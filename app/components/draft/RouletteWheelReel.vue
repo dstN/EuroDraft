@@ -77,7 +77,7 @@ onUnmounted(() => {
       </div>
 
       <div class="min-w-0">
-        <p class="text-xs font-mono font-bold uppercase tracking-[0.15em] text-emerald-400">
+        <p class="text-xs font-mono font-bold uppercase tracking-[0.15em] text-emerald-800 dark:text-emerald-300">
           Euro {{ displayYear }} Squad
         </p>
         <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight truncate">

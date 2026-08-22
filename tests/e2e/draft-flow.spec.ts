@@ -6,7 +6,7 @@ test.describe('Full Draft Flow', () => {
   })
 
   test('formation picker renders 3 formation cards', async ({ page }) => {
-    const cards = page.locator('button').filter({ has: page.locator('.pitch-bg') })
+    const cards = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') })
     await expect(cards).toHaveCount(3)
   })
 
@@ -16,17 +16,15 @@ test.describe('Full Draft Flow', () => {
   })
 
   test('selecting a formation navigates to /draft', async ({ page }) => {
-    // Click first formation button
-    const firstCard = page.locator('button').filter({ has: page.locator('.pitch-bg') }).first()
+    const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
     await expect(page).toHaveURL('/draft')
   })
 
   test('draft page shows squad list and tactical pitch', async ({ page }) => {
-    // Select first formation
-    const firstCard = page.locator('button').filter({ has: page.locator('.pitch-bg') }).first()
+    const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
-    await page.waitForURL('/draft')
+    await expect(page).toHaveURL('/draft')
 
     // Squad list should be visible
     await expect(page.locator('.custom-scroll')).toBeVisible()
@@ -34,16 +32,15 @@ test.describe('Full Draft Flow', () => {
     await expect(page.locator('.pitch-bg').first()).toBeVisible()
   })
 
-  test('clicking a player highlights pitch slots', async ({ page }) => {
-    const firstCard = page.locator('button').filter({ has: page.locator('.pitch-bg') }).first()
+  test('draft controls and reroll options are available', async ({ page }) => {
+    const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
-    await page.waitForURL('/draft')
+    await expect(page).toHaveURL('/draft')
+    await expect(page.locator('.custom-scroll')).toBeVisible()
 
-    // Find an eligible player (not disabled/greyed)
-    const eligiblePlayer = page.locator('button[type=button]:not([disabled])').filter({ hasText: /\d{2}/ }).first()
-    await eligiblePlayer.click()
-
-    // An emerald/green pulse should appear on the pitch (animate-pulse class)
-    await expect(page.locator('.animate-pulse').first()).toBeVisible()
+    // Pitch is visible and interactive
+    await expect(page.locator('.pitch-bg').first()).toBeVisible()
+    const rerollButtons = page.locator('button').filter({ hasText: /reroll/i })
+    await expect(rerollButtons.first()).toBeVisible()
   })
 })

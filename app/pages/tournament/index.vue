@@ -100,7 +100,7 @@ const playerGroup = computed(() => {
     <!-- Top Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1 text-left">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
           UEFA European Championship
         </div>
         <h1 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
@@ -110,22 +110,21 @@ const playerGroup = computed(() => {
           />
           <span>{{ draft.teamName || 'Dream XI' }}</span>
         </h1>
-        <p class="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm font-medium">
-          {{ draft.formation?.label }} Formation · Squad Rating: <strong class="font-mono text-emerald-500 dark:text-emerald-400">{{ draft.teamOVR }} OVR</strong>
+        <p class="text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold">
+          {{ draft.formation?.label }} Formation · Squad Rating: <strong class="font-mono text-emerald-700 dark:text-emerald-400 font-black">{{ draft.teamOVR }} OVR</strong>
         </p>
       </div>
 
       <!-- Skip to Results Button -->
       <div v-if="!isSimulationCompleted">
-        <UButton
-          size="sm"
-          variant="solid"
-          color="primary"
-          leading-icon="i-lucide-fast-forward"
-          label="Skip to Final Results"
-          class="rounded-full px-5 font-bold shadow-md shadow-emerald-500/25 cursor-pointer"
+        <button
+          type="button"
+          class="rounded-full px-5 py-2 text-sm font-bold bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white cursor-pointer shadow-md inline-flex items-center gap-2 transition-all"
           @click="skipAllToResults"
-        />
+        >
+          <UIcon name="i-lucide-fast-forward" class="size-4" />
+          <span>Skip to Final Results</span>
+        </button>
       </div>
     </div>
 
@@ -141,11 +140,11 @@ const playerGroup = computed(() => {
         v-if="playerGroup"
         class="surface-card p-5 space-y-3"
       >
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/5">
-          <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+        <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/10">
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
             Group {{ playerGroup.id }} Draw
           </span>
-          <span class="text-[10px] font-mono font-bold text-emerald-400">
+          <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
             Top 2 Advance to Knockouts
           </span>
         </div>
@@ -156,8 +155,8 @@ const playerGroup = computed(() => {
             :key="t.id"
             class="p-3 rounded-xl border flex flex-col items-center text-center space-y-1.5"
             :class="t.id === tournament.playerTeam?.id
-              ? 'bg-emerald-500/15 border-emerald-500/40 ring-1 ring-emerald-400/40'
-              : 'bg-zinc-100 dark:bg-zinc-800/60 border-zinc-200 dark:border-white/5'"
+              ? 'bg-emerald-600/15 border-emerald-500/50 ring-1 ring-emerald-500/40'
+              : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10'"
           >
             <CountryFlag
               :country="t.country"
@@ -165,11 +164,11 @@ const playerGroup = computed(() => {
             />
             <span
               class="font-bold text-xs truncate max-w-full"
-              :class="t.id === tournament.playerTeam?.id ? 'text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'"
+              :class="t.id === tournament.playerTeam?.id ? 'text-emerald-800 dark:text-emerald-300' : 'text-zinc-900 dark:text-zinc-100'"
             >
               {{ t.countryName }}
             </span>
-            <span class="text-[10px] font-mono text-zinc-500">
+            <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
               OVR {{ t.averageOVR }}
             </span>
           </div>
@@ -341,11 +340,11 @@ const playerGroup = computed(() => {
           <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <UIcon
               name="i-lucide-bar-chart-2"
-              class="size-5 text-emerald-400"
+              class="size-5 text-emerald-700 dark:text-emerald-400"
             />
             <span>Tournament Run Stats</span>
           </h2>
-          <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
+          <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
             {{ tournament.runStats.totalMatches }} Matches Played
           </span>
         </div>
@@ -355,10 +354,10 @@ const playerGroup = computed(() => {
           <!-- Top Scorer -->
           <div class="surface-card p-4 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Scorer</span>
+              <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">Top Scorer</span>
               <UIcon
                 name="i-lucide-award"
-                class="size-4 text-gold-400"
+                class="size-4 text-amber-500"
               />
             </div>
             <template v-if="tournament.runStats.topScorer && tournament.runStats.topScorer.goals > 0">
@@ -367,16 +366,16 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.topScorer.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-white truncate">
+                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.topScorer.player.name }}
                 </h4>
               </div>
-              <p class="text-xl font-black font-mono text-gold-400">
-                {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-400 font-normal">Goals</span>
+              <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
+                {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Goals</span>
               </p>
             </template>
             <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
+              <p class="text-xs text-zinc-600 dark:text-zinc-400 italic py-2">
                 No goals scored
               </p>
             </template>
@@ -385,10 +384,10 @@ const playerGroup = computed(() => {
           <!-- Top Assistgiver -->
           <div class="surface-card p-4 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Playmaker</span>
+              <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">Top Playmaker</span>
               <UIcon
                 name="i-lucide-crosshair"
-                class="size-4 text-emerald-400"
+                class="size-4 text-emerald-600 dark:text-emerald-400"
               />
             </div>
             <template v-if="tournament.runStats.topAssister && tournament.runStats.topAssister.assists > 0">
@@ -397,16 +396,16 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.topAssister.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-white truncate">
+                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.topAssister.player.name }}
                 </h4>
               </div>
-              <p class="text-xl font-black font-mono text-emerald-400">
-                {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-400 font-normal">Assists</span>
+              <p class="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+                {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Assists</span>
               </p>
             </template>
             <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
+              <p class="text-xs text-zinc-600 dark:text-zinc-400 italic py-2">
                 No assists recorded
               </p>
             </template>
@@ -415,10 +414,10 @@ const playerGroup = computed(() => {
           <!-- Most G+A Overall (MVP) -->
           <div class="surface-card p-4 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Most G+A (MVP)</span>
+              <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">Most G+A (MVP)</span>
               <UIcon
                 name="i-lucide-sparkles"
-                class="size-4 text-amber-400"
+                class="size-4 text-amber-500"
               />
             </div>
             <template v-if="tournament.runStats.mvp">
@@ -427,16 +426,16 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.mvp.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-white truncate">
+                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.mvp.player.name }}
                 </h4>
               </div>
-              <p class="text-xl font-black font-mono text-amber-400">
-                {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-400 font-normal">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
+              <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
+                {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
               </p>
             </template>
             <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
+              <p class="text-xs text-zinc-600 dark:text-zinc-400 italic py-2">
                 —
               </p>
             </template>
@@ -445,10 +444,10 @@ const playerGroup = computed(() => {
           <!-- Best G+A / 90 Min -->
           <div class="surface-card p-4 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Efficiency</span>
+              <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">Efficiency</span>
               <UIcon
                 name="i-lucide-gauge"
-                class="size-4 text-sky-400"
+                class="size-4 text-sky-600 dark:text-sky-400"
               />
             </div>
             <template v-if="tournament.runStats.bestGAPer90">
@@ -457,16 +456,16 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.bestGAPer90.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-white truncate">
+                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.bestGAPer90.player.name }}
                 </h4>
               </div>
-              <p class="text-xl font-black font-mono text-sky-400">
-                {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-400 font-normal">G+A / 90'</span>
+              <p class="text-xl font-black font-mono text-sky-700 dark:text-sky-400">
+                {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">G+A / 90'</span>
               </p>
             </template>
             <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
+              <p class="text-xs text-zinc-600 dark:text-zinc-400 italic py-2">
                 —
               </p>
             </template>
@@ -474,36 +473,36 @@ const playerGroup = computed(() => {
         </div>
 
         <!-- Team Overview Ticker Bar (Clean Sheets, Goals, Cards) -->
-        <div class="surface-card p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-white/5">
+        <div class="surface-card p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-white/10">
           <div class="space-y-1">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+            <p class="text-xs uppercase font-mono font-bold tracking-wider text-zinc-700 dark:text-zinc-300">
               Clean Sheets
             </p>
-            <p class="text-lg font-black font-mono text-emerald-400">
+            <p class="text-lg font-black font-mono text-emerald-700 dark:text-emerald-400">
               {{ tournament.runStats.cleanSheets }} 🧤
             </p>
           </div>
           <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+            <p class="text-xs uppercase font-mono font-bold tracking-wider text-zinc-700 dark:text-zinc-300">
               Goals Scored / Conceded
             </p>
-            <p class="text-lg font-black font-mono text-white">
+            <p class="text-lg font-black font-mono text-zinc-900 dark:text-white">
               {{ tournament.runStats.totalGoalsFor }} : {{ tournament.runStats.totalGoalsAgainst }}
             </p>
           </div>
           <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+            <p class="text-xs uppercase font-mono font-bold tracking-wider text-zinc-700 dark:text-zinc-300">
               Yellow Cards
             </p>
-            <p class="text-lg font-black font-mono text-amber-400">
+            <p class="text-lg font-black font-mono text-amber-700 dark:text-amber-400">
               {{ tournament.runStats.totalYellowCards }} 🟨
             </p>
           </div>
           <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+            <p class="text-xs uppercase font-mono font-bold tracking-wider text-zinc-700 dark:text-zinc-300">
               Red Cards
             </p>
-            <p class="text-lg font-black font-mono text-rose-400">
+            <p class="text-lg font-black font-mono text-rose-700 dark:text-rose-400">
               {{ tournament.runStats.totalRedCards }} 🟥
             </p>
           </div>
@@ -511,17 +510,17 @@ const playerGroup = computed(() => {
 
         <!-- Detailed Squad Performance Table -->
         <div class="surface-card p-5 space-y-4 overflow-hidden">
-          <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/5">
-            <h3 class="text-sm font-bold font-mono uppercase tracking-widest text-zinc-300">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/10">
+            <h3 class="text-sm font-bold font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200">
               Complete Squad Performance Table
             </h3>
-            <span class="text-xs text-zinc-500 font-mono">11 Players</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">11 Players</span>
           </div>
 
           <div class="overflow-x-auto custom-scroll">
             <table class="w-full text-left text-xs font-mono">
               <thead>
-                <tr class="text-zinc-500 uppercase border-b border-white/5 pb-2">
+                <tr class="text-zinc-700 dark:text-zinc-400 uppercase border-b border-zinc-200 dark:border-white/10 pb-2 font-bold">
                   <th class="py-2.5 px-2">
                     Player
                   </th>
@@ -537,70 +536,70 @@ const playerGroup = computed(() => {
                   <th class="py-2.5 px-2 text-center">
                     MIN
                   </th>
-                  <th class="py-2.5 px-2 text-center text-emerald-400">
+                  <th class="py-2.5 px-2 text-center text-emerald-700 dark:text-emerald-400 font-black">
                     G
                   </th>
-                  <th class="py-2.5 px-2 text-center text-sky-400">
+                  <th class="py-2.5 px-2 text-center text-sky-700 dark:text-sky-400 font-bold">
                     A
                   </th>
-                  <th class="py-2.5 px-2 text-center font-bold text-amber-400">
+                  <th class="py-2.5 px-2 text-center font-bold text-amber-700 dark:text-amber-400">
                     G+A
                   </th>
-                  <th class="py-2.5 px-2 text-center text-amber-300">
+                  <th class="py-2.5 px-2 text-center text-amber-700 dark:text-amber-300">
                     🟨
                   </th>
-                  <th class="py-2.5 px-2 text-center text-rose-400">
+                  <th class="py-2.5 px-2 text-center text-rose-700 dark:text-rose-400">
                     🟥
                   </th>
-                  <th class="py-2.5 px-2 text-right text-emerald-400">
+                  <th class="py-2.5 px-2 text-right text-emerald-700 dark:text-emerald-400 font-black">
                     RATING
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-zinc-200 dark:divide-white/5">
+              <tbody class="divide-y divide-zinc-200 dark:divide-white/10">
                 <tr
                   v-for="p in tournament.runStats.playerStats"
                   :key="p.player.id"
-                  class="hover:bg-white/5 transition-colors"
+                  class="hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
                 >
-                  <td class="py-2.5 px-2 font-bold text-white flex items-center gap-2">
+                  <td class="py-2.5 px-2 font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <CountryFlag
                       :country="p.player.country"
                       size="sm"
                     />
                     <span class="truncate max-w-[8rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
                   </td>
-                  <td class="py-2.5 px-2 text-zinc-400 font-semibold">
+                  <td class="py-2.5 px-2 text-zinc-700 dark:text-zinc-300 font-semibold">
                     {{ p.player.primaryPosition }}
                   </td>
                   <td
                     class="py-2.5 px-2 font-black"
-                    :class="p.player.stats.overall >= 90 ? 'text-gold-400' : 'text-zinc-300'"
+                    :class="p.player.stats.overall >= 90 ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-200'"
                   >
                     {{ p.player.stats.overall }}
                   </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-300">
+                  <td class="py-2.5 px-2 text-center text-zinc-800 dark:text-zinc-200 font-semibold">
                     {{ p.matches }}
                   </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
+                  <td class="py-2.5 px-2 text-center text-zinc-700 dark:text-zinc-300">
                     {{ p.minutes }}'
                   </td>
-                  <td class="py-2.5 px-2 text-center font-black text-emerald-400">
+                  <td class="py-2.5 px-2 text-center font-black text-emerald-700 dark:text-emerald-400">
                     {{ p.goals }}
                   </td>
-                  <td class="py-2.5 px-2 text-center font-bold text-sky-400">
+                  <td class="py-2.5 px-2 text-center font-bold text-sky-700 dark:text-sky-400">
                     {{ p.assists }}
                   </td>
-                  <td class="py-2.5 px-2 text-center font-black text-amber-400">
+                  <td class="py-2.5 px-2 text-center font-black text-amber-700 dark:text-amber-400">
                     {{ p.ga }}
                   </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
+                  <td class="py-2.5 px-2 text-center text-zinc-700 dark:text-zinc-300">
                     {{ p.yellowCards }}
                   </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
+                  <td class="py-2.5 px-2 text-center text-zinc-700 dark:text-zinc-300">
                     {{ p.redCards }}
                   </td>
-                  <td class="py-2.5 px-2 text-right font-black text-emerald-400">
+                  <td class="py-2.5 px-2 text-right font-black text-emerald-700 dark:text-emerald-400">
                     {{ p.rating }}
                   </td>
                 </tr>

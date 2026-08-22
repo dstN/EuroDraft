@@ -140,12 +140,12 @@ const currentLocaleName = computed(() => {
 
     <!-- Minimal footer with aligned max-w-5xl container -->
     <footer class="relative z-10 border-t border-black/[0.04] dark:border-white/[0.04] py-6 mt-12 bg-transparent">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-medium">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
         <span>EuroDraft — The Historical European Championship Simulator</span>
         <div class="flex items-center gap-6">
           <NuxtLink
             to="/legal/impressum"
-            class="hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+            class="text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors underline-offset-4 hover:underline font-bold"
           >
             {{ $t('nav.impressum') }}
           </NuxtLink>

@@ -168,7 +168,7 @@ const currentCountryDisplayName = computed(() => {
           <div>
             <h2 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
               <span>{{ draft.teamName || 'Dream XI' }}</span>
-              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
                 {{ draft.teamOVR }} OVR
               </span>
             </h2>
@@ -182,8 +182,8 @@ const currentCountryDisplayName = computed(() => {
         <div class="flex items-center justify-between sm:justify-end gap-3">
           <div class="flex items-center gap-2">
             <UBadge
-              color="primary"
-              variant="subtle"
+              color="neutral"
+              variant="outline"
               size="md"
               class="font-mono font-black text-xs"
             >
@@ -196,7 +196,7 @@ const currentCountryDisplayName = computed(() => {
             <button
               type="button"
               class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'squad' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+              :class="mobileTab === 'squad' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300'"
               @click="mobileTab = 'squad'"
             >
               🎲 Squad ({{ roulette.squadWithEligibility.filter(p => p.canDraft).length }})
@@ -204,7 +204,7 @@ const currentCountryDisplayName = computed(() => {
             <button
               type="button"
               class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+              :class="mobileTab === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300'"
               @click="mobileTab = 'pitch'"
             >
               🏟️ Pitch ({{ draft.filledSlots.length }}/11)
@@ -273,7 +273,7 @@ const currentCountryDisplayName = computed(() => {
                     variant="outline"
                     :label="$t('draft.reroll_year')"
                     leading-icon="i-lucide-calendar"
-                    class="rounded-lg font-semibold"
+                    class="rounded-lg font-bold"
                     :disabled="draft.rerollsRemaining <= 0 || isSpinningReel"
                     @click="rerollYearWithAnimation"
                   />
@@ -288,13 +288,13 @@ const currentCountryDisplayName = computed(() => {
                     variant="outline"
                     :label="$t('draft.reroll_nation')"
                     leading-icon="i-lucide-globe"
-                    class="rounded-lg font-semibold"
+                    class="rounded-lg font-bold"
                     :disabled="draft.rerollsRemaining <= 0 || isSpinningReel"
                     @click="rerollNationWithAnimation"
                   />
                 </UTooltip>
               </div>
-              <p class="text-[10px] text-zinc-500 font-mono font-semibold">
+              <p class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">
                 {{ $t('draft.rerolls_remaining', { count: draft.rerollsRemaining }) }}
               </p>
             </div>
@@ -312,7 +312,7 @@ const currentCountryDisplayName = computed(() => {
               <!-- Position Category Section Header -->
               <div
                 v-if="idx === 0 || roulette.squadWithEligibility[idx - 1]?.player.basePosition !== entry.player.basePosition"
-                class="pt-3 pb-1 px-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none font-mono"
+                class="pt-3 pb-1 px-1 flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 select-none"
               >
                 <span>{{ entry.player.basePosition }}s</span>
                 <div class="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
@@ -323,7 +323,7 @@ const currentCountryDisplayName = computed(() => {
                 class="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-left transition-all duration-150 border cursor-pointer select-none"
                 :class="[
                   selectedPlayer?.id === entry.player.id
-                    ? 'bg-emerald-500/25 border-emerald-400 ring-2 ring-emerald-400 shadow-md scale-[1.01]'
+                    ? 'bg-emerald-600/25 border-emerald-500 ring-2 ring-emerald-500 shadow-md scale-[1.01]'
                     : isPlayerEligibleForSelectedSlot(entry.player)
                       ? 'bg-zinc-50 hover:bg-emerald-50/80 dark:bg-zinc-800/70 dark:hover:bg-emerald-950/40 border-zinc-200/80 dark:border-white/5 hover:border-emerald-400/50 shadow-sm active:scale-[0.99]'
                       : 'bg-zinc-100/50 dark:bg-zinc-900/30 border-transparent opacity-35 cursor-not-allowed'
@@ -334,7 +334,7 @@ const currentCountryDisplayName = computed(() => {
                 @click="onPlayerClick(entry.player)"
               >
                 <!-- Shirt number -->
-                <span class="w-6 text-center font-mono text-xs text-zinc-400 font-bold shrink-0">
+                <span class="w-6 text-center font-mono text-xs text-zinc-600 dark:text-zinc-400 font-bold shrink-0">
                   {{ entry.player.shirtNumber ?? '–' }}
                 </span>
 
@@ -398,7 +398,7 @@ const currentCountryDisplayName = computed(() => {
                 <span class="text-xs font-mono font-normal text-zinc-500">({{ draft.formation?.label }})</span>
               </h3>
             </div>
-            <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+            <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
               {{ draft.filledSlots.length }}/11 Selected
             </span>
           </div>
