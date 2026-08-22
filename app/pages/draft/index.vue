@@ -166,13 +166,13 @@ const currentCountryDisplayName = computed(() => {
             size="md"
           />
           <div>
-            <h2 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <h1 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
               <span>{{ draft.teamName || 'Dream XI' }}</span>
-              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-300 border border-emerald-400 dark:border-emerald-500/30">
                 {{ draft.teamOVR }} OVR
               </span>
-            </h2>
-            <p class="text-xs text-zinc-500 font-mono">
+            </h1>
+            <p class="text-xs text-zinc-700 dark:text-zinc-300 font-mono font-bold">
               Drafted {{ draft.filledSlots.length }} / 11 Players
             </p>
           </div>
@@ -294,7 +294,7 @@ const currentCountryDisplayName = computed(() => {
                   />
                 </UTooltip>
               </div>
-              <p class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">
+              <p class="text-xs text-zinc-700 dark:text-zinc-300 font-mono font-bold">
                 {{ $t('draft.rerolls_remaining', { count: draft.rerollsRemaining }) }}
               </p>
             </div>

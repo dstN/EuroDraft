@@ -119,10 +119,14 @@ const playerGroup = computed(() => {
       <div v-if="!isSimulationCompleted">
         <button
           type="button"
-          class="rounded-full px-5 py-2 text-sm font-bold bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white cursor-pointer shadow-md inline-flex items-center gap-2 transition-all"
+          class="rounded-full px-5 py-2 text-sm font-bold bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white cursor-pointer shadow-md inline-flex items-center gap-2 transition-all"
           @click="skipAllToResults"
         >
-          <UIcon name="i-lucide-fast-forward" class="size-4" />
+          <UIcon
+            name="i-lucide-fast-forward"
+            class="size-4 text-white"
+            aria-hidden="true"
+          />
           <span>Skip to Final Results</span>
         </button>
       </div>
@@ -366,12 +370,12 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.topScorer.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
+                <p class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.topScorer.player.name }}
-                </h4>
+                </p>
               </div>
               <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
-                {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Goals</span>
+                {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">Goals</span>
               </p>
             </template>
             <template v-else>
@@ -396,12 +400,12 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.topAssister.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
+                <p class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.topAssister.player.name }}
-                </h4>
+                </p>
               </div>
               <p class="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-                {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Assists</span>
+                {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">Assists</span>
               </p>
             </template>
             <template v-else>
@@ -426,12 +430,12 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.mvp.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
+                <p class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.mvp.player.name }}
-                </h4>
+                </p>
               </div>
               <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
-                {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
+                {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
               </p>
             </template>
             <template v-else>
@@ -456,12 +460,12 @@ const playerGroup = computed(() => {
                   :country="tournament.runStats.bestGAPer90.player.country"
                   size="sm"
                 />
-                <h4 class="font-bold text-sm text-zinc-900 dark:text-white truncate">
+                <p class="font-bold text-sm text-zinc-900 dark:text-white truncate">
                   {{ tournament.runStats.bestGAPer90.player.name }}
-                </h4>
+                </p>
               </div>
               <p class="text-xl font-black font-mono text-sky-700 dark:text-sky-400">
-                {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-medium">G+A / 90'</span>
+                {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">G+A / 90'</span>
               </p>
             </template>
             <template v-else>

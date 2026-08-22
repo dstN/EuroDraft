@@ -65,7 +65,7 @@ const positionBadgeColor = computed(() => {
 
     <!-- Player Name & Country Info -->
     <div class="mb-3">
-      <h4
+      <p
         class="font-black tracking-tight truncate text-zinc-900 dark:text-white"
         :class="[
           isCompact ? 'text-sm' : 'text-base',
@@ -73,8 +73,8 @@ const positionBadgeColor = computed(() => {
         ]"
       >
         {{ player.name }}
-      </h4>
-      <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider truncate">
+      </p>
+      <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider truncate">
         {{ player.countryName }}
       </p>
     </div>
@@ -82,30 +82,30 @@ const positionBadgeColor = computed(() => {
     <!-- Stat Hexagon / Bar Grid (if not compact) -->
     <div
       v-if="!isCompact"
-      class="grid grid-cols-6 gap-1 pt-2 border-t border-zinc-200 dark:border-white/8 text-center text-xs font-mono"
+      class="grid grid-cols-6 gap-1 pt-2 border-t border-zinc-200 dark:border-white/10 text-center text-xs font-mono"
     >
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">PAC</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PAC</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.pace }}</span>
       </div>
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">SHO</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">SHO</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.shooting }}</span>
       </div>
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">PAS</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PAS</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.passing }}</span>
       </div>
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">DRI</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">DRI</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.dribbling }}</span>
       </div>
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">DEF</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">DEF</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.defending }}</span>
       </div>
       <div>
-        <span class="block text-zinc-600 dark:text-zinc-400 text-[10px] uppercase font-bold">PHY</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PHY</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.physical }}</span>
       </div>
     </div>

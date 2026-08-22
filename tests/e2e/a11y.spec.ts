@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
+const A11Y_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag2aaa', 'wcag21aaa', 'best-practice']
+
 async function setTheme(page: Page, theme: 'dark' | 'light') {
   await page.emulateMedia({ colorScheme: theme })
   const isDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
@@ -19,11 +21,13 @@ const staticPages = [
   { name: 'Formation Picker (Dark)', path: '/draft/formation', theme: 'dark' as const },
   { name: 'Formation Picker (Light)', path: '/draft/formation', theme: 'light' as const },
   { name: 'Impressum (Dark)', path: '/legal/impressum', theme: 'dark' as const },
-  { name: 'Impressum (Light)', path: '/legal/impressum', theme: 'light' as const }
+  { name: 'Impressum (Light)', path: '/legal/impressum', theme: 'light' as const },
+  { name: 'Tournament Hub (Dark)', path: '/tournament', theme: 'dark' as const },
+  { name: 'Tournament Hub (Light)', path: '/tournament', theme: 'light' as const }
 ]
 
 for (const { name, path, theme } of staticPages) {
-  test(`a11y audit: ${name}`, async ({ page }) => {
+  test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto(path)
     await page.waitForSelector('main', { state: 'visible' })
     await setTheme(page, theme)
@@ -32,7 +36,7 @@ for (const { name, path, theme } of staticPages) {
     const results = await new AxeBuilder({ page })
       .exclude('#nuxt-devtools-container')
       .exclude('.nuxt-devtools-frame')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .withTags(A11Y_TAGS)
       .analyze()
 
     if (results.violations.length > 0) {
@@ -57,7 +61,7 @@ const interactivePages = [
 ]
 
 for (const { name, theme } of interactivePages) {
-  test(`a11y audit: ${name}`, async ({ page }) => {
+  test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto('/draft/formation')
     const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
@@ -69,7 +73,7 @@ for (const { name, theme } of interactivePages) {
     const results = await new AxeBuilder({ page })
       .exclude('#nuxt-devtools-container')
       .exclude('.nuxt-devtools-frame')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .withTags(A11Y_TAGS)
       .analyze()
 
     if (results.violations.length > 0) {

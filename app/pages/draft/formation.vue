@@ -88,7 +88,7 @@ function selectFormation(f: Formation) {
               type="button"
               class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer"
               :class="teamNameInput === preset
-                ? 'bg-emerald-600/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold'
+                ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-400 text-emerald-950 dark:text-emerald-200 font-bold'
                 : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white'"
               @click="teamNameInput = preset"
             >
@@ -109,7 +109,7 @@ function selectFormation(f: Formation) {
               type="button"
               class="p-2 rounded-xl border transition-all flex items-center gap-2 cursor-pointer"
               :class="selectedEmblem === emb.code
-                ? 'bg-emerald-600/20 border-emerald-500 ring-2 ring-emerald-500/50'
+                ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-400 ring-2 ring-emerald-500/50'
                 : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 hover:border-zinc-400'"
               @click="selectedEmblem = emb.code"
             >
@@ -155,13 +155,14 @@ function selectFormation(f: Formation) {
           </p>
         </div>
 
-        <!-- CTA Button with strong WCAG AA contrast -->
+        <!-- CTA Button with strong WCAG AAA contrast -->
         <div class="pt-1">
-          <div class="w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm">
+          <div class="w-full py-2.5 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm">
             <span>Confirm & Draft</span>
             <UIcon
               name="i-lucide-arrow-right"
               class="size-4 transition-transform group-hover:translate-x-1"
+              aria-hidden="true"
             />
           </div>
         </div>
@@ -176,7 +177,7 @@ function selectFormation(f: Formation) {
         size="md"
         leading-icon="i-lucide-refresh-cw"
         label="Draw 3 New Formations"
-        class="rounded-full px-6 font-bold"
+        class="rounded-full px-6 font-bold text-zinc-900 dark:text-zinc-100"
         @click="formations = pickRandomFormations(3)"
       />
     </div>

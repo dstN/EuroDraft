@@ -59,6 +59,14 @@ const currentLocaleName = computed(() => {
 
 <template>
   <div class="relative min-h-dvh flex flex-col text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+    <!-- Skip to Main Content link for keyboard accessibility (WCAG AAA & Best Practice) -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-800 focus:text-white focus:font-bold focus:rounded-lg focus:shadow-xl focus:ring-2 focus:ring-white focus:outline-none"
+    >
+      {{ $t('common.skip_to_content') || 'Skip to main content' }}
+    </a>
+
     <!-- Authentic Stadium Matchday Canvas Background (Fixed behind everything, zero cuts) -->
     <div
       class="stadium-canvas"
@@ -72,18 +80,23 @@ const currentLocaleName = computed(() => {
         <NuxtLink
           to="/"
           class="flex items-center gap-2.5 shrink-0 group"
+          aria-label="EuroDraft Homepage"
         >
-          <div class="size-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+          <div class="size-7 rounded-lg bg-emerald-700 dark:bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
             <UIcon
               name="i-lucide-trophy"
               class="size-4 text-white"
+              aria-hidden="true"
             />
           </div>
           <span class="font-black text-lg tracking-tight text-zinc-900 dark:text-white">EuroDraft</span>
         </NuxtLink>
 
         <!-- Nav links + Active Draft Pill -->
-        <nav class="flex items-center gap-2">
+        <nav
+          class="flex items-center gap-2"
+          aria-label="Main navigation"
+        >
           <UButton
             v-for="link in navLinks"
             :key="link.to"
@@ -92,15 +105,18 @@ const currentLocaleName = computed(() => {
             color="neutral"
             size="sm"
             :label="link.label"
-            class="font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg px-3"
+            class="font-semibold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-3"
           />
 
           <NuxtLink
             v-if="draft.filledSlots.length > 0 && !draft.isComplete"
             to="/draft"
-            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold"
           >
-            <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span
+              class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
+              aria-hidden="true"
+            />
             <span>Draft ({{ draft.filledSlots.length }}/11)</span>
           </NuxtLink>
         </nav>
@@ -115,7 +131,8 @@ const currentLocaleName = computed(() => {
               color="neutral"
               :leading-icon="`i-circle-flags-${currentLocaleFlag}`"
               :label="currentLocaleName"
-              class="font-mono font-bold text-xs rounded-lg px-2.5 py-1"
+              aria-label="Change language"
+              class="font-mono font-bold text-xs rounded-lg px-2.5 py-1 text-zinc-900 dark:text-zinc-100"
             />
           </UDropdownMenu>
 
@@ -126,7 +143,7 @@ const currentLocaleName = computed(() => {
             color="neutral"
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-            class="rounded-lg"
+            class="rounded-lg text-zinc-900 dark:text-zinc-100"
             @click="isDark = !isDark"
           />
         </div>
@@ -134,7 +151,11 @@ const currentLocaleName = computed(() => {
     </header>
 
     <!-- Page content with consistent container spacing -->
-    <main class="relative z-10 flex-1 py-8">
+    <main
+      id="main-content"
+      class="relative z-10 flex-1 py-8 focus:outline-none"
+      tabindex="-1"
+    >
       <slot />
     </main>
 

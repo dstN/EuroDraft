@@ -168,13 +168,14 @@ const tournamentEras = [
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
             <NuxtLink
               to="/draft/formation"
-              class="btn-nested bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white shadow-lg shadow-emerald-700/25 justify-between sm:justify-start cursor-pointer font-bold"
+              class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-lg shadow-emerald-800/25 justify-between sm:justify-start cursor-pointer font-bold"
             >
               <span>{{ $t('landing.cta_start') }}</span>
-              <span class="btn-nested-icon bg-emerald-800 text-white">
+              <span class="btn-nested-icon bg-emerald-900 text-white">
                 <UIcon
                   name="i-lucide-arrow-right"
                   class="size-4 text-white"
+                  aria-hidden="true"
                 />
               </span>
             </NuxtLink>
@@ -184,7 +185,7 @@ const tournamentEras = [
               size="lg"
               variant="outline"
               color="neutral"
-              class="rounded-full px-5 font-bold"
+              class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
               label="Explore Eras & Roster"
             />
           </div>
@@ -298,13 +299,14 @@ const tournamentEras = [
         <div class="flex justify-center gap-3">
           <button
             type="button"
-            class="rounded-full px-6 py-2.5 font-bold bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white cursor-pointer shadow-md text-sm inline-flex items-center gap-2 transition-all disabled:opacity-50"
+            class="rounded-full px-6 py-2.5 font-bold bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white cursor-pointer shadow-md text-sm inline-flex items-center gap-2 transition-all disabled:opacity-50"
             :disabled="isSpinningPreview"
             @click="spinPreview"
           >
             <UIcon
               name="i-lucide-dices"
-              class="size-4"
+              class="size-4 text-white"
+              aria-hidden="true"
             />
             <span>{{ isSpinningPreview ? 'Spinning Wheel...' : 'Test Spin the Wheel' }}</span>
           </button>
@@ -350,7 +352,7 @@ const tournamentEras = [
             <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">
               {{ era.title }}
             </h3>
-            <p class="text-zinc-600 dark:text-zinc-300 text-xs sm:text-sm leading-relaxed">
+            <p class="text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm leading-relaxed">
               {{ era.subtitle }}
             </p>
           </div>
@@ -364,7 +366,7 @@ const tournamentEras = [
               <span
                 v-for="star in era.stars"
                 :key="star"
-                class="px-2.5 py-1 rounded text-xs font-semibold bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200"
+                class="px-2.5 py-1 rounded text-xs font-bold bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200"
               >
                 {{ star }}
               </span>
@@ -380,6 +382,7 @@ const tournamentEras = [
         <UIcon
           name="i-lucide-trophy"
           class="size-12 text-gold-400 mx-auto animate-bounce"
+          aria-hidden="true"
         />
         <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
           Ready to Build Your <span class="gold-text">Champion XI</span>?
@@ -390,13 +393,14 @@ const tournamentEras = [
         <div class="pt-2">
           <NuxtLink
             to="/draft/formation"
-            class="btn-nested bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white shadow-xl shadow-emerald-700/25 mx-auto inline-flex font-bold"
+            class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-xl shadow-emerald-800/25 mx-auto inline-flex font-bold"
           >
             <span>{{ $t('landing.cta_start') }}</span>
-            <span class="btn-nested-icon bg-emerald-800 text-white">
+            <span class="btn-nested-icon bg-emerald-900 text-white">
               <UIcon
                 name="i-lucide-arrow-right"
                 class="size-4 text-white"
+                aria-hidden="true"
               />
             </span>
           </NuxtLink>
