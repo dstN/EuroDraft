@@ -43,7 +43,10 @@ function selectFormation(f: Formation) {
             style="background: rgba(255,255,255,0.03); box-shadow: inset 0 1px 1px rgba(255,255,255,0.06)"
           >
             <!-- Mini formation pitch (Issue #3: real player dots) -->
-            <div class="relative rounded-lg overflow-hidden" style="height: 160px">
+            <div
+              class="relative rounded-lg overflow-hidden"
+              style="height: 160px"
+            >
               <MiniFormationPitch :formation="formation" />
               <!-- Formation label overlay at bottom -->
               <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 flex items-end justify-between">

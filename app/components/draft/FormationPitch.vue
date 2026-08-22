@@ -13,14 +13,6 @@ const emit = defineEmits<{
   (e: 'select-slot', slot: DraftSlot): void
 }>()
 
-// Position badge color helper
-function getPositionBg(pos: string): string {
-  if (pos === 'GK') return 'bg-sky-500/20 border-sky-400/60 text-sky-300'
-  if (['CB', 'LB', 'RB'].includes(pos)) return 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300'
-  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'bg-amber-500/20 border-amber-400/60 text-amber-300'
-  return 'bg-rose-500/20 border-rose-400/60 text-rose-300'
-}
-
 function isSlotHighlighted(slot: DraftSlot): boolean {
   if (props.highlightedSlotIds && props.highlightedSlotIds.length > 0) {
     return props.highlightedSlotIds.includes(slot.id)
@@ -101,7 +93,10 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
 </script>
 
 <template>
-  <div class="relative w-full h-full pitch-bg rounded-2xl border-2 border-emerald-500/30 overflow-hidden shadow-2xl p-4 select-none" style="min-height: 420px">
+  <div
+    class="relative w-full h-full pitch-bg rounded-2xl border-2 border-emerald-500/30 overflow-hidden shadow-2xl p-4 select-none"
+    style="min-height: 420px"
+  >
     <!-- Pitch markings -->
     <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-px bg-white/15" />
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-24 sm:size-28 rounded-full border border-white/15" />

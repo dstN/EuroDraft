@@ -159,9 +159,9 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
       console.error(`  ✓ Found via search: ${allUrls[0]}`)
       return allUrls[0]!
     }
-  }
-  catch (err: any) {
-    console.error(`  ✗ DuckDuckGo search failed: ${err.message}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`  ✗ DuckDuckGo search failed: ${msg}`)
   }
 
   // B: Source search API (age-based disambiguation — prefer retired players age >= 40)
@@ -171,7 +171,7 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
     const res = await axios.get(searchUrl, { headers: HEADERS, timeout: 15000 })
     const $ = cheerio.load(res.data)
 
-    interface Candidate { url: string; age: number }
+    interface Candidate { url: string, age: number }
     const candidates: Candidate[] = []
 
     $('table.items tbody tr').each((_, row) => {
@@ -182,7 +182,10 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
       let age = 0
       $(row).find('td.zentriert').each((_, td) => {
         const n = parseInt($(td).text().trim())
-        if (!isNaN(n) && n >= 15 && n <= 80) { age = n; return false }
+        if (!isNaN(n) && n >= 15 && n <= 80) {
+          age = n
+          return false
+        }
       })
       candidates.push({ url: `${SOURCE_BASE_URL}${href}`, age })
     })
@@ -194,9 +197,9 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
       console.error(`  ✓ Found via API (age ${chosen.age}): ${chosen.url}`)
       return chosen.url
     }
-  }
-  catch (err: any) {
-    console.error(`  ✗ Search API failed: ${err.message}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`  ✗ Search API failed: ${msg}`)
   }
 
   // C: Playwright fallback
@@ -215,7 +218,7 @@ async function findUrlWithPlaywright(playerName: string): Promise<string | null>
     )
     const links = await page.$$eval('a[href*="/profil/spieler/"]', (els, base) =>
       els.slice(0, 3).map(el => base + (el.getAttribute('href') ?? '')),
-      SOURCE_BASE_URL
+    SOURCE_BASE_URL
     )
     await browser.close()
     if (links.length > 0) {
@@ -223,15 +226,15 @@ async function findUrlWithPlaywright(playerName: string): Promise<string | null>
       return links[0]!
     }
     return null
-  }
-  catch (err: any) {
-    console.error(`  ✗ Playwright failed: ${err.message}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`  ✗ Playwright failed: ${msg}`)
     return null
   }
 }
 
 // ---- Step 2: Parse positions from HTML ----
-function parsePositionsFromHtml(html: string): { primary: string | null; others: string[] } {
+function parsePositionsFromHtml(html: string): { primary: string | null, others: string[] } {
   const $ = cheerio.load(html)
   const positions: string[] = []
 
@@ -266,13 +269,17 @@ async function fetchProfileHtml(profileUrl: string): Promise<string | null> {
       return res.data
     }
     console.error(`  ⚠ Response missing position data, trying Playwright...`)
-  }
-  catch (err: any) {
-    const status = err.response?.status
-    if (status === 403 || status === 503 || status === 429) {
-      console.error(`  ⚠ Blocked (HTTP ${status}), trying Playwright...`)
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response) {
+      const status = err.response.status
+      if (status === 403 || status === 503 || status === 429) {
+        console.error(`  ⚠ Blocked (HTTP ${status}), trying Playwright...`)
+      } else {
+        console.error(`  ✗ Fetch failed: ${err.message}`)
+      }
     } else {
-      console.error(`  ✗ Fetch failed: ${err.message}`)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`  ✗ Fetch failed: ${msg}`)
     }
   }
 
@@ -292,9 +299,9 @@ async function fetchProfileHtml(profileUrl: string): Promise<string | null> {
     await browser.close()
     console.error(`  ✓ Fetched via Playwright (${html.length} bytes)`)
     return html
-  }
-  catch (err: any) {
-    console.error(`  ✗ Playwright fetch failed: ${err.message}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`  ✗ Playwright fetch failed: ${msg}`)
     return null
   }
 }
@@ -349,12 +356,10 @@ async function main() {
 
   if (nameIdx !== -1 && args[nameIdx + 1]) {
     playerNames = [args[nameIdx + 1]!]
-  }
-  else if (fileIdx !== -1 && args[fileIdx + 1]) {
+  } else if (fileIdx !== -1 && args[fileIdx + 1]) {
     const content = await readFile(args[fileIdx + 1]!, 'utf8')
     playerNames = content.split('\n').map(l => l.trim()).filter(Boolean)
-  }
-  else if (dbMode) {
+  } else if (dbMode) {
     // Load ALL unique player names from the database
     const dbPath = join(__dirname, '..', 'public', 'eurodraft_db.json')
     if (!existsSync(dbPath)) {
@@ -380,8 +385,7 @@ async function main() {
 
     playerNames = [...nameSet].sort()
     console.error(`📋 Loaded ${playerNames.length} unique players from database`)
-  }
-  else {
+  } else {
     console.error('Usage:')
     console.error('  npx tsx scripts/enrich-positions.ts --name "Player Name"')
     console.error('  npx tsx scripts/enrich-positions.ts --file players.txt')
@@ -424,14 +428,14 @@ async function main() {
     const key = r.name.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s]/g, '').trim()
-    const posArray = `['${r.positions.join("', '")}']`
+    const posArray = `['${r.positions.join('\', \'')}']`
     console.log(`  '${key}': { primary: '${r.primary}', positions: ${posArray}, base: '${r.base}' },`)
   }
 
   console.error(`\n✅ Done: ${results.length}/${playerNames.length} enriched, ${failed} failed`)
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal:', err)
   process.exit(1)
 })

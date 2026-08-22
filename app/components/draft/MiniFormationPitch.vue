@@ -10,25 +10,27 @@ const props = defineProps<{
 const slots = computed(() => expandFormationToSlots(props.formation))
 
 function dotColor(pos: string): string {
-  if (pos === 'GK') return '#facc15'   // yellow
-  if (['CB', 'LB', 'RB'].includes(pos)) return '#4ade80'   // green
-  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return '#fb923c'  // amber
+  if (pos === 'GK') return '#facc15' // yellow
+  if (['CB', 'LB', 'RB'].includes(pos)) return '#4ade80' // green
+  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return '#fb923c' // amber
   return '#f87171' // red
 }
 
 // Reuse the same coordinate logic as FormationPitch
-function getCoords(pos: string, idx: number, allSlots: string[]): { x: number; y: number } {
+function getCoords(pos: string, idx: number, allSlots: string[]): { x: number, y: number } {
   const same = allSlots.filter(p => p === pos)
-  const posIdx = same.indexOf(pos) < 0 ? 0 : (() => {
-    let count = 0
-    for (let i = 0; i < allSlots.length; i++) {
-      if (allSlots[i] === pos) {
-        if (i === idx) break
-        count++
-      }
-    }
-    return count
-  })()
+  const posIdx = same.indexOf(pos) < 0
+    ? 0
+    : (() => {
+        let count = 0
+        for (let i = 0; i < allSlots.length; i++) {
+          if (allSlots[i] === pos) {
+            if (i === idx) break
+            count++
+          }
+        }
+        return count
+      })()
   const n = same.length
 
   if (pos === 'GK') return { x: 50, y: 87 }
@@ -71,7 +73,10 @@ const dots = computed(() =>
 </script>
 
 <template>
-  <div class="relative w-full h-full pitch-bg rounded-xl overflow-hidden select-none" style="min-height: 120px">
+  <div
+    class="relative w-full h-full pitch-bg rounded-xl overflow-hidden select-none"
+    style="min-height: 120px"
+  >
     <!-- Center line -->
     <div class="absolute inset-x-6 top-1/2 -translate-y-1/2 h-px bg-white/10" />
     <!-- Center circle -->

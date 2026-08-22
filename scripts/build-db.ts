@@ -6,10 +6,12 @@
  */
 
 import { writeFile, readFile, mkdir } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as cheerio from 'cheerio'
+
+import { HISTORICAL_PLAYER_REGISTRY, type PlayerPositionProfile } from './player-positions'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
@@ -124,9 +126,6 @@ function resolveCountry(str: string): { code: string, name: string } | null {
   return null
 }
 
-import { HISTORICAL_PLAYER_REGISTRY, type PlayerPositionProfile } from './player-positions'
-import { readdirSync, readFileSync } from 'node:fs'
-
 // Load any enriched positions from cache if available
 const ENRICHED_CACHE_DIR = join(__dirname, 'cache', 'positions')
 const ENRICHED_REGISTRY: Record<string, PlayerPositionProfile> = { ...HISTORICAL_PLAYER_REGISTRY }
@@ -147,9 +146,13 @@ if (existsSync(ENRICHED_CACHE_DIR)) {
             }
           }
         }
-      } catch {}
+      } catch {
+        // Ignore unparseable or corrupted cache files
+      }
     }
-  } catch {}
+  } catch {
+    // Cache directory read error
+  }
 }
 
 function normalizeForLookup(str: string): string {
@@ -243,7 +246,7 @@ function calculateOVR(
   playerName: string = ''
 ): PlayerStats {
   const normName = normalizeForLookup(playerName)
-  let ovr = 78
+  let ovr: number
 
   // 1. Check if player has an authentic star rating in the registry
   let matchedRating: number | undefined

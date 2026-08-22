@@ -290,7 +290,10 @@ function positionColor(pos: string): 'info' | 'success' | 'warning' | 'error' | 
             </div>
 
             <!-- Squad list (Position-sorted: Goalkeepers -> Defenders -> Midfielders -> Forwards) -->
-            <div ref="squadScrollRef" class="space-y-1 max-h-[55vh] lg:max-h-[62vh] overflow-y-auto custom-scroll pr-1">
+            <div
+              ref="squadScrollRef"
+              class="space-y-1 max-h-[55vh] lg:max-h-[62vh] overflow-y-auto custom-scroll pr-1"
+            >
               <template
                 v-for="(entry, idx) in roulette.squadWithEligibility"
                 :key="entry.player.id"
