@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url'
 import * as cheerio from 'cheerio'
 
 import { HISTORICAL_PLAYER_REGISTRY, type PlayerPositionProfile } from './player-positions'
+import { calculateTournamentOVR } from './player-ratings'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
@@ -237,8 +238,6 @@ function mapPosition(posText: string, playerName: string = '', shirtNumber: numb
   }
   return { basePosition: 'Forward', positions: ['ST', 'CF'], primaryPosition: 'ST' }
 }
-
-import { calculateTournamentOVR } from './player-ratings'
 
 function calculateOVR(
   basePosition: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward',
