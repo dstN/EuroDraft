@@ -39,18 +39,6 @@ function selectFormation(f: Formation) {
   draft.selectFormation(f)
   navigateTo('/draft')
 }
-
-function getDefCount(f: Formation): number {
-  return (f.slots.CB || 0) + (f.slots.LB || 0) + (f.slots.RB || 0)
-}
-
-function getMidCount(f: Formation): number {
-  return (f.slots.CDM || 0) + (f.slots.CM || 0) + (f.slots.CAM || 0) + (f.slots.LM || 0) + (f.slots.RM || 0)
-}
-
-function getFwdCount(f: Formation): number {
-  return (f.slots.LW || 0) + (f.slots.RW || 0) + (f.slots.ST || 0) + (f.slots.CF || 0)
-}
 </script>
 
 <template>
@@ -166,23 +154,11 @@ function getFwdCount(f: Formation): number {
               style="height: 180px"
             >
               <MiniFormationPitch :formation="formation" />
-              <!-- Formation label overlay at bottom -->
-              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3.5 py-2.5 flex items-end justify-between">
-                <span class="text-white font-black font-mono text-xl tracking-widest drop-shadow-md">
-                  {{ formation.id }}
-                </span>
-                <div class="flex items-center gap-1.5 text-[10px] font-mono font-bold">
-                  <span class="text-yellow-300">1 GK</span>
-                  <span class="text-emerald-300">{{ getDefCount(formation) }} DEF</span>
-                  <span class="text-amber-300">{{ getMidCount(formation) }} MID</span>
-                  <span class="text-rose-300">{{ getFwdCount(formation) }} FWD</span>
-                </div>
-              </div>
             </div>
 
-            <!-- Formation name & description -->
+            <!-- Formation label below pitch -->
             <div>
-              <p class="text-zinc-900 dark:text-white font-black text-base tracking-tight">
+              <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
                 {{ formation.label }}
               </p>
             </div>
