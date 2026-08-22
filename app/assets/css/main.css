@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* ============================================================
+   EuroDraft Design Tokens
+   Stadium atmosphere — deep navy-black, emerald accents, gold moments
+   ============================================================ */
+
+@theme static {
+  /* Typography — self-hosted via @nuxt/fonts */
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+
+  /* Dark stadium background colors */
+  --color-surface-950: #080c14;
+  --color-surface-900: #0e1420;
+  --color-surface-800: #141c2e;
+  --color-surface-700: #1a253c;
+
+  /* Light stadium / clean day colors */
+  --color-surface-50: #f8fafc;
+  --color-surface-100: #f1f5f9;
+  --color-surface-200: #e2e8f0;
+  --color-surface-300: #cbd5e1;
+
+  /* Champion gold */
+  --color-gold-300: #fde68a;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+}
+
+/* Base styling adapting to color scheme */
+:root {
+  --ui-radius: 0.625rem; /* 10px */
+}
+
+/* Global base styles */
+html {
+  min-height: 100%;
+}
+
+html.dark {
+  background-color: var(--color-surface-950);
+  color-scheme: dark;
+}
+
+html.light, html:not(.dark) {
+  background-color: #f8fafc;
+  color-scheme: light;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Formation Pitch — chalk on grass effect
+   Used in FormationPitch.vue and FormationPicker.vue
+   ============================================================ */
+.pitch-bg {
+  background-color: #1a4731;
+  background-image:
+    /* Center circle */
+    radial-gradient(circle at center, transparent 18%, rgba(255,255,255,0.12) 18%, rgba(255,255,255,0.12) 19.5%, transparent 19.5%),
+    /* Halfway line */
+    linear-gradient(to bottom, transparent calc(50% - 0.75px), rgba(255,255,255,0.12) calc(50% - 0.75px), rgba(255,255,255,0.12) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    /* Outer border */
+    linear-gradient(to bottom, rgba(255,255,255,0.12) 1.5px, transparent 1.5px),
+    linear-gradient(to top, rgba(255,255,255,0.12) 1.5px, transparent 1.5px),
+    linear-gradient(to right, rgba(255,255,255,0.12) 1.5px, transparent 1.5px),
+    linear-gradient(to left, rgba(255,255,255,0.12) 1.5px, transparent 1.5px);
+}
+
+/* ============================================================
+   Live Match Ticker — typing animation
+   ============================================================ */
+@keyframes ticker-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ticker-line {
+  animation: ticker-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================================
+   Flag roulette — full-bleed immersive background
+   ============================================================ */
+.flag-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flag-bg-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(28px) saturate(0.6) brightness(0.35);
+  transform: scale(1.1); /* prevent blur edge artifacts */
+}
+
+/* ============================================================
+   Custom scroll bar for squad list / ticker
+   ============================================================ */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Position slot on the pitch — drag target
+   ============================================================ */
+.position-slot {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.position-slot--filled {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.position-slot--empty {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.position-slot--empty:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+/* ============================================================
+   OVR ring — circular badge
+   ============================================================ */
+.ovr-ring {
+  background: conic-gradient(
+    var(--ovr-color, #10b981) calc(var(--ovr, 75) * 1%),
+    rgba(255, 255, 255, 0.06) 0
+  );
+}
+
+/* ============================================================
+   Gold shimmer for champion moments
+   ============================================================ */
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-text {
+  background: linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b, #fbbf24);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 3s linear infinite;
+}
+
+/* ============================================================
+   Responsive utilities
+   ============================================================ */
+
+/* Mobile-first hero — safe area aware */
+.hero-safe {
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
