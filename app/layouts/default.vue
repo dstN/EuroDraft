@@ -58,24 +58,15 @@ const currentLocaleName = computed(() => {
 </script>
 
 <template>
-  <div class="relative min-h-dvh flex flex-col bg-zinc-50 dark:bg-[#06090e] text-zinc-900 dark:text-zinc-100 transition-colors duration-300 overflow-x-clip">
-    <!-- Global Stadium Night Atmospheric Lighting (Seamless mesh across whole window, zero cut-off) -->
+  <div class="relative min-h-dvh flex flex-col text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+    <!-- Authentic Stadium Matchday Canvas Background (Fixed behind everything, zero cuts) -->
     <div
-      class="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+      class="stadium-canvas"
       aria-hidden="true"
-    >
-      <!-- Top Stadium Pitch Floodlight (Flows behind header and radiates smoothly into hero) -->
-      <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[750px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.18)_0%,rgba(16,185,129,0.06)_45%,transparent_70%)] blur-[45px]" />
+    />
 
-      <!-- Mid-right Electric Stadium Azure Floodlight -->
-      <div class="absolute top-[28%] -right-48 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.10)_0%,transparent_70%)] blur-[60px]" />
-
-      <!-- Bottom Championship Trophy Gold Glow (Radiates from footer/CTA upwards) -->
-      <div class="absolute -bottom-48 left-1/2 -translate-x-1/2 w-[1100px] h-[750px] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.16)_0%,rgba(245,158,11,0.04)_50%,transparent_70%)] blur-[55px]" />
-    </div>
-
-    <!-- Top Sticky Navigation Bar (Translucent glass with seamless backdrop glow) -->
-    <header class="sticky top-0 z-50 w-full border-b border-zinc-200/60 dark:border-white/5 bg-white/70 dark:bg-[#06090e]/60 backdrop-blur-xl transition-colors">
+    <!-- Top Sticky Navigation Bar (Seamless glass, zero hard borders) -->
+    <header class="sticky top-0 z-50 w-full bg-white/40 dark:bg-[#060b10]/40 backdrop-blur-md border-b border-black/[0.04] dark:border-white/[0.04] transition-colors">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <!-- Logo -->
         <NuxtLink
@@ -148,7 +139,7 @@ const currentLocaleName = computed(() => {
     </main>
 
     <!-- Minimal footer with aligned max-w-5xl container -->
-    <footer class="relative z-10 border-t border-zinc-200/60 dark:border-white/5 py-6 mt-12 bg-transparent">
+    <footer class="relative z-10 border-t border-black/[0.04] dark:border-white/[0.04] py-6 mt-12 bg-transparent">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-medium">
         <span>EuroDraft — The Historical European Championship Simulator</span>
         <div class="flex items-center gap-6">

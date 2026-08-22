@@ -60,6 +60,52 @@ body {
 }
 
 /* ============================================================
+   Authentic Stadium Matchday Night Atmosphere
+   Architectural floodlight cones, tactical lawn mowing bands & turf grid
+   ============================================================ */
+.stadium-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-color: #060b10;
+  background-image:
+    /* Dual Stadium Tower Floodlights from top corners */
+    radial-gradient(ellipse 90% 70% at 50% -10%, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.08) 40%, transparent 75%),
+    radial-gradient(circle at 10% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+    /* Bottom Championship Trophy Ambient Illumination */
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.04) 40%, transparent 70%),
+    /* Authentic Tactical Lawn Pattern (alternating subtle mowing bands) */
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 50%, transparent 50%),
+    /* Tactical Matchday Coordinate Grid */
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 96px,
+    48px 48px,
+    48px 48px;
+}
+
+.light .stadium-canvas {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(ellipse 90% 70% at 50% -10%, rgba(16, 185, 129, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(245, 158, 11, 0.10) 0%, transparent 70%),
+    linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    48px 48px,
+    48px 48px;
+}
+
+/* ============================================================
    Clean Architectural Surface Card (Single border, no nesting)
    ============================================================ */
 .surface-card {
