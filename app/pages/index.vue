@@ -147,19 +147,17 @@ const tournamentEras = [
 </script>
 
 <template>
-  <div class="relative overflow-hidden space-y-16">
-    <!-- Stadium Night Lighting Atmosphere -->
+  <div class="relative space-y-24">
+    <!-- Smooth Seamless Atmospheric Glow (Fades naturally to 100% transparent without any cut-off) -->
     <div
-      class="absolute inset-0 pointer-events-none overflow-hidden"
+      class="absolute top-0 inset-x-0 h-[700px] pointer-events-none overflow-hidden"
       aria-hidden="true"
     >
-      <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/10 dark:bg-emerald-500/8 blur-[120px] rounded-full" />
-      <div class="absolute top-1/3 -right-40 w-[600px] h-[600px] bg-blue-500/8 dark:bg-blue-600/6 blur-[140px] rounded-full" />
-      <div class="absolute bottom-10 -left-40 w-[600px] h-[600px] bg-amber-500/8 dark:bg-amber-500/6 blur-[140px] rounded-full" />
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(16,185,129,0.14),transparent_100%)] dark:bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(16,185,129,0.12),transparent_100%)]" />
     </div>
 
     <!-- ==================== HERO SECTION ==================== -->
-    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-12">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <!-- Left: Headline, Value Prop & CTAs -->
         <div class="lg:col-span-7 space-y-6 text-left">
@@ -186,7 +184,7 @@ const tournamentEras = [
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
             <NuxtLink
               to="/draft/formation"
-              class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25 justify-between sm:justify-start"
+              class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25 justify-between sm:justify-start cursor-pointer"
             >
               <span>{{ $t('landing.cta_start') }}</span>
               <span class="btn-nested-icon bg-emerald-600">
@@ -285,7 +283,7 @@ const tournamentEras = [
     <!-- ==================== LIVE ROULETTE DEMO SECTION ==================== -->
     <section
       id="roulette-preview"
-      class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-200 dark:border-white/10"
+      class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6"
     >
       <div class="text-center max-w-xl mx-auto mb-8 space-y-2">
         <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
@@ -329,7 +327,7 @@ const tournamentEras = [
     </section>
 
     <!-- ==================== 4 ERAS BENTO GRID ==================== -->
-    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-200 dark:border-white/10">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
       <div class="max-w-xl mb-8 space-y-2">
         <span class="text-[10px] font-mono uppercase tracking-[0.2em] font-bold text-emerald-600 dark:text-emerald-400">
           Historical Depth
@@ -391,7 +389,7 @@ const tournamentEras = [
     </section>
 
     <!-- ==================== FOOTER CTA ==================== -->
-    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 text-center border-t border-zinc-200 dark:border-white/10">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
       <div class="surface-card p-8 sm:p-12 space-y-5 max-w-2xl mx-auto">
         <UIcon
           name="i-lucide-trophy"
