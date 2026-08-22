@@ -148,14 +148,6 @@ const tournamentEras = [
 
 <template>
   <div class="relative space-y-24">
-    <!-- Smooth Seamless Atmospheric Glow (Fades naturally to 100% transparent without any cut-off) -->
-    <div
-      class="absolute top-0 inset-x-0 h-[700px] pointer-events-none overflow-hidden"
-      aria-hidden="true"
-    >
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(16,185,129,0.14),transparent_100%)] dark:bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(16,185,129,0.12),transparent_100%)]" />
-    </div>
-
     <!-- ==================== HERO SECTION ==================== -->
     <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -237,8 +229,8 @@ const tournamentEras = [
         <!-- Right: Interactive Tactical Legend Card Fan -->
         <div class="lg:col-span-5 flex flex-col items-center">
           <div class="w-full max-w-sm space-y-3">
-            <!-- Active Legendary Card (Clean single surface-card) -->
-            <div class="surface-card p-5 space-y-4">
+            <!-- Active Legendary Card (Clean single surface-card with subtle gold highlight) -->
+            <div class="surface-card p-5 space-y-4 shadow-[0_10px_35px_-5px_rgba(0,0,0,0.5)]">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-emerald-400">
                   Featured Legend
@@ -388,23 +380,23 @@ const tournamentEras = [
       </div>
     </section>
 
-    <!-- ==================== FOOTER CTA ==================== -->
+    <!-- ==================== FOOTER CTA WITH CHAMPIONSHIP GOLD GLOW ==================== -->
     <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
-      <div class="surface-card p-8 sm:p-12 space-y-5 max-w-2xl mx-auto">
+      <div class="surface-card p-8 sm:p-12 space-y-5 max-w-2xl mx-auto border-amber-500/30 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent shadow-[0_10px_40px_rgba(245,158,11,0.1)]">
         <UIcon
           name="i-lucide-trophy"
-          class="size-10 text-gold-400 mx-auto"
+          class="size-12 text-gold-400 mx-auto animate-bounce"
         />
-        <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-          Ready to Build Your Champion XI?
+        <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
+          Ready to Build Your <span class="gold-text">Champion XI</span>?
         </h2>
-        <p class="text-zinc-600 dark:text-zinc-400 text-sm max-w-md mx-auto">
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base max-w-md mx-auto">
           Choose your formation, conquer the draft roulette, and test your dream team in a simulated European Championship.
         </p>
         <div class="pt-2">
           <NuxtLink
             to="/draft/formation"
-            class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/20 mx-auto inline-flex"
+            class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/25 mx-auto inline-flex"
           >
             <span>{{ $t('landing.cta_start') }}</span>
             <span class="btn-nested-icon bg-emerald-600">
