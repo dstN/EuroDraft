@@ -6,13 +6,13 @@
  * The source URL is configured via the POSITION_SOURCE_BASE_URL environment variable.
  *
  * Strategy:
- *  1. Search DuckDuckGo for a player profile URL on the configured source
- *  2. Fetch the profile with cheerio (fast, no JS required)
- *  3. Fall back to Playwright if the initial fetch is blocked
- *  4. Parse main position + secondary positions from the profile HTML
+ *  1. Generate normalized & transliterated search variants (e.g. Solskjær -> Solskjaer)
+ *  2. Search DuckDuckGo / Schnellsuche API with resilient fallbacks
+ *  3. Fetch the profile with cheerio / Playwright
+ *  4. Parse individual main and secondary position tags accurately
  *
  * Usage:
- *   POSITION_SOURCE_BASE_URL=https://... npx tsx scripts/enrich-positions.ts --name "Zinedine Zidane"
+ *   POSITION_SOURCE_BASE_URL=https://... npx tsx scripts/enrich-positions.ts --name "Ole Gunnar Solskjær"
  *   POSITION_SOURCE_BASE_URL=https://... npx tsx scripts/enrich-positions.ts --file players.txt
  *   POSITION_SOURCE_BASE_URL=https://... npx tsx scripts/enrich-positions.ts --db  # enrich all DB players
  *
@@ -60,7 +60,7 @@ if (!process.env['POSITION_SOURCE_BASE_URL']) {
 }
 
 // Source base URL — injected from environment or .env, never hardcoded
-const SOURCE_BASE_URL = process.env['POSITION_SOURCE_BASE_URL'] ?? ''
+const SOURCE_BASE_URL = (process.env['POSITION_SOURCE_BASE_URL'] ?? '').replace(/\/+$/, '')
 if (!SOURCE_BASE_URL) {
   console.error('❌ POSITION_SOURCE_BASE_URL environment variable not set.')
   console.error('   Add POSITION_SOURCE_BASE_URL to your .env file or set it in your environment.')
@@ -126,7 +126,7 @@ function mapPositionLabel(label: string): string | null {
   if (POSITION_LABEL_MAP[trimmed]) return POSITION_LABEL_MAP[trimmed]!
   const lower = trimmed.toLowerCase()
   for (const [key, val] of Object.entries(POSITION_LABEL_MAP)) {
-    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
+    if (lower === key.toLowerCase() || lower.includes(key.toLowerCase())) {
       return val
     }
   }
@@ -149,27 +149,128 @@ interface EnrichedPosition {
 }
 
 const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
   'Referer': 'https://www.google.com/'
+}
+
+/**
+ * Generates transliterated & normalized search variants for international names.
+ * Ensures characters like Scandinavian æ/ø/å, German umlauts ä/ö/ü/ß, Slavic č/ć/š/ž, etc.
+ * match Transfermarkt search slugs.
+ */
+function generateSearchVariants(name: string): string[] {
+  const variants = new Set<string>()
+  const raw = name.trim()
+  if (!raw) return []
+
+  // 1. Transliteration variant (æ -> ae, ø -> o, å -> a, etc.)
+  const transliterated = raw
+    .replace(/[æÆ]/g, 'ae')
+    .replace(/[øØ]/g, 'o')
+    .replace(/[åÅ]/g, 'a')
+    .replace(/[äÄ]/g, 'ae')
+    .replace(/[öÖ]/g, 'oe')
+    .replace(/[üÜ]/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[łŁ]/g, 'l')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[ñÑ]/g, 'n')
+    .replace(/[çÇ]/g, 'c')
+    .replace(/[éèêëÉÈÊË]/g, 'e')
+    .replace(/[áàâãÁÀÂÃ]/g, 'a')
+    .replace(/[íìîïÍÌÎÏ]/g, 'i')
+    .replace(/[óòôõÓÒÔÕ]/g, 'o')
+    .replace(/[úùûüÚÙÛÜ]/g, 'u')
+    .replace(/[ćčĆČ]/g, 'c')
+    .replace(/[šŠ]/g, 's')
+    .replace(/[žŽ]/g, 'z')
+    .replace(/[ýÝ]/g, 'y')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // 2. Pure ASCII (NFD stripped)
+  const ascii = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // Add in priority order: Transliterated -> ASCII -> Raw
+  if (transliterated) variants.add(transliterated)
+  if (ascii) variants.add(ascii)
+  variants.add(raw)
+
+  // Simplified first + last name if player has > 2 name parts
+  const parts = transliterated.split(' ')
+  if (parts.length > 2) {
+    variants.add(`${parts[0]} ${parts[parts.length - 1]}`)
+  }
+
+  return [...variants]
 }
 
 // ---- Step 1: Find profile URL ----
 async function findProfileUrl(playerName: string): Promise<string | null> {
-  console.error(`🔍 Searching for: ${playerName}`)
+  const searchVariants = generateSearchVariants(playerName)
+  console.error(`🔍 Searching for: ${playerName} (variants: ${searchVariants.join(' | ')})`)
 
-  // A: DuckDuckGo HTML search
-  const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(`site:${SOURCE_HOST} "${playerName}" profil`)}`
+  // A: Fast Source Search API via Axios with search variants
+  for (const variant of searchVariants) {
+    try {
+      const searchUrl = `${SOURCE_BASE_URL}/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(variant)}&Spieler_page=0`
+      const res = await axios.get(searchUrl, { headers: HEADERS, timeout: 8000, maxRedirects: 5 })
+
+      // If Transfermarkt redirected directly to player profile
+      if (res.request?.res?.responseUrl && res.request.res.responseUrl.includes('/profil/spieler/')) {
+        console.error(`  ✓ Found via direct redirect: ${res.request.res.responseUrl}`)
+        return res.request.res.responseUrl
+      }
+
+      const $ = cheerio.load(res.data)
+      interface Candidate { url: string, age: number }
+      const candidates: Candidate[] = []
+
+      $('table.items tbody tr').each((_, row) => {
+        const link = $(row).find('a[href*="/profil/spieler/"]').first()
+        const href = link.attr('href') ?? ''
+        if (!href.includes('/profil/spieler/')) return
+
+        let age = 0
+        $(row).find('td.zentriert').each((_, td) => {
+          const n = parseInt($(td).text().trim())
+          if (!isNaN(n) && n >= 15 && n <= 85) {
+            age = n
+            return false
+          }
+        })
+        const fullUrl = href.startsWith('http') ? href : `${SOURCE_BASE_URL}${href.startsWith('/') ? '' : '/'}${href}`
+        candidates.push({ url: fullUrl, age })
+      })
+
+      if (candidates.length > 0) {
+        // Disambiguation: prefer retired / historical players (age >= 35)
+        const historical = candidates.filter(c => c.age >= 35)
+        const chosen = historical.length > 0 ? historical[0]! : candidates[0]!
+        console.error(`  ✓ Found via API (${variant}, age ${chosen.age}): ${chosen.url}`)
+        return chosen.url
+      }
+    } catch {
+      // Continue to next variant / search method
+    }
+  }
+
+  // B: DuckDuckGo HTML search fallback
+  const primaryVariant = searchVariants[0] ?? playerName
+  const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(`site:${SOURCE_HOST} ${primaryVariant} profil`)}`
   try {
-    const res = await axios.get(ddgUrl, { headers: HEADERS, timeout: 15000 })
+    const res = await axios.get(ddgUrl, { headers: HEADERS, timeout: 6000 })
     const html: string = res.data
-
-    // Regex match for profile URLs
     const profileRegex = new RegExp(`https?:\\/\\/(?:www\\.)?${SOURCE_HOST.replace('.', '\\.')}\\/[^/]+\\/profil\\/spieler\\/\\d+`, 'g')
     const regexMatches = html.match(profileRegex) ?? []
 
-    // Cheerio href extraction (DuckDuckGo wraps with uddg= param)
     const $ = cheerio.load(html)
     const hrefMatches: string[] = []
     $('a').each((_, el) => {
@@ -186,75 +287,57 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
       u.includes(SOURCE_HOST) && u.includes('/profil/spieler/')
     )
     if (allUrls.length > 0) {
-      console.error(`  ✓ Found via search: ${allUrls[0]}`)
+      console.error(`  ✓ Found via DuckDuckGo: ${allUrls[0]}`)
       return allUrls[0]!
     }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error(`  ✗ DuckDuckGo search failed: ${msg}`)
+  } catch {
+    // Continue to Playwright fallback
   }
 
-  // B: Source search API (age-based disambiguation — prefer retired players age >= 40)
-  console.error(`  → Trying source search API...`)
-  try {
-    const searchUrl = `${SOURCE_BASE_URL}/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(playerName)}&Spieler_page=0`
-    const res = await axios.get(searchUrl, { headers: HEADERS, timeout: 15000 })
-    const $ = cheerio.load(res.data)
-
-    interface Candidate { url: string, age: number }
-    const candidates: Candidate[] = []
-
-    $('table.items tbody tr').each((_, row) => {
-      const link = $(row).find('a[href*="/profil/spieler/"]').first()
-      const href = link.attr('href') ?? ''
-      if (!href.includes('/profil/spieler/')) return
-
-      let age = 0
-      $(row).find('td.zentriert').each((_, td) => {
-        const n = parseInt($(td).text().trim())
-        if (!isNaN(n) && n >= 15 && n <= 80) {
-          age = n
-          return false
-        }
-      })
-      candidates.push({ url: `${SOURCE_BASE_URL}${href}`, age })
-    })
-
-    if (candidates.length > 0) {
-      // Prefer retired historical players (age >= 40)
-      const historical = candidates.filter(c => c.age >= 40)
-      const chosen = historical.length > 0 ? historical[0]! : candidates[0]!
-      console.error(`  ✓ Found via API (age ${chosen.age}): ${chosen.url}`)
-      return chosen.url
-    }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error(`  ✗ Search API failed: ${msg}`)
-  }
-
-  // C: Playwright fallback
+  // C: Playwright fallback with transliterated queries
   console.error(`  🎭 Falling back to Playwright...`)
-  return await findUrlWithPlaywright(playerName)
+  return await findUrlWithPlaywright(searchVariants)
 }
 
-async function findUrlWithPlaywright(playerName: string): Promise<string | null> {
+async function findUrlWithPlaywright(searchVariants: string[]): Promise<string | null> {
   try {
     const { chromium } = await import('playwright')
     const browser = await chromium.launch({ headless: true })
     const page = await browser.newPage()
-    await page.goto(
-      `${SOURCE_BASE_URL}/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(playerName)}`,
-      { waitUntil: 'domcontentloaded', timeout: 20000 }
-    )
-    const links = await page.$$eval('a[href*="/profil/spieler/"]', (els, base) =>
-      els.slice(0, 3).map(el => base + (el.getAttribute('href') ?? '')),
-    SOURCE_BASE_URL
-    )
-    await browser.close()
-    if (links.length > 0) {
-      console.error(`  ✓ Found via Playwright: ${links[0]}`)
-      return links[0]!
+
+    for (const query of searchVariants) {
+      const searchUrl = `${SOURCE_BASE_URL}/schnellsuche/ergebnis/schnellsuche?query=${encodeURIComponent(query)}`
+      try {
+        await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 20000 })
+        await page.waitForTimeout(1000)
+
+        // Check if page redirected directly to a player profile
+        const currentUrl = page.url()
+        if (currentUrl.includes('/profil/spieler/')) {
+          await browser.close()
+          console.error(`  ✓ Found via Playwright direct redirect: ${currentUrl}`)
+          return currentUrl
+        }
+
+        const links = await page.$$eval('a[href*="/profil/spieler/"]', (els, base) =>
+          els.slice(0, 5).map(el => {
+            const h = el.getAttribute('href') ?? ''
+            return h.startsWith('http') ? h : base + (h.startsWith('/') ? '' : '/') + h
+          }),
+        SOURCE_BASE_URL
+        )
+
+        if (links.length > 0) {
+          await browser.close()
+          console.error(`  ✓ Found via Playwright (${query}): ${links[0]}`)
+          return links[0]!
+        }
+      } catch {
+        // Try next variant
+      }
     }
+
+    await browser.close()
     return null
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -266,28 +349,56 @@ async function findUrlWithPlaywright(playerName: string): Promise<string | null>
 // ---- Step 2: Parse positions from HTML ----
 function parsePositionsFromHtml(html: string): { primary: string | null, others: string[] } {
   const $ = cheerio.load(html)
-  const positions: string[] = []
+  const primaryList: string[] = []
+  const secondaryList: string[] = []
 
+  // 1. Process dl blocks containing detail-position items individually
   $('dl').each((_, dl) => {
-    const title = $(dl).find('dt.detail-position__title').text().trim()
-    const pos = $(dl).find('dd.detail-position__position').text().trim()
-    if (pos) {
-      const mapped = mapPositionLabel(pos)
-      if (mapped && !positions.includes(mapped)) {
-        if (title.toLowerCase().includes('main')) positions.unshift(mapped)
-        else positions.push(mapped)
+    const title = $(dl).find('dt.detail-position__title').text().trim().toLowerCase()
+    const isMain = title.includes('main') || title.includes('hauptposition')
+
+    $(dl).find('dd.detail-position__position').each((_, dd) => {
+      const posText = $(dd).text().trim()
+      const mapped = mapPositionLabel(posText)
+      if (mapped) {
+        if (isMain) {
+          if (!primaryList.includes(mapped)) primaryList.push(mapped)
+        } else {
+          if (!secondaryList.includes(mapped)) secondaryList.push(mapped)
+        }
       }
-    }
+    })
   })
 
-  if (positions.length === 0) {
+  // 2. Fallback if no dl found: check all dd.detail-position__position
+  if (primaryList.length === 0) {
     $('dd.detail-position__position').each((_, el) => {
       const mapped = mapPositionLabel($(el).text().trim())
-      if (mapped && !positions.includes(mapped)) positions.push(mapped)
+      if (mapped && !primaryList.includes(mapped) && !secondaryList.includes(mapped)) {
+        if (primaryList.length === 0) primaryList.push(mapped)
+        else secondaryList.push(mapped)
+      }
     })
   }
 
-  return { primary: positions[0] ?? null, others: positions.slice(1) }
+  // 3. Fallback: check header info-table for position
+  if (primaryList.length === 0) {
+    $('.info-table__content--bold').each((_, el) => {
+      const text = $(el).text().trim()
+      const parts = text.split('-').map(p => p.trim())
+      for (const p of parts) {
+        const mapped = mapPositionLabel(p)
+        if (mapped && !primaryList.includes(mapped)) {
+          primaryList.push(mapped)
+          break
+        }
+      }
+    })
+  }
+
+  const primary = primaryList[0] ?? null
+  const others = secondaryList.filter(p => p !== primary)
+  return { primary, others }
 }
 
 // ---- Step 3: Fetch HTML ----
@@ -324,7 +435,7 @@ async function fetchProfileHtml(profileUrl: string): Promise<string | null> {
     })
     const page = await ctx.newPage()
     await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(1500)
     const html = await page.content()
     await browser.close()
     console.error(`  ✓ Fetched via Playwright (${html.length} bytes)`)
@@ -337,11 +448,28 @@ async function fetchProfileHtml(profileUrl: string): Promise<string | null> {
 }
 
 // ---- Main enrichment function ----
+function normalizeRegistryKey(str: string): string {
+  return str
+    .replace(/[æÆ]/g, 'ae')
+    .replace(/[øØ]/g, 'oe')
+    .replace(/[åÅ]/g, 'aa')
+    .replace(/[äÄ]/g, 'ae')
+    .replace(/[öÖ]/g, 'oe')
+    .replace(/[üÜ]/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[łŁ]/g, 'l')
+    .replace(/[đĐ]/g, 'd')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 async function enrichPlayer(playerName: string): Promise<EnrichedPosition | null> {
   await mkdir(CACHE_DIR, { recursive: true })
-  const cacheKey = playerName.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+  const cacheKey = normalizeRegistryKey(playerName).replace(/\s+/g, '-')
   const cacheFile = join(CACHE_DIR, `${cacheKey}.json`)
 
   if (existsSync(cacheFile)) {
@@ -437,7 +565,7 @@ async function main() {
 
     const res = await enrichPlayer(name)
     if (res) {
-      console.error(`  ✓ ${res.primary} [${res.positions.join(', ')}]`)
+      console.error(`  ✓ ${res.primary} [${res.positions.join(', ')}] (${res.base})`)
       results.push(res)
     } else {
       console.error(`  ✗ Failed — will use fallback position from Wikipedia`)
@@ -455,9 +583,7 @@ async function main() {
   console.log('// Enriched player position data')
   console.log('// ==============================')
   for (const r of results) {
-    const key = r.name.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s]/g, '').trim()
+    const key = normalizeRegistryKey(r.name)
     const posArray = `['${r.positions.join('\', \'')}']`
     console.log(`  '${key}': { primary: '${r.primary}', positions: ${posArray}, base: '${r.base}' },`)
   }

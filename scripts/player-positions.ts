@@ -565,6 +565,11 @@ export const HISTORICAL_PLAYER_REGISTRY: Record<string, PlayerPositionProfile> =
   'luka jovic': { primary: 'ST', positions: ['ST', 'CF'], base: 'Forward' },
   'darko kovacevic': { primary: 'ST', positions: ['ST', 'CF'], base: 'Forward' },
   'mateja kezman': { primary: 'ST', positions: ['ST', 'CF'], base: 'Forward' },
+  'ole gunnar solskjaer': { primary: 'ST', positions: ['ST', 'CAM', 'RW'], base: 'Forward', baseRating: 88 },
+  'ole gunnar solskjær': { primary: 'ST', positions: ['ST', 'CAM', 'RW'], base: 'Forward', baseRating: 88 },
+  'tore andre flo': { primary: 'ST', positions: ['ST', 'CF'], base: 'Forward', baseRating: 86 },
+  'steffen iversen': { primary: 'ST', positions: ['ST', 'CAM', 'RM'], base: 'Forward', baseRating: 85 },
+  'john carew': { primary: 'ST', positions: ['ST', 'CF'], base: 'Forward', baseRating: 86 },
 
   // ==================== FORWARDS: WINGERS ====================
   'cristiano ronaldo': { primary: 'LW', positions: ['LW', 'LM', 'ST', 'RW'], base: 'Forward', baseRating: 95 },
