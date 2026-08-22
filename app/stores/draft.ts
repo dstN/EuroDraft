@@ -8,6 +8,8 @@ import { expandFormationToSlots } from '~/composables/useFormations'
 
 export const useDraftStore = defineStore('draft', () => {
   // ---- State ----
+  const teamName = ref<string>('Dream XI')
+  const teamEmblem = ref<string>('eu')
   const formation = ref<Formation | null>(null)
   const slots = ref<DraftSlot[]>([])
   /** Set of "nameNormalized|country" to prevent same player being drafted twice */
@@ -89,6 +91,8 @@ export const useDraftStore = defineStore('draft', () => {
 
   return {
     // State
+    teamName,
+    teamEmblem,
     formation,
     slots,
     draftedPlayerKeys,

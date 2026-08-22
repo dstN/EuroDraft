@@ -8,21 +8,23 @@ import { useDraftStore } from '~/stores/draft'
 import { useMatchEngine, calculateSectionRatings } from '~/composables/useMatchEngine'
 
 // ============================================================
-// Tournament Store
+// Tournament Store — with progressive simulation & custom team
 // ============================================================
 
 function buildTournamentTeam(
   country: string,
   year: number,
   squad: Player[],
-  isPlayerTeam: boolean
+  isPlayerTeam: boolean,
+  customName?: string,
+  customEmblem?: string
 ): TournamentTeam {
   const ratings = calculateSectionRatings(squad)
   return {
-    id: `${country}-${year}`,
-    country,
-    year,
-    countryName: squad[0]?.countryName ?? country.toUpperCase(),
+    id: isPlayerTeam ? 'player-team' : `${country}-${year}`,
+    country: isPlayerTeam ? (customEmblem || 'eu') : country,
+    year: isPlayerTeam ? 2024 : year,
+    countryName: isPlayerTeam ? (customName || 'Dream XI') : (squad[0]?.countryName ?? country.toUpperCase()),
     squad,
     isPlayerTeam,
     ...ratings
@@ -84,7 +86,11 @@ export const useTournamentStore = defineStore('tournament', () => {
   const tournamentPhase = ref<TournamentPhase>('group')
   const playerTeam = ref<TournamentTeam | null>(null)
 
-  /** Player's team journey — for the mobile stacked view */
+  // Progressive simulation steps: 0 = not started, 1 = MD1, 2 = MD2, 3 = MD3, 4 = QF, 5 = SF, 6 = Final (Complete)
+  const simulationStep = ref<number>(0)
+  const isSimulating = ref<boolean>(false)
+
+  /** Player's team journey */
   const playerMatches = computed((): MatchResult[] => {
     if (!playerTeam.value) return []
     const pid = playerTeam.value.id
@@ -109,6 +115,9 @@ export const useTournamentStore = defineStore('tournament', () => {
     return winner === pid
   })
 
+  // All precalculated matches stored internally to reveal progressively
+  const _allGroupMatches = ref<Map<string, MatchResult[]>>(new Map())
+
   function initTournament() {
     if (!draft.formation || !draft.isComplete) {
       throw new Error('Draft must be complete before initializing tournament')
@@ -118,10 +127,17 @@ export const useTournamentStore = defineStore('tournament', () => {
       .filter(s => s.player !== null)
       .map(s => s.player!)
 
-    playerTeam.value = buildTournamentTeam('player', 0, draftedSquad, true)
+    playerTeam.value = buildTournamentTeam(
+      draft.teamEmblem || 'eu',
+      2024,
+      draftedSquad,
+      true,
+      draft.teamName || 'Dream XI',
+      draft.teamEmblem || 'eu'
+    )
 
     // Pick 15 CPU teams
-    const cpuTeamRefs = db.getRandomTeams(15, [`player-0`])
+    const cpuTeamRefs = db.getRandomTeams(15, ['player-team'])
     const cpuTeams = cpuTeamRefs.map((ref) => {
       const squad = db.getSquad(ref.country, ref.year)
       return buildTournamentTeam(ref.country, ref.year, squad, false)
@@ -130,62 +146,98 @@ export const useTournamentStore = defineStore('tournament', () => {
     const allTeams = [playerTeam.value, ...cpuTeams]
       .sort(() => Math.random() - 0.5) // Random seeding
 
-    // Split into 4 groups of 4
+    // Precalculate group matches
+    let matchSeed = Date.now()
+    _allGroupMatches.value.clear()
+
     groups.value = (['A', 'B', 'C', 'D'] as const).map((id, i) => {
       const teamSlice = allTeams.slice(i * 4, i * 4 + 4)
-      return { id, teams: teamSlice, matches: [], standings: [] }
+      const groupMatchList: MatchResult[] = []
+
+      // 3 matchdays for 4 teams (6 matches total per group)
+      // MD1: 0 vs 1, 2 vs 3
+      // MD2: 0 vs 2, 1 vs 3
+      // MD3: 0 vs 3, 1 vs 2
+      const pairings = [
+        [0, 1], [2, 3], // MD1
+        [0, 2], [1, 3], // MD2
+        [0, 3], [1, 2] // MD3
+      ]
+
+      for (const [t1, t2] of pairings) {
+        groupMatchList.push(
+          simulateMatch(teamSlice[t1!]!, teamSlice[t2!]!, 'group', matchSeed++)
+        )
+      }
+
+      _allGroupMatches.value.set(id, groupMatchList)
+      return { id, teams: teamSlice, matches: [], standings: buildGroupStandings(teamSlice, []) }
     })
 
-    simulateGroupStage()
+    knockoutBracket.value = { quarterFinals: [], semiFinals: [], final: null }
+    simulationStep.value = 0
+    tournamentPhase.value = 'group'
   }
 
-  function simulateGroupStage() {
-    let matchSeed = Date.now()
+  // Advance simulation by 1 step (Matchday 1 -> 2 -> 3 -> QF -> SF -> Final)
+  function advanceSimulationStep() {
+    if (simulationStep.value >= 6) return
 
-    for (const group of groups.value) {
-      group.matches = []
-      // Round-robin: each pair plays once
-      for (let i = 0; i < group.teams.length; i++) {
-        for (let j = i + 1; j < group.teams.length; j++) {
-          const match = simulateMatch(
-            group.teams[i]!, group.teams[j]!, 'group', matchSeed++
-          )
-          group.matches.push(match)
+    simulationStep.value++
+
+    if (simulationStep.value <= 3) {
+      // Reveal group matchday
+      const matchLimit = simulationStep.value * 2 // 2 matches per matchday
+      for (const group of groups.value) {
+        const fullList = _allGroupMatches.value.get(group.id) ?? []
+        group.matches = fullList.slice(0, matchLimit)
+        group.standings = buildGroupStandings(group.teams, group.matches)
+      }
+    } else if (simulationStep.value === 4) {
+      // Simulate Quarter-Finals
+      const [groupA, groupB, groupC, groupD] = groups.value
+      if (groupA && groupB && groupC && groupD) {
+        let seed = Date.now() + 2000
+        const qf1 = simulateMatch(groupA.standings[0]!.team, groupB.standings[1]!.team, 'quarter-final', seed++)
+        const qf2 = simulateMatch(groupC.standings[0]!.team, groupD.standings[1]!.team, 'quarter-final', seed++)
+        const qf3 = simulateMatch(groupB.standings[0]!.team, groupA.standings[1]!.team, 'quarter-final', seed++)
+        const qf4 = simulateMatch(groupD.standings[0]!.team, groupC.standings[1]!.team, 'quarter-final', seed)
+        knockoutBracket.value.quarterFinals = [qf1, qf2, qf3, qf4]
+      }
+    } else if (simulationStep.value === 5) {
+      // Simulate Semi-Finals
+      const qfs = knockoutBracket.value.quarterFinals
+      if (qfs.length === 4) {
+        let seed = Date.now() + 3000
+        const getWinner = (m: MatchResult): TournamentTeam => {
+          if (m.penalties) return m.penalties.teamA > m.penalties.teamB ? m.teamA.team : m.teamB.team
+          return m.teamA.goals >= m.teamB.goals ? m.teamA.team : m.teamB.team
         }
+        const sf1 = simulateMatch(getWinner(qfs[0]!), getWinner(qfs[1]!), 'semi-final', seed++)
+        const sf2 = simulateMatch(getWinner(qfs[2]!), getWinner(qfs[3]!), 'semi-final', seed)
+        knockoutBracket.value.semiFinals = [sf1, sf2]
       }
-      group.standings = buildGroupStandings(group.teams, group.matches)
+    } else if (simulationStep.value === 6) {
+      // Simulate Final
+      const sfs = knockoutBracket.value.semiFinals
+      if (sfs.length === 2) {
+        const seed = Date.now() + 4000
+        const getWinner = (m: MatchResult): TournamentTeam => {
+          if (m.penalties) return m.penalties.teamA > m.penalties.teamB ? m.teamA.team : m.teamB.team
+          return m.teamA.goals >= m.teamB.goals ? m.teamA.team : m.teamB.team
+        }
+        const final = simulateMatch(getWinner(sfs[0]!), getWinner(sfs[1]!), 'final', seed)
+        knockoutBracket.value.final = final
+        tournamentPhase.value = 'complete'
+      }
     }
-
-    simulateKnockouts()
-    tournamentPhase.value = 'complete'
   }
 
-  function simulateKnockouts() {
-    // Quarter-finals: 1st of A vs 2nd of B, etc.
-    const [groupA, groupB, groupC, groupD] = groups.value
-    if (!groupA || !groupB || !groupC || !groupD) return
-
-    let seed = Date.now() + 1000
-
-    const qf1 = simulateMatch(groupA.standings[0]!.team, groupB.standings[1]!.team, 'quarter-final', seed++)
-    const qf2 = simulateMatch(groupC.standings[0]!.team, groupD.standings[1]!.team, 'quarter-final', seed++)
-    const qf3 = simulateMatch(groupB.standings[0]!.team, groupA.standings[1]!.team, 'quarter-final', seed++)
-    const qf4 = simulateMatch(groupD.standings[0]!.team, groupC.standings[1]!.team, 'quarter-final', seed++)
-    knockoutBracket.value.quarterFinals = [qf1, qf2, qf3, qf4]
-
-    const getWinner = (m: MatchResult): TournamentTeam => {
-      if (m.penalties) {
-        return m.penalties.teamA > m.penalties.teamB ? m.teamA.team : m.teamB.team
-      }
-      return m.teamA.goals >= m.teamB.goals ? m.teamA.team : m.teamB.team
+  // Fast forward all rounds immediately
+  function skipAllSimulation() {
+    while (simulationStep.value < 6) {
+      advanceSimulationStep()
     }
-
-    const sf1 = simulateMatch(getWinner(qf1), getWinner(qf2), 'semi-final', seed++)
-    const sf2 = simulateMatch(getWinner(qf3), getWinner(qf4), 'semi-final', seed++)
-    knockoutBracket.value.semiFinals = [sf1, sf2]
-
-    const final = simulateMatch(getWinner(sf1), getWinner(sf2), 'final', seed)
-    knockoutBracket.value.final = final
     tournamentPhase.value = 'complete'
   }
 
@@ -194,6 +246,9 @@ export const useTournamentStore = defineStore('tournament', () => {
     knockoutBracket.value = { quarterFinals: [], semiFinals: [], final: null }
     tournamentPhase.value = 'group'
     playerTeam.value = null
+    simulationStep.value = 0
+    isSimulating.value = false
+    _allGroupMatches.value.clear()
   }
 
   return {
@@ -203,7 +258,11 @@ export const useTournamentStore = defineStore('tournament', () => {
     playerTeam,
     playerMatches,
     isChampion,
+    simulationStep,
+    isSimulating,
     initTournament,
+    advanceSimulationStep,
+    skipAllSimulation,
     reset
   }
 })

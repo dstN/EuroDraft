@@ -2,6 +2,7 @@
 import type { DraftSlot, Player } from '~/types'
 import FormationPitch from '~/components/draft/FormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
+import RouletteWheelReel from '~/components/draft/RouletteWheelReel.vue'
 
 definePageMeta({ layout: 'default' })
 
@@ -11,6 +12,9 @@ const roulette = useRouletteStore()
 // Mobile view tab state: 'squad' | 'pitch'
 const mobileTab = ref<'squad' | 'pitch'>('squad')
 
+// Wheel spinning state for reel animation
+const isSpinningReel = ref(false)
+
 // Redirect if no formation selected
 onMounted(() => {
   if (!draft.formation) {
@@ -18,9 +22,33 @@ onMounted(() => {
     return
   }
   if (!roulette.currentCountry) {
-    roulette.spin()
+    spinWithAnimation()
   }
 })
+
+function spinWithAnimation() {
+  isSpinningReel.value = true
+  roulette.spin()
+  setTimeout(() => {
+    isSpinningReel.value = false
+  }, 550)
+}
+
+function rerollYearWithAnimation() {
+  isSpinningReel.value = true
+  roulette.rerollYear()
+  setTimeout(() => {
+    isSpinningReel.value = false
+  }, 500)
+}
+
+function rerollNationWithAnimation() {
+  isSpinningReel.value = true
+  roulette.rerollNation()
+  setTimeout(() => {
+    isSpinningReel.value = false
+  }, 500)
+}
 
 // Selected player from squad list
 const selectedPlayer = ref<Player | null>(null)
@@ -98,7 +126,8 @@ function confirmDraft(player: Player, slot: DraftSlot) {
     navigateTo('/tournament')
     return
   }
-  roulette.spin()
+
+  spinWithAnimation()
   nextTick(() => {
     if (squadScrollRef.value) {
       squadScrollRef.value.scrollTop = 0
@@ -148,21 +177,27 @@ function positionColor(pos: string): string {
       <!-- Top header bar: Progress HUD -->
       <div class="bezel-card">
         <div class="bezel-inner px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="space-y-1.5 flex-1 max-w-md">
-            <div class="flex items-center justify-between text-xs">
-              <span class="font-bold text-zinc-700 dark:text-zinc-300 uppercase font-mono tracking-wider">
-                {{ $t('draft.progress', { filled: draft.filledSlots.length }) }}
-              </span>
-              <span class="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
-                {{ draft.teamOVR > 0 ? `Team Rating: ${draft.teamOVR} OVR` : '' }}
-              </span>
-            </div>
-            <UProgress
-              :value="draft.filledSlots.length"
-              :max="11"
-              color="primary"
-              class="h-2.5 rounded-full"
+          <div class="flex items-center gap-3 flex-1 max-w-md">
+            <CountryFlag
+              :country="draft.teamEmblem || 'eu'"
+              size="md"
             />
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-zinc-900 dark:text-white uppercase font-mono tracking-wider">
+                  {{ draft.teamName }} ({{ draft.filledSlots.length }}/11)
+                </span>
+                <span class="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                  {{ draft.teamOVR > 0 ? `${draft.teamOVR} OVR` : '' }}
+                </span>
+              </div>
+              <UProgress
+                :value="draft.filledSlots.length"
+                :max="11"
+                color="primary"
+                class="h-2.5 rounded-full"
+              />
+            </div>
           </div>
 
           <!-- Formation badge & Mobile Tab Switcher -->
@@ -238,24 +273,18 @@ function positionColor(pos: string): string {
           <!-- Current team card -->
           <div class="bezel-card flex-1 flex flex-col">
             <div class="bezel-inner p-5 space-y-4 flex-1 flex flex-col">
-              <!-- Team header -->
+              <!-- Team header with Animated Roulette Reel -->
               <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
-                <div>
-                  <p class="text-zinc-500 dark:text-zinc-400 text-xs font-mono font-bold uppercase tracking-[0.15em]">
-                    Euro {{ roulette.currentYear }} Tournament Squad
-                  </p>
-                  <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
-                    <CountryFlag
-                      v-if="roulette.currentCountry"
-                      :country="roulette.currentCountry"
-                      size="lg"
-                    />
-                    <span>{{ currentCountryDisplayName }}</span>
-                  </h2>
-                </div>
+                <RouletteWheelReel
+                  :is-spinning="isSpinningReel"
+                  :target-country="roulette.currentCountry"
+                  :target-year="roulette.currentYear"
+                  :target-country-name="currentCountryDisplayName"
+                  @spin-complete="isSpinningReel = false"
+                />
 
                 <!-- Reroll controls -->
-                <div class="flex flex-col gap-1.5 items-end">
+                <div class="flex flex-col gap-1.5 items-end shrink-0">
                   <div class="flex gap-1.5">
                     <UTooltip
                       :text="$t('draft.reroll_year_hint', { nation: currentCountryDisplayName })"
@@ -268,8 +297,8 @@ function positionColor(pos: string): string {
                         :label="$t('draft.reroll_year')"
                         leading-icon="i-lucide-calendar"
                         class="rounded-lg font-semibold"
-                        :disabled="draft.rerollsRemaining <= 0"
-                        @click="roulette.rerollYear()"
+                        :disabled="draft.rerollsRemaining <= 0 || isSpinningReel"
+                        @click="rerollYearWithAnimation"
                       />
                     </UTooltip>
                     <UTooltip
@@ -283,8 +312,8 @@ function positionColor(pos: string): string {
                         :label="$t('draft.reroll_nation')"
                         leading-icon="i-lucide-globe"
                         class="rounded-lg font-semibold"
-                        :disabled="draft.rerollsRemaining <= 0"
-                        @click="roulette.rerollNation()"
+                        :disabled="draft.rerollsRemaining <= 0 || isSpinningReel"
+                        @click="rerollNationWithAnimation"
                       />
                     </UTooltip>
                   </div>

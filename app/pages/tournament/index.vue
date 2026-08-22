@@ -2,11 +2,19 @@
 import type { MatchResult } from '~/types'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 import FormationPitch from '~/components/draft/FormationPitch.vue'
+import PlayerFoilCard from '~/components/draft/PlayerFoilCard.vue'
 
 definePageMeta({ layout: 'default' })
 
 const tournament = useTournamentStore()
 const draft = useDraftStore()
+
+// Squad view tab: 'pitch' | 'cards'
+const squadViewMode = ref<'pitch' | 'cards'>('pitch')
+
+// Auto-simulation timer
+const isAutoSimulating = ref(true)
+let simTimer: ReturnType<typeof setInterval> | null = null
 
 // Auto-init tournament on mount if draft is complete
 onMounted(() => {
@@ -16,6 +24,57 @@ onMounted(() => {
   }
   if (tournament.groups.length === 0) {
     tournament.initTournament()
+    startAutoSimulation()
+  } else if (tournament.simulationStep === 0) {
+    startAutoSimulation()
+  }
+})
+
+onUnmounted(() => {
+  if (simTimer !== null) clearInterval(simTimer)
+})
+
+function startAutoSimulation() {
+  if (simTimer !== null) clearInterval(simTimer)
+  isAutoSimulating.value = true
+
+  simTimer = setInterval(() => {
+    if (tournament.simulationStep < 6) {
+      tournament.advanceSimulationStep()
+    } else {
+      isAutoSimulating.value = false
+      if (simTimer !== null) clearInterval(simTimer)
+    }
+  }, 1000)
+}
+
+function pauseSimulation() {
+  isAutoSimulating.value = false
+  if (simTimer !== null) {
+    clearInterval(simTimer)
+    simTimer = null
+  }
+}
+
+function resumeSimulation() {
+  startAutoSimulation()
+}
+
+function skipAll() {
+  pauseSimulation()
+  tournament.skipAllSimulation()
+}
+
+const simulationStageLabel = computed(() => {
+  switch (tournament.simulationStep) {
+    case 0: return 'Tournament Setup'
+    case 1: return 'Simulating Matchday 1 of 3...'
+    case 2: return 'Simulating Matchday 2 of 3...'
+    case 3: return 'Simulating Matchday 3 of 3 (Group Finale)...'
+    case 4: return 'Simulating Quarter-Finals...'
+    case 5: return 'Simulating Semi-Finals...'
+    case 6: return 'Final Whistle · Tournament Complete'
+    default: return 'Tournament Complete'
   }
 })
 
@@ -56,48 +115,163 @@ function opponentTeam(match: MatchResult) {
   const pid = tournament.playerTeam?.id
   return match.teamA.team.id === pid ? match.teamB.team : match.teamA.team
 }
+
+const draftedPlayersList = computed(() => {
+  return draft.filledSlots.filter(s => s.player !== null).map(s => s.player!)
+})
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
     <!-- Header -->
-    <div class="space-y-2 text-left">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
-        Championship Stage
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="space-y-1.5 text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
+          UEFA European Championship
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
+          <CountryFlag
+            :country="draft.teamEmblem || 'eu'"
+            size="md"
+          />
+          <span>{{ draft.teamName || 'Dream XI' }}</span>
+        </h1>
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+          {{ draft.formation?.label }} Formation · Squad Rating: <strong class="font-mono text-emerald-500 dark:text-emerald-400">{{ draft.teamOVR }} OVR</strong>
+        </p>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-        {{ $t('tournament.your_journey') }}
-      </h1>
-      <p class="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-        {{ tournament.playerTeam?.countryName }} · Team Rating {{ tournament.playerTeam?.averageOVR }} OVR · {{ draft.formation?.id }}
-      </p>
+
+      <!-- Play / Pause / Skip Simulation Controls -->
+      <div class="flex items-center gap-2">
+        <UButton
+          v-if="tournament.simulationStep < 6"
+          size="sm"
+          variant="solid"
+          color="primary"
+          leading-icon="i-lucide-fast-forward"
+          label="Skip Animation"
+          class="rounded-full px-4 font-bold shadow-md shadow-emerald-500/20"
+          @click="skipAll"
+        />
+        <UButton
+          v-if="tournament.simulationStep < 6 && isAutoSimulating"
+          size="sm"
+          variant="outline"
+          color="neutral"
+          leading-icon="i-lucide-pause"
+          label="Pause"
+          class="rounded-full font-semibold"
+          @click="pauseSimulation"
+        />
+        <UButton
+          v-else-if="tournament.simulationStep < 6 && !isAutoSimulating"
+          size="sm"
+          variant="outline"
+          color="neutral"
+          leading-icon="i-lucide-play"
+          label="Resume"
+          class="rounded-full font-semibold"
+          @click="resumeSimulation"
+        />
+      </div>
     </div>
 
-    <!-- My Squad Pitch & List (Collapsible / Showcase) -->
+    <!-- Live Simulation Progress HUD Banner -->
+    <div
+      v-if="tournament.simulationStep < 6"
+      class="bezel-card animate-pulse"
+    >
+      <div class="bezel-inner p-4 space-y-3">
+        <div class="flex items-center justify-between text-xs font-mono font-bold">
+          <span class="text-emerald-400 flex items-center gap-2">
+            <span class="size-2 rounded-full bg-emerald-400 animate-ping" />
+            {{ simulationStageLabel }}
+          </span>
+          <span class="text-zinc-400">Step {{ tournament.simulationStep }} / 6</span>
+        </div>
+        <UProgress
+          :value="tournament.simulationStep"
+          :max="6"
+          color="primary"
+          class="h-2 rounded-full"
+        />
+      </div>
+    </div>
+
+    <!-- ==================== SQUAD SHOWCASE (Pitch vs Cards) ==================== -->
     <div class="bezel-card">
       <div class="bezel-inner p-5 space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/5">
-          <p class="text-xs text-zinc-400 uppercase font-mono tracking-widest font-bold">
-            Drafted XI · {{ draft.formation?.id }} Formation
-          </p>
-          <span class="text-xs font-mono text-emerald-400 font-black">
-            Team OVR {{ draft.teamOVR }}
-          </span>
+        <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
+          <div>
+            <p class="text-xs text-zinc-400 uppercase font-mono tracking-widest font-bold">
+              Drafted XI Lineup
+            </p>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">
+              {{ draft.formation?.id }} · {{ draft.teamName }}
+            </h3>
+          </div>
+
+          <!-- View Toggle -->
+          <div class="flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
+            <button
+              type="button"
+              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+              :class="squadViewMode === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+              @click="squadViewMode = 'pitch'"
+            >
+              🏟️ Tactical Pitch
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+              :class="squadViewMode === 'cards' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+              @click="squadViewMode = 'cards'"
+            >
+              🎴 Player Cards
+            </button>
+          </div>
         </div>
-        <div class="h-[360px]">
+
+        <!-- Pitch View -->
+        <div
+          v-if="squadViewMode === 'pitch'"
+          class="w-full max-w-xl mx-auto h-[460px] py-2"
+        >
           <FormationPitch
             :slots="draft.slots"
             :interactive="false"
+            class="h-full"
+          />
+        </div>
+
+        <!-- Cards View -->
+        <div
+          v-else
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto custom-scroll pr-1"
+        >
+          <PlayerFoilCard
+            v-for="p in draftedPlayersList"
+            :key="p.id"
+            :player="p"
+            :is-compact="true"
           />
         </div>
       </div>
     </div>
 
-    <!-- Journey: stacked match + table flow -->
-    <div class="space-y-6">
-      <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-        {{ $t('tournament.group_stage') }}
-      </h2>
+    <!-- ==================== GROUP STAGE SECTION ==================== -->
+    <div
+      v-if="tournament.simulationStep >= 1"
+      class="space-y-6"
+    >
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+          {{ $t('tournament.group_stage') }}
+        </h2>
+        <span class="text-xs font-mono text-zinc-500">
+          {{ tournament.simulationStep < 3 ? `Matchday ${tournament.simulationStep} of 3` : 'Group Stage Complete' }}
+        </span>
+      </div>
 
       <!-- Group matches for player's group -->
       <div class="space-y-3">
@@ -114,7 +288,7 @@ function opponentTeam(match: MatchResult) {
                 size="md"
               />
               <div class="min-w-0">
-                <p class="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-0.5">{{ match.phase }}</p>
+                <p class="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-0.5">Group Stage</p>
                 <p class="text-base font-bold text-zinc-900 dark:text-white truncate">
                   vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
                 </p>
@@ -138,7 +312,7 @@ function opponentTeam(match: MatchResult) {
         </NuxtLink>
       </div>
 
-      <!-- Player's group standing -->
+      <!-- Player's group standing table -->
       <div
         v-if="tournament.groups.length"
         class="bezel-card overflow-hidden"
@@ -148,7 +322,7 @@ function opponentTeam(match: MatchResult) {
             <p class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
               Group {{ tournament.groups.find(g => g.teams.some(t => t.id === tournament.playerTeam?.id))?.id }} Standings
             </p>
-            <span class="text-[10px] font-mono text-zinc-500">Top 2 Qualify</span>
+            <span class="text-[10px] font-mono text-zinc-500 font-semibold">Top 2 Qualify for Knockouts</span>
           </div>
           <div
             v-for="group in tournament.groups.filter(g => g.teams.some(t => t.id === tournament.playerTeam?.id))"
@@ -158,20 +332,28 @@ function opponentTeam(match: MatchResult) {
             <div
               v-for="(standing, rank) in group.standings"
               :key="standing.team.id"
-              class="flex items-center gap-3.5 py-3 text-sm"
-              :class="standing.team.id === tournament.playerTeam?.id ? 'bg-emerald-500/10 dark:bg-emerald-950/40 px-3 rounded-xl border border-emerald-500/30' : ''"
+              class="flex items-center gap-3.5 py-3 text-sm transition-all"
+              :class="standing.team.isPlayerTeam ? 'bg-emerald-500/15 dark:bg-emerald-950/50 px-3 rounded-xl border border-emerald-500/40' : ''"
             >
-              <span class="w-5 font-mono text-zinc-500 text-xs font-bold">{{ rank + 1 }}</span>
+              <span
+                class="w-5 font-mono text-xs font-black"
+                :class="rank < 2 ? 'text-emerald-400' : 'text-zinc-500'"
+              >
+                {{ rank + 1 }}
+              </span>
               <CountryFlag
                 :country="standing.team.country"
                 size="sm"
               />
               <span
-                class="flex-1 font-bold"
-                :class="standing.team.isPlayerTeam ? 'text-emerald-500 dark:text-emerald-400' : 'text-zinc-900 dark:text-white'"
+                class="flex-1 font-bold truncate"
+                :class="standing.team.isPlayerTeam ? 'text-emerald-500 dark:text-emerald-300' : 'text-zinc-900 dark:text-white'"
               >
                 {{ standing.team.countryName }}
-                <span class="text-zinc-500 text-xs font-mono font-normal">'{{ standing.team.year }}</span>
+                <span
+                  v-if="!standing.team.isPlayerTeam"
+                  class="text-zinc-500 text-xs font-mono font-normal"
+                >'{{ standing.team.year }}</span>
               </span>
               <div class="flex gap-4 font-mono text-xs text-zinc-400 font-semibold">
                 <span>{{ standing.played }}P</span>
@@ -184,13 +366,13 @@ function opponentTeam(match: MatchResult) {
       </div>
     </div>
 
-    <!-- Knockout phase -->
+    <!-- ==================== KNOCKOUT ROUNDS SECTION ==================== -->
     <div
-      v-if="tournament.playerMatches.some(m => m.phase !== 'group')"
+      v-if="tournament.simulationStep >= 4 && tournament.playerMatches.some(m => m.phase !== 'group')"
       class="space-y-6"
     >
       <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Knockout Rounds
+        Knockout Stage
       </h2>
 
       <div class="space-y-3">
@@ -232,9 +414,9 @@ function opponentTeam(match: MatchResult) {
       </div>
     </div>
 
-    <!-- Champion / Eliminated banner -->
+    <!-- ==================== CHAMPION / ELIMINATED BANNER ==================== -->
     <div
-      v-if="tournament.tournamentPhase === 'complete'"
+      v-if="tournament.simulationStep >= 6"
       class="bezel-card"
     >
       <div
