@@ -238,62 +238,36 @@ function mapPosition(posText: string, playerName: string = '', shirtNumber: numb
   return { basePosition: 'Forward', positions: ['ST', 'CF'], primaryPosition: 'ST' }
 }
 
+import { calculateTournamentOVR } from './player-ratings'
+
 function calculateOVR(
   basePosition: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward',
   caps: number,
   goals: number,
-  _year: number,
-  playerName: string = ''
+  year: number,
+  playerName: string = '',
+  countryCode: string = '',
+  shirtNumber: number | null = null
 ): PlayerStats {
-  const normName = normalizeForLookup(playerName)
-  let ovr: number
-
-  // 1. Check if player has an authentic star rating in the registry
-  let matchedRating: number | undefined
-  if (normName && HISTORICAL_PLAYER_REGISTRY[normName]?.baseRating) {
-    matchedRating = HISTORICAL_PLAYER_REGISTRY[normName]?.baseRating
-  } else if (normName && normName.length >= 4) {
-    for (const [key, reg] of Object.entries(HISTORICAL_PLAYER_REGISTRY)) {
-      if ((normName === key || normName.includes(key) || key.includes(normName)) && reg.baseRating) {
-        matchedRating = reg.baseRating
-        break
-      }
-    }
-  }
-
-  if (matchedRating) {
-    // Slight nuance based on tournament caps
-    if (caps < 10) {
-      ovr = matchedRating - 2 // Young emerging star
-    } else if (caps > 80) {
-      ovr = Math.max(matchedRating - 1, 86) // Experienced legend
-    } else {
-      ovr = matchedRating // Peak prime
-    }
-  } else {
-    // 2. Standard international tournament player formula
-    const baseByPos = { Goalkeeper: 77, Defender: 77, Midfielder: 78, Forward: 78 }
-    ovr = baseByPos[basePosition]
-
-    // Caps experience bonus (up to +6)
-    ovr += Math.min(6, Math.floor((caps || 10) / 15))
-
-    // Goal scoring bonus (up to +5)
-    const goalWeight = basePosition === 'Forward' ? 0.2 : basePosition === 'Midfielder' ? 0.3 : 0.45
-    ovr += Math.min(5, Math.floor((goals || 0) * goalWeight))
-
-    ovr = Math.min(87, Math.max(73, ovr))
-  }
+  const ovr = calculateTournamentOVR(
+    playerName,
+    year,
+    countryCode,
+    basePosition,
+    caps,
+    goals,
+    shirtNumber
+  )
 
   const seed = ((caps || 5) * 7 + (goals || 2) * 13) % 5
 
   if (basePosition === 'Goalkeeper') {
     return {
       overall: ovr,
-      pace: 52 + seed,
-      shooting: 30 + seed,
+      pace: Math.min(65, Math.max(48, 52 + seed)),
+      shooting: Math.min(40, 25 + seed),
       passing: Math.min(88, ovr - 12 + seed),
-      dribbling: 45 + seed,
+      dribbling: Math.min(55, 45 + seed),
       defending: ovr,
       physical: Math.min(92, ovr - 2)
     }
@@ -493,7 +467,7 @@ async function scrapeTournament(year: number, config: { format: '4-teams' | '8-t
         const finalShirtNum = shirtNumber ?? shirtCount
         const fallbackPos = finalShirtNum === 1 ? 'GK' : finalShirtNum <= 4 ? 'DF' : finalShirtNum <= 8 ? 'MF' : 'FW'
         const mappedPos = mapPosition(posText || fallbackPos, name, finalShirtNum)
-        const stats = calculateOVR(mappedPos.basePosition, caps, goals, year, name)
+        const stats = calculateOVR(mappedPos.basePosition, caps, goals, year, name, country.code, finalShirtNum)
 
         const norm = normalizeName(name)
         const id = `${country.code}-${year}-${norm.replace(/\s+/g, '-')}`
