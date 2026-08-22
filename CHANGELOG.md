@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Transfermarkt position scraper for verified player roles (closes #8)
-- Full database re-scrape with Transfermarkt-enriched positions (closes #9)
+- External position enrichment pipeline for verified player roles (closes #8)
+- Full database re-scrape with enriched positions (closes #9)
 
 ---
 
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive README, CHANGELOG, CONTRIBUTING, PR/issue templates (#6)
 - ROADMAP.md with milestone planning (#7)
 - GitHub issues and milestones via gh CLI (#7)
-- Transfermarkt position scraper (cheerio + Playwright fallback) (#8)
+- Position enrichment pipeline (cheerio + Playwright fallback) (#8)
 
 ### Fixed
 - Tactical pitch height now matches squad panel height (#1)
@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Authentic historical player positions via `scripts/player-positions.ts` registry (350+ legends)
 - Calibrated historical star ratings: Zidane 94, Blanc 90, Thuram 90, Deschamps 89, Barthez 89
-- Transfermarkt-style position specificity: CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF
+- Granular position specificity: CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF
 - Vector circular flags via `@iconify-json/circle-flags`
 - Working light/dark theme toggle
 - Language switcher in header (10 locales)

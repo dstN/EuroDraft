@@ -30,7 +30,7 @@ EuroDraft is a web-based fantasy football game built around **historical UEFA Eu
 | State Management | [Pinia](https://pinia.vuejs.org) |
 | Internationalization | [@nuxtjs/i18n](https://i18n.nuxtjs.org) (10 languages) |
 | Styling | Tailwind CSS v4 |
-| Data Pipeline | Wikipedia scraper + Transfermarkt enrichment |
+| Data Pipeline | Wikipedia scraper + position enrichment pipeline |
 | Unit Tests | [Vitest](https://vitest.dev) |
 | E2E / A11y Tests | [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) |
 
@@ -66,12 +66,14 @@ The `public/eurodraft_db.json` is pre-built. To regenerate from Wikipedia:
 npm run build:db
 ```
 
-### Scrape Transfermarkt Positions
+### Enrich Player Positions
 
-To enrich player position data from Transfermarkt:
+To enrich player position data from an external football data source:
 
 ```bash
-npm run scrape:positions -- --name "Zinedine Zidane"
+POSITION_SOURCE_BASE_URL=https://... npm run enrich:positions -- --name "Zinedine Zidane"
+# Or enrich all ~4600 players in the database:
+POSITION_SOURCE_BASE_URL=https://... npm run enrich:positions -- --db
 ```
 
 ---
@@ -83,7 +85,7 @@ npm run scrape:positions -- --name "Zinedine Zidane"
 | `npm run dev` | Start dev server |
 | `npm run build` | Build for production |
 | `npm run build:db` | Rebuild player database from Wikipedia |
-| `npm run scrape:positions` | Scrape Transfermarkt for position data |
+| `npm run enrich:positions` | Enrich position data for players |
 | `npm run test` | Run Vitest unit tests |
 | `npm run test:e2e` | Run Playwright e2e tests |
 | `npm run test:a11y` | Run accessibility audit |
@@ -132,11 +134,11 @@ EuroDraft is available in **10 languages**:
 
 ---
 
-## Data Sources
+## Data Pipeline
 
 - **Player Rosters**: Wikipedia squad tables for all 17 UEFA Euro tournaments (1960–2024)
-- **Player Positions**: Transfermarkt `div.detail-position__box` for verified specific roles (CB, LB, CDM, CAM, LW, etc.)
-- **Player Ratings**: Curated historical prime ratings for 350+ legends, calibrated by position and peak years
+- **Player Positions**: Verified specific tactical roles (CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF)
+- **Player Ratings**: Curated historical prime ratings calibrated by position and tournament performance
 
 ---
 

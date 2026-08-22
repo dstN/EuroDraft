@@ -72,7 +72,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```bash
 git commit -m "feat: formation picker shows mini-pitch with player dots (closes #3)"
 git commit -m "fix: squad list scrolls to top after draft pick (closes #2)"
-git commit -m "data: rebuild DB with Transfermarkt-enriched positions (closes #9)"
+git commit -m "data: rebuild DB with enriched positions (closes #9)"
 ```
 
 ---
@@ -151,4 +151,4 @@ For player position corrections, include:
 - Player name
 - Country + Year
 - Current incorrect position
-- Correct position (with source: Transfermarkt URL preferred)
+- Correct position (with reputable source / match report link)

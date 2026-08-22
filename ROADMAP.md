@@ -29,8 +29,8 @@ This document tracks all planned features by milestone.
 - [x] Historical player position registry (350+ legends)
 - [x] Calibrated star ratings (Zidane 94, Blanc 90, etc.)
 - [x] LM/RM positions playable by wide midfielders + wingers
-- [ ] **Transfermarkt scraper for verified position data** (#8)
-- [ ] **Full DB re-scrape with Transfermarkt positions** (#9)
+- [x] **Position enrichment pipeline for authentic player roles** (#8)
+- [ ] **Full DB re-scrape with enriched positions** (#9)
 - [ ] Player position correction workflow (issue template + PR flow)
 
 ---
