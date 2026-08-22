@@ -3,6 +3,7 @@ import type { MatchResult } from '~/types'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 import FormationPitch from '~/components/draft/FormationPitch.vue'
 import PlayerFoilCard from '~/components/draft/PlayerFoilCard.vue'
+import LiveMatchBroadcast from '~/components/tournament/LiveMatchBroadcast.vue'
 
 definePageMeta({ layout: 'default' })
 
@@ -12,9 +13,9 @@ const draft = useDraftStore()
 // Squad view tab: 'pitch' | 'cards'
 const squadViewMode = ref<'pitch' | 'cards'>('pitch')
 
-// Auto-simulation timer
-const isAutoSimulating = ref(true)
-let simTimer: ReturnType<typeof setInterval> | null = null
+// Live simulation match tracking
+const currentSimMatchIndex = ref(0)
+const isSimulationCompleted = ref(false)
 
 // Auto-init tournament on mount if draft is complete
 onMounted(() => {
@@ -24,59 +25,47 @@ onMounted(() => {
   }
   if (tournament.groups.length === 0) {
     tournament.initTournament()
-    startAutoSimulation()
-  } else if (tournament.simulationStep === 0) {
-    startAutoSimulation()
   }
+  // Start with match 1
+  currentSimMatchIndex.value = 0
 })
 
-onUnmounted(() => {
-  if (simTimer !== null) clearInterval(simTimer)
+// Current player match being simulated live
+const activePlayerMatch = computed<MatchResult | null>(() => {
+  if (isSimulationCompleted.value) return null
+  const matches = tournament.playerMatches
+  if (currentSimMatchIndex.value < matches.length) {
+    return matches[currentSimMatchIndex.value] ?? null
+  }
+  return null
 })
 
-function startAutoSimulation() {
-  if (simTimer !== null) clearInterval(simTimer)
-  isAutoSimulating.value = true
+// Completed matches so far
+const completedPlayerMatches = computed<MatchResult[]>(() => {
+  if (isSimulationCompleted.value) return tournament.playerMatches
+  return tournament.playerMatches.slice(0, currentSimMatchIndex.value)
+})
 
-  simTimer = setInterval(() => {
-    if (tournament.simulationStep < 6) {
-      tournament.advanceSimulationStep()
-    } else {
-      isAutoSimulating.value = false
-      if (simTimer !== null) clearInterval(simTimer)
+// Called when active match broadcast finishes
+function onLiveMatchCompleted() {
+  // Advance tournament simulation step
+  tournament.advanceSimulationStep()
+  currentSimMatchIndex.value++
+
+  // Check if all player matches are complete
+  if (currentSimMatchIndex.value >= tournament.playerMatches.length || tournament.tournamentPhase === 'complete') {
+    // If the team qualified and there are knockouts, advance until next player match or complete
+    if (tournament.tournamentPhase === 'complete') {
+      isSimulationCompleted.value = true
     }
-  }, 1000)
-}
-
-function pauseSimulation() {
-  isAutoSimulating.value = false
-  if (simTimer !== null) {
-    clearInterval(simTimer)
-    simTimer = null
   }
 }
 
-function resumeSimulation() {
-  startAutoSimulation()
-}
-
-function skipAll() {
-  pauseSimulation()
+function skipAllToResults() {
   tournament.skipAllSimulation()
+  currentSimMatchIndex.value = tournament.playerMatches.length
+  isSimulationCompleted.value = true
 }
-
-const simulationStageLabel = computed(() => {
-  switch (tournament.simulationStep) {
-    case 0: return 'Tournament Setup'
-    case 1: return 'Simulating Matchday 1 of 3...'
-    case 2: return 'Simulating Matchday 2 of 3...'
-    case 3: return 'Simulating Matchday 3 of 3 (Group Finale)...'
-    case 4: return 'Simulating Quarter-Finals...'
-    case 5: return 'Simulating Semi-Finals...'
-    case 6: return 'Final Whistle · Tournament Complete'
-    default: return 'Tournament Complete'
-  }
-})
 
 function matchResultLabel(match: MatchResult): string {
   if (!tournament.playerTeam) return ''
@@ -119,13 +108,17 @@ function opponentTeam(match: MatchResult) {
 const draftedPlayersList = computed(() => {
   return draft.filledSlots.filter(s => s.player !== null).map(s => s.player!)
 })
+
+const playerGroup = computed(() => {
+  return tournament.groups.find(g => g.teams.some(t => t.id === tournament.playerTeam?.id)) ?? null
+})
 </script>
 
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-    <!-- Header -->
+    <!-- Top Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="space-y-1.5 text-left">
+      <div class="space-y-1 text-left">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
           UEFA European Championship
         </div>
@@ -136,493 +129,150 @@ const draftedPlayersList = computed(() => {
           />
           <span>{{ draft.teamName || 'Dream XI' }}</span>
         </h1>
-        <p class="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+        <p class="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm font-medium">
           {{ draft.formation?.label }} Formation · Squad Rating: <strong class="font-mono text-emerald-500 dark:text-emerald-400">{{ draft.teamOVR }} OVR</strong>
         </p>
       </div>
 
-      <!-- Play / Pause / Skip Simulation Controls -->
-      <div class="flex items-center gap-2">
+      <!-- Skip to Results Button -->
+      <div v-if="!isSimulationCompleted">
         <UButton
-          v-if="tournament.simulationStep < 6"
           size="sm"
           variant="solid"
           color="primary"
           leading-icon="i-lucide-fast-forward"
-          label="Skip Animation"
-          class="rounded-full px-4 font-bold shadow-md shadow-emerald-500/20 cursor-pointer"
-          @click="skipAll"
-        />
-        <UButton
-          v-if="tournament.simulationStep < 6 && isAutoSimulating"
-          size="sm"
-          variant="outline"
-          color="neutral"
-          leading-icon="i-lucide-pause"
-          label="Pause"
-          class="rounded-full font-semibold cursor-pointer"
-          @click="pauseSimulation"
-        />
-        <UButton
-          v-else-if="tournament.simulationStep < 6 && !isAutoSimulating"
-          size="sm"
-          variant="outline"
-          color="neutral"
-          leading-icon="i-lucide-play"
-          label="Resume"
-          class="rounded-full font-semibold cursor-pointer"
-          @click="resumeSimulation"
+          label="Skip to Final Results"
+          class="rounded-full px-5 font-bold shadow-md shadow-emerald-500/25 cursor-pointer"
+          @click="skipAllToResults"
         />
       </div>
     </div>
 
-    <!-- Live Simulation Progress HUD Banner -->
+    <!-- ==================================================================== -->
+    <!-- MODE 1: LIVE TOURNAMENT SIMULATION ARENA (First thing user sees)     -->
+    <!-- ==================================================================== -->
     <div
-      v-if="tournament.simulationStep < 6"
-      class="bezel-card animate-pulse"
+      v-if="!isSimulationCompleted"
+      class="space-y-8"
     >
-      <div class="bezel-inner p-4 space-y-3">
-        <div class="flex items-center justify-between text-xs font-mono font-bold">
-          <span class="text-emerald-400 flex items-center gap-2">
-            <span class="size-2 rounded-full bg-emerald-400 animate-ping" />
-            {{ simulationStageLabel }}
-          </span>
-          <span class="text-zinc-400">Step {{ tournament.simulationStep }} / 6</span>
-        </div>
-        <UProgress
-          :value="tournament.simulationStep"
-          :max="6"
-          color="primary"
-          class="h-2 rounded-full"
-        />
-      </div>
-    </div>
-
-    <!-- ==================== SQUAD SHOWCASE (Pitch vs Cards) ==================== -->
-    <div class="bezel-card">
-      <div class="bezel-inner p-5 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
-          <div>
-            <p class="text-xs text-zinc-400 uppercase font-mono tracking-widest font-bold">
-              Drafted XI Lineup
-            </p>
-            <h3 class="text-base font-bold text-zinc-900 dark:text-white">
-              {{ draft.formation?.id }} · {{ draft.teamName }}
-            </h3>
-          </div>
-
-          <!-- View Toggle -->
-          <div class="flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
-              :class="squadViewMode === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
-              @click="squadViewMode = 'pitch'"
-            >
-              🏟️ Tactical Pitch
-            </button>
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
-              :class="squadViewMode === 'cards' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
-              @click="squadViewMode = 'cards'"
-            >
-              🎴 Player Cards
-            </button>
-          </div>
-        </div>
-
-        <!-- Pitch View with proper padding and non-overlapping slots -->
-        <div
-          v-if="squadViewMode === 'pitch'"
-          class="w-full max-w-xl mx-auto h-[460px] py-2"
-        >
-          <FormationPitch
-            :slots="draft.slots"
-            :interactive="false"
-            class="h-full"
-          />
-        </div>
-
-        <!-- Cards View -->
-        <div
-          v-else
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto custom-scroll pr-1"
-        >
-          <PlayerFoilCard
-            v-for="p in draftedPlayersList"
-            :key="p.id"
-            :player="p"
-            :is-compact="true"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== TOURNAMENT RUN STATS DASHBOARD ==================== -->
-    <div
-      v-if="tournament.runStats && tournament.simulationStep >= 1"
-      class="space-y-6"
-    >
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
-          <UIcon
-            name="i-lucide-bar-chart-2"
-            class="size-5 text-emerald-400"
-          />
-          <span>Tournament Run Stats</span>
-        </h2>
-        <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
-          {{ tournament.runStats.totalMatches }} Matches Played
-        </span>
-      </div>
-
-      <!-- 4 Highlight Hero Stat Cards (Top Scorer, Top Assister, MVP, G+A/90) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Top Scorer -->
-        <div class="bezel-card">
-          <div class="bezel-inner p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Scorer</span>
-              <UIcon
-                name="i-lucide-award"
-                class="size-4 text-gold-400"
-              />
-            </div>
-            <template v-if="tournament.runStats.topScorer && tournament.runStats.topScorer.goals > 0">
-              <div class="flex items-center gap-2">
-                <CountryFlag
-                  :country="tournament.runStats.topScorer.player.country"
-                  size="sm"
-                />
-                <h4 class="font-bold text-sm text-white truncate">
-                  {{ tournament.runStats.topScorer.player.name }}
-                </h4>
-              </div>
-              <p class="text-xl font-black font-mono text-gold-400">
-                {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-400 font-normal">Goals</span>
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
-                No goals scored yet
-              </p>
-            </template>
-          </div>
-        </div>
-
-        <!-- Top Assistgiver -->
-        <div class="bezel-card">
-          <div class="bezel-inner p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Playmaker</span>
-              <UIcon
-                name="i-lucide-crosshair"
-                class="size-4 text-emerald-400"
-              />
-            </div>
-            <template v-if="tournament.runStats.topAssister && tournament.runStats.topAssister.assists > 0">
-              <div class="flex items-center gap-2">
-                <CountryFlag
-                  :country="tournament.runStats.topAssister.player.country"
-                  size="sm"
-                />
-                <h4 class="font-bold text-sm text-white truncate">
-                  {{ tournament.runStats.topAssister.player.name }}
-                </h4>
-              </div>
-              <p class="text-xl font-black font-mono text-emerald-400">
-                {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-400 font-normal">Assists</span>
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
-                No assists recorded yet
-              </p>
-            </template>
-          </div>
-        </div>
-
-        <!-- Most G+A Overall (MVP) -->
-        <div class="bezel-card">
-          <div class="bezel-inner p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Most G+A (MVP)</span>
-              <UIcon
-                name="i-lucide-sparkles"
-                class="size-4 text-amber-400"
-              />
-            </div>
-            <template v-if="tournament.runStats.mvp">
-              <div class="flex items-center gap-2">
-                <CountryFlag
-                  :country="tournament.runStats.mvp.player.country"
-                  size="sm"
-                />
-                <h4 class="font-bold text-sm text-white truncate">
-                  {{ tournament.runStats.mvp.player.name }}
-                </h4>
-              </div>
-              <p class="text-xl font-black font-mono text-amber-400">
-                {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-400 font-normal">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
-                —
-              </p>
-            </template>
-          </div>
-        </div>
-
-        <!-- Best G+A / 90 Min -->
-        <div class="bezel-card">
-          <div class="bezel-inner p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Efficiency</span>
-              <UIcon
-                name="i-lucide-gauge"
-                class="size-4 text-sky-400"
-              />
-            </div>
-            <template v-if="tournament.runStats.bestGAPer90">
-              <div class="flex items-center gap-2">
-                <CountryFlag
-                  :country="tournament.runStats.bestGAPer90.player.country"
-                  size="sm"
-                />
-                <h4 class="font-bold text-sm text-white truncate">
-                  {{ tournament.runStats.bestGAPer90.player.name }}
-                </h4>
-              </div>
-              <p class="text-xl font-black font-mono text-sky-400">
-                {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-400 font-normal">G+A / 90'</span>
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-xs text-zinc-500 italic py-2">
-                —
-              </p>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Team Overview Ticker Bar (Clean Sheets, Goals, Cards) -->
-      <div class="bezel-card">
-        <div class="bezel-inner p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-white/5">
-          <div class="space-y-1">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
-              Clean Sheets
-            </p>
-            <p class="text-lg font-black font-mono text-emerald-400">
-              {{ tournament.runStats.cleanSheets }} 🧤
-            </p>
-          </div>
-          <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
-              Goals Scored / Conceded
-            </p>
-            <p class="text-lg font-black font-mono text-white">
-              {{ tournament.runStats.totalGoalsFor }} : {{ tournament.runStats.totalGoalsAgainst }}
-            </p>
-          </div>
-          <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
-              Yellow Cards
-            </p>
-            <p class="text-lg font-black font-mono text-amber-400">
-              {{ tournament.runStats.totalYellowCards }} 🟨
-            </p>
-          </div>
-          <div class="space-y-1 pt-2 sm:pt-0">
-            <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
-              Red Cards
-            </p>
-            <p class="text-lg font-black font-mono text-rose-400">
-              {{ tournament.runStats.totalRedCards }} 🟥
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detailed Squad Performance Table -->
-      <div class="bezel-card overflow-hidden">
-        <div class="bezel-inner p-5 space-y-4">
+      <!-- Group Draw Announcement Card -->
+      <div
+        v-if="playerGroup"
+        class="bezel-card"
+      >
+        <div class="bezel-inner p-5 space-y-3">
           <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/5">
-            <h3 class="text-sm font-bold font-mono uppercase tracking-widest text-zinc-300">
-              Complete Squad Performance Table
-            </h3>
-            <span class="text-xs text-zinc-500 font-mono">11 Players</span>
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+              Group {{ playerGroup.id }} Draw
+            </span>
+            <span class="text-[10px] font-mono font-bold text-emerald-400">
+              Top 2 Advance to Knockouts
+            </span>
           </div>
 
-          <div class="overflow-x-auto custom-scroll">
-            <table class="w-full text-left text-xs font-mono">
-              <thead>
-                <tr class="text-zinc-500 uppercase border-b border-white/5 pb-2">
-                  <th class="py-2.5 px-2">
-                    Player
-                  </th>
-                  <th class="py-2.5 px-2">
-                    POS
-                  </th>
-                  <th class="py-2.5 px-2">
-                    OVR
-                  </th>
-                  <th class="py-2.5 px-2 text-center">
-                    P
-                  </th>
-                  <th class="py-2.5 px-2 text-center">
-                    MIN
-                  </th>
-                  <th class="py-2.5 px-2 text-center text-emerald-400">
-                    G
-                  </th>
-                  <th class="py-2.5 px-2 text-center text-sky-400">
-                    A
-                  </th>
-                  <th class="py-2.5 px-2 text-center font-bold text-amber-400">
-                    G+A
-                  </th>
-                  <th class="py-2.5 px-2 text-center text-amber-300">
-                    🟨
-                  </th>
-                  <th class="py-2.5 px-2 text-center text-rose-400">
-                    🟥
-                  </th>
-                  <th class="py-2.5 px-2 text-right text-emerald-400">
-                    RATING
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-zinc-200 dark:divide-white/5">
-                <tr
-                  v-for="p in tournament.runStats.playerStats"
-                  :key="p.player.id"
-                  class="hover:bg-white/5 transition-colors"
-                >
-                  <td class="py-2.5 px-2 font-bold text-white flex items-center gap-2">
-                    <CountryFlag
-                      :country="p.player.country"
-                      size="sm"
-                    />
-                    <span class="truncate max-w-[8rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
-                  </td>
-                  <td class="py-2.5 px-2 text-zinc-400 font-semibold">
-                    {{ p.player.primaryPosition }}
-                  </td>
-                  <td
-                    class="py-2.5 px-2 font-black"
-                    :class="p.player.stats.overall >= 90 ? 'text-gold-400' : 'text-zinc-300'"
-                  >
-                    {{ p.player.stats.overall }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-300">
-                    {{ p.matches }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
-                    {{ p.minutes }}'
-                  </td>
-                  <td class="py-2.5 px-2 text-center font-black text-emerald-400">
-                    {{ p.goals }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center font-bold text-sky-400">
-                    {{ p.assists }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center font-black text-amber-400">
-                    {{ p.ga }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
-                    {{ p.yellowCards }}
-                  </td>
-                  <td class="py-2.5 px-2 text-center text-zinc-400">
-                    {{ p.redCards }}
-                  </td>
-                  <td class="py-2.5 px-2 text-right font-black text-emerald-400">
-                    {{ p.rating }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== GROUP STAGE SECTION ==================== -->
-    <div
-      v-if="tournament.simulationStep >= 1"
-      class="space-y-6"
-    >
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-          {{ $t('tournament.group_stage') }}
-        </h2>
-        <span class="text-xs font-mono text-zinc-500">
-          {{ tournament.simulationStep < 3 ? `Matchday ${tournament.simulationStep} of 3` : 'Group Stage Complete' }}
-        </span>
-      </div>
-
-      <!-- Group matches for player's group -->
-      <div class="space-y-3">
-        <NuxtLink
-          v-for="match in tournament.playerMatches.filter(m => m.phase === 'group')"
-          :key="match.id"
-          :to="`/match/${match.id}`"
-          class="bezel-card block cursor-pointer transition-transform hover:-translate-y-0.5"
-        >
-          <div class="bezel-inner p-4 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5 flex-1 min-w-0">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div
+              v-for="t in playerGroup.teams"
+              :key="t.id"
+              class="p-3 rounded-xl border flex flex-col items-center text-center space-y-1.5"
+              :class="t.id === tournament.playerTeam?.id
+                ? 'bg-emerald-500/15 border-emerald-500/40 ring-1 ring-emerald-400/40'
+                : 'bg-zinc-100 dark:bg-zinc-800/60 border-zinc-200 dark:border-white/5'"
+            >
               <CountryFlag
-                :country="opponentTeam(match).country"
+                :country="t.country"
                 size="md"
               />
-              <div class="min-w-0">
-                <p class="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-0.5">Group Stage</p>
-                <p class="text-base font-bold text-zinc-900 dark:text-white truncate">
-                  vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
-                </p>
-              </div>
+              <span
+                class="font-bold text-xs truncate max-w-full"
+                :class="t.id === tournament.playerTeam?.id ? 'text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'"
+              >
+                {{ t.countryName }}
+              </span>
+              <span class="text-[10px] font-mono text-zinc-500">
+                OVR {{ t.averageOVR }}
+              </span>
             </div>
-            <div class="flex items-center gap-2.5 shrink-0">
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE LIVE MATCH BROADCAST (Streams events live, then triggers collapse) -->
+      <div
+        v-if="activePlayerMatch && tournament.playerTeam"
+        class="space-y-3"
+      >
+        <h2 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
+          <span class="size-2.5 rounded-full bg-rose-500 animate-ping" />
+          <span>Match {{ currentSimMatchIndex + 1 }}: vs {{ opponentTeam(activePlayerMatch).countryName }} '{{ opponentTeam(activePlayerMatch).year }}</span>
+        </h2>
+
+        <LiveMatchBroadcast
+          :key="activePlayerMatch.id"
+          :match="activePlayerMatch"
+          :player-team-id="tournament.playerTeam.id"
+          :speed-ms="400"
+          @completed="onLiveMatchCompleted"
+        />
+      </div>
+
+      <!-- COLLAPSED COMPLETED MATCHES LIST -->
+      <div
+        v-if="completedPlayerMatches.length > 0"
+        class="space-y-3"
+      >
+        <h3 class="text-xs font-mono uppercase font-bold tracking-widest text-zinc-400">
+          Completed Matches ({{ completedPlayerMatches.length }})
+        </h3>
+        <div class="space-y-2">
+          <div
+            v-for="match in completedPlayerMatches"
+            :key="match.id"
+            class="bezel-card animate-scale-in"
+          >
+            <div class="bezel-inner p-3.5 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3 min-w-0">
+                <CountryFlag
+                  :country="opponentTeam(match).country"
+                  size="sm"
+                />
+                <span class="font-bold text-sm text-zinc-900 dark:text-white truncate">
+                  vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
+                </span>
+              </div>
               <UBadge
                 :color="matchResultColor(match)"
                 variant="soft"
-                size="md"
+                size="sm"
                 class="font-mono font-bold"
               >
                 {{ matchResultLabel(match) }}
               </UBadge>
-              <UIcon
-                name="i-lucide-chevron-right"
-                class="size-5 text-zinc-500"
-              />
             </div>
           </div>
-        </NuxtLink>
+        </div>
       </div>
 
-      <!-- Player's group standing table -->
+      <!-- LIVE GROUP STANDINGS (Dynamically updates with animated score tally) -->
       <div
-        v-if="tournament.groups.length"
+        v-if="playerGroup"
         class="bezel-card overflow-hidden"
       >
         <div class="bezel-inner p-5 space-y-4">
           <div class="pb-2 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between">
             <p class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
-              Group {{ tournament.groups.find(g => g.teams.some(t => t.id === tournament.playerTeam?.id))?.id }} Standings
+              Live Group {{ playerGroup.id }} Table
             </p>
-            <span class="text-[10px] font-mono text-zinc-500 font-semibold">Top 2 Qualify for Knockouts</span>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold">
+              Live Point Calculations
+            </span>
           </div>
-          <div
-            v-for="group in tournament.groups.filter(g => g.teams.some(t => t.id === tournament.playerTeam?.id))"
-            :key="group.id"
-            class="divide-y divide-zinc-200 dark:divide-white/5"
-          >
+
+          <div class="divide-y divide-zinc-200 dark:divide-white/5">
             <div
-              v-for="(standing, rank) in group.standings"
+              v-for="(standing, rank) in playerGroup.standings"
               :key="standing.team.id"
-              class="flex items-center gap-3.5 py-3 text-sm transition-all"
+              class="flex items-center gap-3.5 py-2.5 text-sm transition-all"
               :class="standing.team.isPlayerTeam ? 'bg-emerald-500/15 dark:bg-emerald-950/50 px-3 rounded-xl border border-emerald-500/40' : ''"
             >
               <span
@@ -656,98 +306,452 @@ const draftedPlayersList = computed(() => {
       </div>
     </div>
 
-    <!-- ==================== KNOCKOUT ROUNDS SECTION ==================== -->
+    <!-- ==================================================================== -->
+    <!-- MODE 2: FINAL TOURNAMENT HUB, STATS DASHBOARD & SQUAD LINEUP         -->
+    <!-- (Appears upon tournament completion or when user skips)             -->
+    <!-- ==================================================================== -->
     <div
-      v-if="tournament.simulationStep >= 4 && tournament.playerMatches.some(m => m.phase !== 'group')"
-      class="space-y-6"
+      v-else
+      class="space-y-8 animate-fade-in"
     >
-      <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Knockout Stage
-      </h2>
-
-      <div class="space-y-3">
-        <NuxtLink
-          v-for="match in tournament.playerMatches.filter(m => m.phase !== 'group')"
-          :key="match.id"
-          :to="`/match/${match.id}`"
-          class="bezel-card block cursor-pointer transition-transform hover:-translate-y-0.5"
+      <!-- CHAMPION / ELIMINATED BANNER -->
+      <div class="bezel-card">
+        <div
+          class="bezel-inner p-8 text-center space-y-4"
+          :class="tournament.isChampion ? 'bg-gradient-to-b from-amber-500/20 via-transparent to-transparent border border-gold-500/40' : ''"
         >
-          <div class="bezel-inner p-4 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5 flex-1 min-w-0">
-              <CountryFlag
-                :country="opponentTeam(match).country"
-                size="md"
-              />
-              <div class="min-w-0">
-                <p class="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-0.5">{{ match.phase }}</p>
-                <p class="text-base font-bold text-zinc-900 dark:text-white truncate">
-                  vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
-                </p>
+          <div v-if="tournament.isChampion">
+            <UIcon
+              name="i-lucide-trophy"
+              class="size-16 mx-auto mb-2 text-gold-400 animate-bounce"
+            />
+            <h2 class="gold-text text-3xl sm:text-5xl font-black">
+              {{ $t('results.champion_title') }}
+            </h2>
+            <p class="text-zinc-300 max-w-md mx-auto text-sm">
+              {{ $t('results.champion_subtitle') }}
+            </p>
+          </div>
+          <div v-else>
+            <UIcon
+              name="i-lucide-flag-off"
+              class="size-12 mx-auto mb-2 text-zinc-500"
+            />
+            <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
+              {{ $t('results.eliminated_title') }}
+            </h2>
+            <p class="text-zinc-400 text-sm">
+              {{ $t('results.eliminated_subtitle', { phase: tournament.playerMatches.at(-1)?.phase }) }}
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <UButton
+              to="/draft/formation"
+              color="primary"
+              size="md"
+              :label="$t('results.play_again')"
+              leading-icon="i-lucide-refresh-cw"
+              class="rounded-full px-6 font-bold cursor-pointer"
+              @click="tournament.reset(); useDraftStore().resetDraft()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TOURNAMENT RUN STATS DASHBOARD ==================== -->
+      <div
+        v-if="tournament.runStats"
+        class="space-y-6"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <UIcon
+              name="i-lucide-bar-chart-2"
+              class="size-5 text-emerald-400"
+            />
+            <span>Tournament Run Stats</span>
+          </h2>
+          <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
+            {{ tournament.runStats.totalMatches }} Matches Played
+          </span>
+        </div>
+
+        <!-- 4 Highlight Hero Stat Cards (Top Scorer, Top Assister, MVP, G+A/90) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Top Scorer -->
+          <div class="bezel-card">
+            <div class="bezel-inner p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Scorer</span>
+                <UIcon
+                  name="i-lucide-award"
+                  class="size-4 text-gold-400"
+                />
               </div>
-            </div>
-            <div class="flex items-center gap-2.5 shrink-0">
-              <UBadge
-                :color="matchResultColor(match)"
-                variant="soft"
-                size="md"
-                class="font-mono font-bold"
-              >
-                {{ matchResultLabel(match) }}
-              </UBadge>
-              <UIcon
-                name="i-lucide-chevron-right"
-                class="size-5 text-zinc-500"
-              />
+              <template v-if="tournament.runStats.topScorer && tournament.runStats.topScorer.goals > 0">
+                <div class="flex items-center gap-2">
+                  <CountryFlag
+                    :country="tournament.runStats.topScorer.player.country"
+                    size="sm"
+                  />
+                  <h4 class="font-bold text-sm text-white truncate">
+                    {{ tournament.runStats.topScorer.player.name }}
+                  </h4>
+                </div>
+                <p class="text-xl font-black font-mono text-gold-400">
+                  {{ tournament.runStats.topScorer.goals }} <span class="text-xs text-zinc-400 font-normal">Goals</span>
+                </p>
+              </template>
+              <template v-else>
+                <p class="text-xs text-zinc-500 italic py-2">
+                  No goals scored
+                </p>
+              </template>
             </div>
           </div>
-        </NuxtLink>
+
+          <!-- Top Assistgiver -->
+          <div class="bezel-card">
+            <div class="bezel-inner p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Top Playmaker</span>
+                <UIcon
+                  name="i-lucide-crosshair"
+                  class="size-4 text-emerald-400"
+                />
+              </div>
+              <template v-if="tournament.runStats.topAssister && tournament.runStats.topAssister.assists > 0">
+                <div class="flex items-center gap-2">
+                  <CountryFlag
+                    :country="tournament.runStats.topAssister.player.country"
+                    size="sm"
+                  />
+                  <h4 class="font-bold text-sm text-white truncate">
+                    {{ tournament.runStats.topAssister.player.name }}
+                  </h4>
+                </div>
+                <p class="text-xl font-black font-mono text-emerald-400">
+                  {{ tournament.runStats.topAssister.assists }} <span class="text-xs text-zinc-400 font-normal">Assists</span>
+                </p>
+              </template>
+              <template v-else>
+                <p class="text-xs text-zinc-500 italic py-2">
+                  No assists recorded
+                </p>
+              </template>
+            </div>
+          </div>
+
+          <!-- Most G+A Overall (MVP) -->
+          <div class="bezel-card">
+            <div class="bezel-inner p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Most G+A (MVP)</span>
+                <UIcon
+                  name="i-lucide-sparkles"
+                  class="size-4 text-amber-400"
+                />
+              </div>
+              <template v-if="tournament.runStats.mvp">
+                <div class="flex items-center gap-2">
+                  <CountryFlag
+                    :country="tournament.runStats.mvp.player.country"
+                    size="sm"
+                  />
+                  <h4 class="font-bold text-sm text-white truncate">
+                    {{ tournament.runStats.mvp.player.name }}
+                  </h4>
+                </div>
+                <p class="text-xl font-black font-mono text-amber-400">
+                  {{ tournament.runStats.mvp.ga }} <span class="text-xs text-zinc-400 font-normal">G+A ({{ tournament.runStats.mvp.goals }}G, {{ tournament.runStats.mvp.assists }}A)</span>
+                </p>
+              </template>
+              <template v-else>
+                <p class="text-xs text-zinc-500 italic py-2">
+                  —
+                </p>
+              </template>
+            </div>
+          </div>
+
+          <!-- Best G+A / 90 Min -->
+          <div class="bezel-card">
+            <div class="bezel-inner p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-400">Efficiency</span>
+                <UIcon
+                  name="i-lucide-gauge"
+                  class="size-4 text-sky-400"
+                />
+              </div>
+              <template v-if="tournament.runStats.bestGAPer90">
+                <div class="flex items-center gap-2">
+                  <CountryFlag
+                    :country="tournament.runStats.bestGAPer90.player.country"
+                    size="sm"
+                  />
+                  <h4 class="font-bold text-sm text-white truncate">
+                    {{ tournament.runStats.bestGAPer90.player.name }}
+                  </h4>
+                </div>
+                <p class="text-xl font-black font-mono text-sky-400">
+                  {{ tournament.runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-400 font-normal">G+A / 90'</span>
+                </p>
+              </template>
+              <template v-else>
+                <p class="text-xs text-zinc-500 italic py-2">
+                  —
+                </p>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team Overview Ticker Bar (Clean Sheets, Goals, Cards) -->
+        <div class="bezel-card">
+          <div class="bezel-inner p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-white/5">
+            <div class="space-y-1">
+              <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+                Clean Sheets
+              </p>
+              <p class="text-lg font-black font-mono text-emerald-400">
+                {{ tournament.runStats.cleanSheets }} 🧤
+              </p>
+            </div>
+            <div class="space-y-1 pt-2 sm:pt-0">
+              <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+                Goals Scored / Conceded
+              </p>
+              <p class="text-lg font-black font-mono text-white">
+                {{ tournament.runStats.totalGoalsFor }} : {{ tournament.runStats.totalGoalsAgainst }}
+              </p>
+            </div>
+            <div class="space-y-1 pt-2 sm:pt-0">
+              <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+                Yellow Cards
+              </p>
+              <p class="text-lg font-black font-mono text-amber-400">
+                {{ tournament.runStats.totalYellowCards }} 🟨
+              </p>
+            </div>
+            <div class="space-y-1 pt-2 sm:pt-0">
+              <p class="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-400">
+                Red Cards
+              </p>
+              <p class="text-lg font-black font-mono text-rose-400">
+                {{ tournament.runStats.totalRedCards }} 🟥
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Squad Performance Table -->
+        <div class="bezel-card overflow-hidden">
+          <div class="bezel-inner p-5 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/5">
+              <h3 class="text-sm font-bold font-mono uppercase tracking-widest text-zinc-300">
+                Complete Squad Performance Table
+              </h3>
+              <span class="text-xs text-zinc-500 font-mono">11 Players</span>
+            </div>
+
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="text-zinc-500 uppercase border-b border-white/5 pb-2">
+                    <th class="py-2.5 px-2">
+                      Player
+                    </th>
+                    <th class="py-2.5 px-2">
+                      POS
+                    </th>
+                    <th class="py-2.5 px-2">
+                      OVR
+                    </th>
+                    <th class="py-2.5 px-2 text-center">
+                      P
+                    </th>
+                    <th class="py-2.5 px-2 text-center">
+                      MIN
+                    </th>
+                    <th class="py-2.5 px-2 text-center text-emerald-400">
+                      G
+                    </th>
+                    <th class="py-2.5 px-2 text-center text-sky-400">
+                      A
+                    </th>
+                    <th class="py-2.5 px-2 text-center font-bold text-amber-400">
+                      G+A
+                    </th>
+                    <th class="py-2.5 px-2 text-center text-amber-300">
+                      🟨
+                    </th>
+                    <th class="py-2.5 px-2 text-center text-rose-400">
+                      🟥
+                    </th>
+                    <th class="py-2.5 px-2 text-right text-emerald-400">
+                      RATING
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-200 dark:divide-white/5">
+                  <tr
+                    v-for="p in tournament.runStats.playerStats"
+                    :key="p.player.id"
+                    class="hover:bg-white/5 transition-colors"
+                  >
+                    <td class="py-2.5 px-2 font-bold text-white flex items-center gap-2">
+                      <CountryFlag
+                        :country="p.player.country"
+                        size="sm"
+                      />
+                      <span class="truncate max-w-[8rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-zinc-400 font-semibold">
+                      {{ p.player.primaryPosition }}
+                    </td>
+                    <td
+                      class="py-2.5 px-2 font-black"
+                      :class="p.player.stats.overall >= 90 ? 'text-gold-400' : 'text-zinc-300'"
+                    >
+                      {{ p.player.stats.overall }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center text-zinc-300">
+                      {{ p.matches }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center text-zinc-400">
+                      {{ p.minutes }}'
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-black text-emerald-400">
+                      {{ p.goals }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-bold text-sky-400">
+                      {{ p.assists }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-black text-amber-400">
+                      {{ p.ga }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center text-zinc-400">
+                      {{ p.yellowCards }}
+                    </td>
+                    <td class="py-2.5 px-2 text-center text-zinc-400">
+                      {{ p.redCards }}
+                    </td>
+                    <td class="py-2.5 px-2 text-right font-black text-emerald-400">
+                      {{ p.rating }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- ==================== CHAMPION / ELIMINATED BANNER ==================== -->
-    <div
-      v-if="tournament.simulationStep >= 6"
-      class="bezel-card"
-    >
-      <div
-        class="bezel-inner p-10 text-center space-y-6"
-        :class="tournament.isChampion ? 'bg-gradient-to-b from-amber-500/15 via-transparent to-transparent border border-gold-500/40' : ''"
-      >
-        <div v-if="tournament.isChampion">
-          <UIcon
-            name="i-lucide-trophy"
-            class="size-16 mx-auto mb-4 text-gold-400 animate-bounce"
-          />
-          <h2 class="gold-text text-3xl sm:text-5xl font-black mb-2">
-            {{ $t('results.champion_title') }}
-          </h2>
-          <p class="text-zinc-300 max-w-md mx-auto">
-            {{ $t('results.champion_subtitle') }}
-          </p>
-        </div>
-        <div v-else>
-          <UIcon
-            name="i-lucide-flag-off"
-            class="size-14 mx-auto mb-4 text-zinc-500"
-          />
-          <h2 class="text-3xl font-black text-zinc-900 dark:text-white mb-2">
-            {{ $t('results.eliminated_title') }}
-          </h2>
-          <p class="text-zinc-400">
-            {{ $t('results.eliminated_subtitle', { phase: tournament.playerMatches.at(-1)?.phase }) }}
-          </p>
-        </div>
+      <!-- ==================== SQUAD SHOWCASE (Pitch vs Cards) ==================== -->
+      <div class="bezel-card">
+        <div class="bezel-inner p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
+            <div>
+              <p class="text-xs text-zinc-400 uppercase font-mono tracking-widest font-bold">
+                Drafted XI Lineup
+              </p>
+              <h3 class="text-base font-bold text-zinc-900 dark:text-white">
+                {{ draft.formation?.id }} · {{ draft.teamName }}
+              </h3>
+            </div>
 
-        <div class="pt-4">
-          <UButton
-            to="/draft/formation"
-            color="primary"
-            size="lg"
-            :label="$t('results.play_again')"
-            leading-icon="i-lucide-refresh-cw"
-            class="rounded-full px-8 font-bold cursor-pointer"
-            @click="tournament.reset(); useDraftStore().resetDraft()"
-          />
+            <!-- View Toggle -->
+            <div class="flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                :class="squadViewMode === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+                @click="squadViewMode = 'pitch'"
+              >
+                🏟️ Tactical Pitch
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                :class="squadViewMode === 'cards' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+                @click="squadViewMode = 'cards'"
+              >
+                🎴 Player Cards
+              </button>
+            </div>
+          </div>
+
+          <!-- Pitch View with proper padding and non-overlapping slots -->
+          <div
+            v-if="squadViewMode === 'pitch'"
+            class="w-full max-w-xl mx-auto h-[460px] py-2"
+          >
+            <FormationPitch
+              :slots="draft.slots"
+              :interactive="false"
+              class="h-full"
+            />
+          </div>
+
+          <!-- Cards View -->
+          <div
+            v-else
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[460px] overflow-y-auto custom-scroll pr-1"
+          >
+            <PlayerFoilCard
+              v-for="p in draftedPlayersList"
+              :key="p.id"
+              :player="p"
+              :is-compact="true"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== COMPLETE TOURNAMENT MATCHES LIST ==================== -->
+      <div class="space-y-4">
+        <h2 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+          Tournament Journey Recap
+        </h2>
+
+        <div class="space-y-3">
+          <NuxtLink
+            v-for="match in tournament.playerMatches"
+            :key="match.id"
+            :to="`/match/${match.id}`"
+            class="bezel-card block cursor-pointer transition-transform hover:-translate-y-0.5"
+          >
+            <div class="bezel-inner p-4 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3.5 flex-1 min-w-0">
+                <CountryFlag
+                  :country="opponentTeam(match).country"
+                  size="md"
+                />
+                <div class="min-w-0">
+                  <p class="text-[10px] text-zinc-500 uppercase font-mono tracking-widest mb-0.5">{{ match.phase.toUpperCase() }}</p>
+                  <p class="text-base font-bold text-zinc-900 dark:text-white truncate">
+                    vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5 shrink-0">
+                <UBadge
+                  :color="matchResultColor(match)"
+                  variant="soft"
+                  size="md"
+                  class="font-mono font-bold"
+                >
+                  {{ matchResultLabel(match) }}
+                </UBadge>
+                <UIcon
+                  name="i-lucide-chevron-right"
+                  class="size-5 text-zinc-500"
+                />
+              </div>
+            </div>
+          </NuxtLink>
         </div>
       </div>
     </div>
