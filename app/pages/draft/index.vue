@@ -63,7 +63,6 @@ function onPlayerClick(player: Player) {
   if (mobileTab.value === 'squad') {
     const compatible = draft.getCompatibleSlots(player)
     if (compatible.length === 1) {
-      // Auto-assign directly if only 1 single open slot exists!
       confirmDraft(player, compatible[0]!)
     }
   }
@@ -71,10 +70,8 @@ function onPlayerClick(player: Player) {
 
 // When user clicks a slot on the Tactical Pitch
 function onPitchSlotClick(slot: DraftSlot) {
-  // If slot already has a player, do nothing
   if (slot.player) return
 
-  // If a player was already selected from the squad, check if compatible and assign!
   if (selectedPlayer.value) {
     const isCompatible = selectedPlayer.value.positions.includes(slot.position)
     if (isCompatible) {
@@ -83,15 +80,13 @@ function onPitchSlotClick(slot: DraftSlot) {
     }
   }
 
-  // Otherwise, select this slot on the pitch to filter/highlight compatible squad players!
   selectedSlotId.value = selectedSlotId.value === slot.id ? null : slot.id
   selectedPlayer.value = null
   if (mobileTab.value === 'pitch') {
-    mobileTab.value = 'squad' // switch to squad list on mobile so user can pick
+    mobileTab.value = 'squad'
   }
 }
 
-// Squad scroll container ref for scroll-to-top on new team (Issue #2)
 const squadScrollRef = ref<HTMLElement | null>(null)
 
 function confirmDraft(player: Player, slot: DraftSlot) {
@@ -104,7 +99,6 @@ function confirmDraft(player: Player, slot: DraftSlot) {
     return
   }
   roulette.spin()
-  // Scroll squad list back to top so user sees the new team from the start (Issue #2)
   nextTick(() => {
     if (squadScrollRef.value) {
       squadScrollRef.value.scrollTop = 0
@@ -117,7 +111,10 @@ function cancelSelection() {
   selectedSlotId.value = null
 }
 
-// Check if a player in the squad is eligible for the currently selected slot on pitch
+const currentCountryDisplayName = computed(() => {
+  return roulette.currentSquad[0]?.countryName ?? roulette.currentCountry?.toUpperCase() ?? ''
+})
+
 function isPlayerEligibleForSelectedSlot(player: Player): boolean {
   if (!selectedSlotId.value) return draft.canDraftToAnySlot(player)
   const targetSlot = draft.slots.find(s => s.id === selectedSlotId.value)
@@ -125,18 +122,17 @@ function isPlayerEligibleForSelectedSlot(player: Player): boolean {
   return player.positions.includes(targetSlot.position) && !targetSlot.player
 }
 
-// Position badge color
-function positionColor(pos: string): 'info' | 'success' | 'warning' | 'error' | 'neutral' {
-  if (pos === 'GK') return 'info'
-  if (['CB', 'LB', 'RB'].includes(pos)) return 'success'
-  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'warning'
-  return 'error'
+function positionColor(pos: string): string {
+  if (pos === 'GK') return 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+  if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+  return 'bg-rose-500/15 text-rose-400 border-rose-500/30'
 }
 </script>
 
 <template>
   <div class="relative min-h-[calc(100dvh-5rem)] pb-12">
-    <!-- Full-screen flag background overlay -->
+    <!-- Full-screen nation aura overlay -->
     <div
       v-if="roulette.currentCountry"
       class="flag-bg-overlay opacity-30 dark:opacity-20"
@@ -148,53 +144,59 @@ function positionColor(pos: string): 'info' | 'success' | 'warning' | 'error' | 
       />
     </div>
 
-    <div class="relative z-10 max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <!-- Top header bar: Progress + Team Stats -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
-        <div class="space-y-1.5 flex-1 max-w-md">
-          <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-            <span class="font-semibold">{{ $t('draft.progress', { filled: draft.filledSlots.length }) }}</span>
-            <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ draft.teamOVR > 0 ? `Squad OVR ${draft.teamOVR}` : '' }}</span>
-          </div>
-          <UProgress
-            :value="draft.filledSlots.length"
-            :max="11"
-            color="primary"
-            class="h-2"
-          />
-        </div>
-
-        <!-- Formation badge & Mobile Tab Switcher -->
-        <div class="flex items-center justify-between sm:justify-end gap-3">
-          <div class="flex items-center gap-2">
-            <UBadge
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <!-- Top header bar: Progress HUD -->
+      <div class="bezel-card">
+        <div class="bezel-inner px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1.5 flex-1 max-w-md">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-zinc-700 dark:text-zinc-300 uppercase font-mono tracking-wider">
+                {{ $t('draft.progress', { filled: draft.filledSlots.length }) }}
+              </span>
+              <span class="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                {{ draft.teamOVR > 0 ? `Team Rating: ${draft.teamOVR} OVR` : '' }}
+              </span>
+            </div>
+            <UProgress
+              :value="draft.filledSlots.length"
+              :max="11"
               color="primary"
-              variant="subtle"
-              size="sm"
-              class="font-mono font-bold"
-            >
-              {{ draft.formation?.label }}
-            </UBadge>
+              class="h-2.5 rounded-full"
+            />
           </div>
 
-          <!-- Mobile Tab Toggle (< lg) -->
-          <div class="lg:hidden flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'squad' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
-              @click="mobileTab = 'squad'"
-            >
-              🎲 Roulette ({{ roulette.squadWithEligibility.filter(p => p.canDraft).length }})
-            </button>
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
-              @click="mobileTab = 'pitch'"
-            >
-              🏟️ Pitch ({{ draft.filledSlots.length }}/11)
-            </button>
+          <!-- Formation badge & Mobile Tab Switcher -->
+          <div class="flex items-center justify-between sm:justify-end gap-3">
+            <div class="flex items-center gap-2">
+              <UBadge
+                color="primary"
+                variant="subtle"
+                size="md"
+                class="font-mono font-black text-xs"
+              >
+                {{ draft.formation?.label }}
+              </UBadge>
+            </div>
+
+            <!-- Mobile Tab Toggle (< lg) -->
+            <div class="lg:hidden flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
+                :class="mobileTab === 'squad' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+                @click="mobileTab = 'squad'"
+              >
+                🎲 Squad ({{ roulette.squadWithEligibility.filter(p => p.canDraft).length }})
+              </button>
+              <button
+                type="button"
+                class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
+                :class="mobileTab === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'"
+                @click="mobileTab = 'pitch'"
+              >
+                🏟️ Pitch ({{ draft.filledSlots.length }}/11)
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -202,7 +204,7 @@ function positionColor(pos: string): 'info' | 'success' | 'warning' | 'error' | 
       <!-- Action Guidance Banner (shows current selection state) -->
       <div
         v-if="selectedPlayer || selectedSlotId"
-        class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border bg-emerald-500/10 dark:bg-emerald-950/60 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 text-xs sm:text-sm animate-pulse"
+        class="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border bg-emerald-500/15 dark:bg-emerald-950/70 border-emerald-500/50 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm shadow-md animate-pulse"
       >
         <div class="flex items-center gap-2">
           <UIcon
@@ -226,183 +228,188 @@ function positionColor(pos: string): 'info' | 'success' | 'warning' | 'error' | 
         />
       </div>
 
-      <!-- Main drafting area: 2-column on desktop; items-stretch so both columns share height (Issue #1) -->
+      <!-- Main drafting area: 2-column on desktop; items-stretch so both columns share height -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <!-- Left column: Roulette & Squad Selection -->
         <div
-          class="space-y-6 lg:col-span-7"
-          :class="{ 'hidden lg:block': mobileTab === 'pitch' }"
+          class="space-y-6 lg:col-span-7 flex flex-col"
+          :class="{ 'hidden lg:flex': mobileTab === 'pitch' }"
         >
           <!-- Current team card -->
-          <div class="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-5 shadow-lg space-y-4">
-            <!-- Team header -->
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-[0.12em]">
-                  Euro {{ roulette.currentYear }}
-                </p>
-                <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                  <CountryFlag
-                    v-if="roulette.currentCountry"
-                    :country="roulette.currentCountry"
-                    size="lg"
-                  />
-                  <span>{{ roulette.currentCountry?.toUpperCase() }}</span>
-                </h2>
-              </div>
-
-              <!-- Reroll controls -->
-              <div class="flex flex-col gap-1.5 items-end">
-                <div class="flex gap-1.5">
-                  <UTooltip
-                    :text="$t('draft.reroll_year_hint', { nation: roulette.currentCountry })"
-                    :delay-duration="300"
-                  >
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="outline"
-                      :label="$t('draft.reroll_year')"
-                      leading-icon="i-lucide-calendar"
-                      :disabled="draft.rerollsRemaining <= 0"
-                      @click="roulette.rerollYear()"
+          <div class="bezel-card flex-1 flex flex-col">
+            <div class="bezel-inner p-5 space-y-4 flex-1 flex flex-col">
+              <!-- Team header -->
+              <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
+                <div>
+                  <p class="text-zinc-500 dark:text-zinc-400 text-xs font-mono font-bold uppercase tracking-[0.15em]">
+                    Euro {{ roulette.currentYear }} Tournament Squad
+                  </p>
+                  <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
+                    <CountryFlag
+                      v-if="roulette.currentCountry"
+                      :country="roulette.currentCountry"
+                      size="lg"
                     />
-                  </UTooltip>
-                  <UTooltip
-                    :text="$t('draft.reroll_nation_hint', { year: roulette.currentYear })"
-                    :delay-duration="300"
-                  >
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="outline"
-                      :label="$t('draft.reroll_nation')"
-                      leading-icon="i-lucide-globe"
-                      :disabled="draft.rerollsRemaining <= 0"
-                      @click="roulette.rerollNation()"
-                    />
-                  </UTooltip>
+                    <span>{{ currentCountryDisplayName }}</span>
+                  </h2>
                 </div>
-                <p class="text-[10px] text-zinc-500 font-medium">
-                  {{ $t('draft.rerolls_remaining', { count: draft.rerollsRemaining }) }}
-                </p>
-              </div>
-            </div>
 
-            <!-- Squad list (Position-sorted: Goalkeepers -> Defenders -> Midfielders -> Forwards) -->
-            <div
-              ref="squadScrollRef"
-              class="space-y-1 max-h-[55vh] lg:max-h-[62vh] overflow-y-auto custom-scroll pr-1"
-            >
-              <template
-                v-for="(entry, idx) in roulette.squadWithEligibility"
-                :key="entry.player.id"
+                <!-- Reroll controls -->
+                <div class="flex flex-col gap-1.5 items-end">
+                  <div class="flex gap-1.5">
+                    <UTooltip
+                      :text="$t('draft.reroll_year_hint', { nation: currentCountryDisplayName })"
+                      :delay-duration="300"
+                    >
+                      <UButton
+                        size="xs"
+                        color="neutral"
+                        variant="outline"
+                        :label="$t('draft.reroll_year')"
+                        leading-icon="i-lucide-calendar"
+                        class="rounded-lg font-semibold"
+                        :disabled="draft.rerollsRemaining <= 0"
+                        @click="roulette.rerollYear()"
+                      />
+                    </UTooltip>
+                    <UTooltip
+                      :text="$t('draft.reroll_nation_hint', { year: roulette.currentYear })"
+                      :delay-duration="300"
+                    >
+                      <UButton
+                        size="xs"
+                        color="neutral"
+                        variant="outline"
+                        :label="$t('draft.reroll_nation')"
+                        leading-icon="i-lucide-globe"
+                        class="rounded-lg font-semibold"
+                        :disabled="draft.rerollsRemaining <= 0"
+                        @click="roulette.rerollNation()"
+                      />
+                    </UTooltip>
+                  </div>
+                  <p class="text-[10px] text-zinc-500 font-mono font-semibold">
+                    {{ $t('draft.rerolls_remaining', { count: draft.rerollsRemaining }) }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Squad list (Position-sorted: Goalkeepers -> Defenders -> Midfielders -> Forwards) -->
+              <div
+                ref="squadScrollRef"
+                class="space-y-1.5 max-h-[55vh] lg:max-h-[62vh] overflow-y-auto custom-scroll pr-1 flex-1"
               >
-                <!-- Position Category Section Header -->
-                <div
-                  v-if="idx === 0 || roulette.squadWithEligibility[idx - 1]?.player.basePosition !== entry.player.basePosition"
-                  class="pt-3 pb-1 px-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none"
+                <template
+                  v-for="(entry, idx) in roulette.squadWithEligibility"
+                  :key="entry.player.id"
                 >
-                  <span>{{ entry.player.basePosition }}s</span>
-                  <div class="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                </div>
-
-                <button
-                  type="button"
-                  class="w-full flex items-center gap-3 rounded-xl px-3.5 py-2 text-left transition-all duration-150 border"
-                  :class="[
-                    selectedPlayer?.id === entry.player.id
-                      ? 'bg-emerald-500/20 border-emerald-400 ring-2 ring-emerald-400 shadow-md'
-                      : isPlayerEligibleForSelectedSlot(entry.player)
-                        ? 'bg-zinc-50 hover:bg-emerald-50/80 dark:bg-zinc-800/60 dark:hover:bg-emerald-950/40 border-zinc-200/80 dark:border-white/5 hover:border-emerald-400/50 cursor-pointer shadow-sm active:scale-[0.99]'
-                        : 'bg-zinc-100/50 dark:bg-zinc-900/30 border-transparent opacity-35 cursor-not-allowed'
-                  ]"
-                  :disabled="!isPlayerEligibleForSelectedSlot(entry.player)"
-                  @mouseenter="hoveredPlayer = entry.player"
-                  @mouseleave="hoveredPlayer = null"
-                  @click="onPlayerClick(entry.player)"
-                >
-                  <!-- Shirt number -->
-                  <span class="w-6 text-center font-mono text-xs text-zinc-400 font-bold shrink-0">
-                    {{ entry.player.shirtNumber ?? '–' }}
-                  </span>
-
-                  <!-- Position badge -->
-                  <UBadge
-                    :color="positionColor(entry.player.primaryPosition)"
-                    variant="soft"
-                    size="xs"
-                    class="font-mono text-[10px] font-bold shrink-0 w-9 justify-center"
+                  <!-- Position Category Section Header -->
+                  <div
+                    v-if="idx === 0 || roulette.squadWithEligibility[idx - 1]?.player.basePosition !== entry.player.basePosition"
+                    class="pt-3 pb-1 px-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 select-none font-mono"
                   >
-                    {{ entry.player.primaryPosition }}
-                  </UBadge>
+                    <span>{{ entry.player.basePosition }}s</span>
+                    <div class="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                  </div>
 
-                  <!-- Name -->
-                  <span class="flex-1 text-sm font-semibold text-zinc-900 dark:text-white truncate">
-                    {{ entry.player.name }}
-                  </span>
-
-                  <!-- OVR rating badge -->
-                  <span
-                    class="font-mono text-xs font-black px-2 py-0.5 rounded-md border shrink-0"
-                    :class="entry.player.stats.overall >= 85
-                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
-                      : 'bg-zinc-200/60 dark:bg-zinc-800 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300'"
+                  <button
+                    type="button"
+                    class="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-left transition-all duration-150 border cursor-pointer select-none"
+                    :class="[
+                      selectedPlayer?.id === entry.player.id
+                        ? 'bg-emerald-500/25 border-emerald-400 ring-2 ring-emerald-400 shadow-md scale-[1.01]'
+                        : isPlayerEligibleForSelectedSlot(entry.player)
+                          ? 'bg-zinc-50 hover:bg-emerald-50/80 dark:bg-zinc-800/70 dark:hover:bg-emerald-950/40 border-zinc-200/80 dark:border-white/5 hover:border-emerald-400/50 shadow-sm active:scale-[0.99]'
+                          : 'bg-zinc-100/50 dark:bg-zinc-900/30 border-transparent opacity-35 cursor-not-allowed'
+                    ]"
+                    :disabled="!isPlayerEligibleForSelectedSlot(entry.player)"
+                    @mouseenter="hoveredPlayer = entry.player"
+                    @mouseleave="hoveredPlayer = null"
+                    @click="onPlayerClick(entry.player)"
                   >
-                    {{ entry.player.stats.overall }}
-                  </span>
+                    <!-- Shirt number -->
+                    <span class="w-6 text-center font-mono text-xs text-zinc-400 font-bold shrink-0">
+                      {{ entry.player.shirtNumber ?? '–' }}
+                    </span>
 
-                  <!-- Action icon -->
-                  <UIcon
-                    v-if="selectedPlayer?.id === entry.player.id"
-                    name="i-lucide-check-circle"
-                    class="size-4 text-emerald-400 shrink-0"
-                  />
-                  <UIcon
-                    v-else-if="isPlayerEligibleForSelectedSlot(entry.player)"
-                    name="i-lucide-circle-plus"
-                    class="size-4 text-emerald-500 shrink-0"
-                  />
-                  <UIcon
-                    v-else
-                    name="i-lucide-lock"
-                    class="size-3.5 text-zinc-400 dark:text-zinc-600 shrink-0"
-                  />
-                </button>
-              </template>
+                    <!-- Position badge -->
+                    <span
+                      class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 w-9 text-center"
+                      :class="positionColor(entry.player.primaryPosition)"
+                    >
+                      {{ entry.player.primaryPosition }}
+                    </span>
+
+                    <!-- Name -->
+                    <span class="flex-1 text-sm font-bold text-zinc-900 dark:text-white truncate">
+                      {{ entry.player.name }}
+                    </span>
+
+                    <!-- OVR rating badge -->
+                    <span
+                      class="font-mono text-xs font-black px-2 py-0.5 rounded-md border shrink-0"
+                      :class="entry.player.stats.overall >= 90
+                        ? 'bg-gold-500/15 border-gold-500/40 text-gold-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                        : entry.player.stats.overall >= 85
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
+                          : 'bg-zinc-200/60 dark:bg-zinc-800 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300'"
+                    >
+                      {{ entry.player.stats.overall }}
+                    </span>
+
+                    <!-- Action icon -->
+                    <UIcon
+                      v-if="selectedPlayer?.id === entry.player.id"
+                      name="i-lucide-check-circle"
+                      class="size-4 text-emerald-400 shrink-0"
+                    />
+                    <UIcon
+                      v-else-if="isPlayerEligibleForSelectedSlot(entry.player)"
+                      name="i-lucide-circle-plus"
+                      class="size-4 text-emerald-500 shrink-0"
+                    />
+                    <UIcon
+                      v-else
+                      name="i-lucide-lock"
+                      class="size-3.5 text-zinc-400 dark:text-zinc-600 shrink-0"
+                    />
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right column: Tactical Pitch Formation (Issue #1: height matches squad panel) -->
+        <!-- Right column: Tactical Pitch Formation (height matches squad panel) -->
         <div
           class="flex flex-col lg:col-span-5"
-          :class="{ 'hidden lg:block': mobileTab === 'squad' }"
+          :class="{ 'hidden lg:flex': mobileTab === 'squad' }"
         >
-          <!-- Tactical Pitch card: fills full column height -->
-          <div class="flex flex-col flex-1 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-4 shadow-lg space-y-3">
-            <div class="flex items-center justify-between px-1 shrink-0">
-              <div>
-                <h3 class="font-bold text-sm text-zinc-900 dark:text-white flex items-center gap-1.5">
-                  <span>Tactical Pitch</span>
-                  <span class="text-xs font-normal text-zinc-500">({{ draft.formation?.label }})</span>
-                </h3>
+          <div class="bezel-card flex-1 flex flex-col">
+            <div class="bezel-inner p-5 space-y-4 flex-1 flex flex-col">
+              <div class="flex items-center justify-between px-1 shrink-0">
+                <div>
+                  <h3 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
+                    <span>Tactical Pitch</span>
+                    <span class="text-xs font-mono font-normal text-zinc-500">({{ draft.formation?.label }})</span>
+                  </h3>
+                </div>
+                <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  {{ draft.filledSlots.length }}/11 Selected
+                </span>
               </div>
-              <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                {{ draft.filledSlots.length }}/11 Selected
-              </span>
-            </div>
 
-            <!-- Pitch fills remaining card height -->
-            <div class="flex-1 min-h-0">
-              <FormationPitch
-                :slots="draft.slots"
-                :active-slot-id="selectedSlotId"
-                :highlighted-slot-ids="highlightedSlotIds"
-                :interactive="true"
-                class="h-full"
-                @select-slot="onPitchSlotClick"
-              />
+              <!-- Pitch fills remaining card height -->
+              <div class="flex-1 min-h-[420px]">
+                <FormationPitch
+                  :slots="draft.slots"
+                  :active-slot-id="selectedSlotId"
+                  :highlighted-slot-ids="highlightedSlotIds"
+                  :interactive="true"
+                  class="h-full"
+                  @select-slot="onPitchSlotClick"
+                />
+              </div>
             </div>
           </div>
         </div>

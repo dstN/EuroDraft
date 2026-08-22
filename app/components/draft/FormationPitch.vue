@@ -97,12 +97,21 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
     class="relative w-full h-full pitch-bg rounded-2xl border-2 border-emerald-500/30 overflow-hidden shadow-2xl p-4 select-none"
     style="min-height: 420px"
   >
-    <!-- Pitch markings -->
-    <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-px bg-white/15" />
-    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-24 sm:size-28 rounded-full border border-white/15" />
+    <!-- Stadium Floodlight Atmosphere Overlay -->
+    <div class="pitch-floodlight" />
+
+    <!-- Pitch Line Markings -->
+    <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-px bg-white/20" />
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-24 sm:size-28 rounded-full border border-white/20" />
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-1.5 rounded-full bg-white/40" />
+
     <!-- Penalty boxes -->
-    <div class="absolute inset-x-1/4 top-0 h-14 sm:h-16 border-b border-x border-white/15 rounded-b" />
-    <div class="absolute inset-x-1/4 bottom-0 h-14 sm:h-16 border-t border-x border-white/15 rounded-t" />
+    <div class="absolute inset-x-1/4 top-0 h-14 sm:h-16 border-b border-x border-white/20 rounded-b" />
+    <div class="absolute inset-x-1/4 bottom-0 h-14 sm:h-16 border-t border-x border-white/20 rounded-t" />
+
+    <!-- Goal arcs -->
+    <div class="absolute left-1/2 top-14 sm:top-16 -translate-x-1/2 w-16 h-6 border-b border-white/20 rounded-b-full" />
+    <div class="absolute left-1/2 bottom-14 sm:bottom-16 -translate-x-1/2 w-16 h-6 border-t border-white/20 rounded-t-full" />
 
     <!-- Slot items on pitch -->
     <div
@@ -121,20 +130,25 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
         :disabled="!interactive"
         @click="emit('select-slot', slot)"
       >
-        <!-- Slot disc -->
+        <!-- Slot Token / Disc -->
         <div
-          class="size-9 sm:size-11 rounded-full flex flex-col items-center justify-center border shadow-md transition-all duration-200"
+          class="size-10 sm:size-12 rounded-full flex flex-col items-center justify-center border shadow-lg transition-all duration-200"
           :class="[
             slot.player
-              ? 'bg-zinc-900/95 border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.35)] group-hover:scale-105'
+              ? slot.player.stats.overall >= 90
+                ? 'bg-zinc-950/95 border-gold-400 shadow-[0_0_15px_rgba(251,191,36,0.4)] group-hover:scale-105'
+                : 'bg-zinc-950/95 border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.35)] group-hover:scale-105'
               : isSlotHighlighted(slot)
-                ? 'bg-emerald-500/30 border-2 border-emerald-300 ring-4 ring-emerald-400/50 shadow-[0_0_16px_rgba(16,185,129,0.7)] animate-pulse'
-                : 'bg-zinc-950/70 border-dashed border-white/30 group-hover:border-emerald-400 group-hover:bg-emerald-950/40',
+                ? 'bg-emerald-500/35 border-2 border-emerald-300 ring-4 ring-emerald-400/60 shadow-[0_0_20px_rgba(16,185,129,0.8)] animate-pulse'
+                : 'bg-zinc-950/80 border-dashed border-white/35 group-hover:border-emerald-400 group-hover:bg-emerald-950/50',
             activeSlotId === slot.id ? 'ring-2 ring-emerald-400' : ''
           ]"
         >
           <template v-if="slot.player">
-            <span class="font-mono font-black text-xs sm:text-sm text-emerald-300 leading-tight">
+            <span
+              class="font-mono font-black text-xs sm:text-sm leading-tight"
+              :class="slot.player.stats.overall >= 90 ? 'text-gold-300' : 'text-emerald-300'"
+            >
               {{ slot.player.stats.overall }}
             </span>
             <span class="font-mono text-[8px] text-zinc-400 leading-none">
@@ -143,24 +157,26 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
           </template>
           <template v-else>
             <span
-              class="font-mono text-[10px] sm:text-xs font-bold transition-colors"
-              :class="isSlotHighlighted(slot) ? 'text-emerald-200 font-extrabold' : 'text-zinc-400 group-hover:text-emerald-300'"
+              class="font-mono text-[11px] sm:text-xs font-black transition-colors"
+              :class="isSlotHighlighted(slot) ? 'text-emerald-100 font-extrabold' : 'text-zinc-400 group-hover:text-emerald-300'"
             >
               {{ slot.position }}
             </span>
           </template>
         </div>
 
-        <!-- Name / Position label pill -->
+        <!-- Name / Action Pill -->
         <div
-          class="mt-1 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-semibold tracking-tight max-w-[5rem] sm:max-w-[5.5rem] truncate text-center shadow-sm transition-all"
+          class="mt-1 px-2 py-0.5 rounded text-[9px] font-bold tracking-tight max-w-[5.5rem] sm:max-w-[6.5rem] truncate text-center shadow-md transition-all font-mono"
           :class="slot.player
-            ? 'bg-zinc-900/90 text-white border border-white/10'
+            ? slot.player.stats.overall >= 90
+              ? 'bg-zinc-900/95 text-gold-300 border border-gold-500/40'
+              : 'bg-zinc-900/95 text-white border border-white/15'
             : isSlotHighlighted(slot)
-              ? 'bg-emerald-500 text-black font-extrabold border border-emerald-300 shadow-md'
-              : 'bg-black/50 text-zinc-400 border border-white/5'"
+              ? 'bg-emerald-500 text-black font-extrabold border border-emerald-300 shadow-lg'
+              : 'bg-black/70 text-zinc-300 border border-white/10'"
         >
-          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? 'Place here' : slot.position }}
+          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? 'Tap to Place' : slot.position }}
         </div>
       </button>
     </div>

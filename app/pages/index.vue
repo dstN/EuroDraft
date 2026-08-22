@@ -1,93 +1,431 @@
 <script setup lang="ts">
+import type { Player } from '~/types'
+import PlayerFoilCard from '~/components/draft/PlayerFoilCard.vue'
+import CountryFlag from '~/components/shared/CountryFlag.vue'
+
 definePageMeta({ layout: 'default' })
+
+// Featured legendary showcase players for the hero card fan
+const showcaseLegends: Player[] = [
+  {
+    id: 'fr-2000-zidane',
+    name: 'Zinedine Zidane',
+    nameNormalized: 'zinedine-zidane',
+    country: 'fr',
+    countryName: 'France',
+    year: 2000,
+    shirtNumber: 10,
+    basePosition: 'Midfielder',
+    positions: ['CAM', 'CM'],
+    primaryPosition: 'CAM',
+    enrichmentSource: 'fifa',
+    stats: { overall: 96, pace: 84, shooting: 88, passing: 97, dribbling: 96, defending: 75, physical: 86 }
+  },
+  {
+    id: 'nl-1988-van-basten',
+    name: 'Marco van Basten',
+    nameNormalized: 'marco-van-basten',
+    country: 'nl',
+    countryName: 'Netherlands',
+    year: 1988,
+    shirtNumber: 12,
+    basePosition: 'Forward',
+    positions: ['ST', 'CF'],
+    primaryPosition: 'ST',
+    enrichmentSource: 'fifa',
+    stats: { overall: 95, pace: 89, shooting: 96, passing: 84, dribbling: 90, defending: 42, physical: 85 }
+  },
+  {
+    id: 'pt-2008-ronaldo',
+    name: 'Cristiano Ronaldo',
+    nameNormalized: 'cristiano-ronaldo',
+    country: 'pt',
+    countryName: 'Portugal',
+    year: 2008,
+    shirtNumber: 7,
+    basePosition: 'Forward',
+    positions: ['LW', 'LM', 'ST', 'RW'],
+    primaryPosition: 'LW',
+    enrichmentSource: 'fifa',
+    stats: { overall: 91, pace: 94, shooting: 91, passing: 84, dribbling: 93, defending: 45, physical: 82 }
+  },
+  {
+    id: 'es-2024-yamal',
+    name: 'Lamine Yamal',
+    nameNormalized: 'lamine-yamal',
+    country: 'es',
+    countryName: 'Spain',
+    year: 2024,
+    shirtNumber: 19,
+    basePosition: 'Forward',
+    positions: ['RW', 'RM'],
+    primaryPosition: 'RW',
+    enrichmentSource: 'fifa',
+    stats: { overall: 83, pace: 88, shooting: 79, passing: 83, dribbling: 89, defending: 38, physical: 68 }
+  }
+]
+
+const activeLegendIndex = ref(0)
+const currentLegend = computed(() => showcaseLegends[activeLegendIndex.value]!)
+
+// Mini Interactive Roulette Preview on Homepage
+const previewSpinCountry = ref('nl')
+const previewSpinCountryName = ref('Netherlands')
+const previewSpinYear = ref(1988)
+const isSpinningPreview = ref(false)
+
+const previewPool = [
+  { code: 'nl', name: 'Netherlands', year: 1988 },
+  { code: 'fr', name: 'France', year: 2000 },
+  { code: 'es', name: 'Spain', year: 2012 },
+  { code: 'de', name: 'Germany', year: 1996 },
+  { code: 'it', name: 'Italy', year: 2020 },
+  { code: 'pt', name: 'Portugal', year: 2016 },
+  { code: 'dk', name: 'Denmark', year: 1992 },
+  { code: 'gr', name: 'Greece', year: 2004 },
+  { code: 'gb-eng', name: 'England', year: 1996 },
+  { code: 'cz', name: 'Czech Republic', year: 1996 }
+]
+
+function spinPreview() {
+  if (isSpinningPreview.value) return
+  isSpinningPreview.value = true
+  let step = 0
+  const maxSteps = 10
+  const interval = setInterval(() => {
+    const pick = previewPool[Math.floor(Math.random() * previewPool.length)]!
+    previewSpinCountry.value = pick.code
+    previewSpinCountryName.value = pick.name
+    previewSpinYear.value = pick.year
+    step++
+    if (step >= maxSteps) {
+      clearInterval(interval)
+      isSpinningPreview.value = false
+    }
+  }, 80)
+}
+
+// 4 Tournament Era Bento Data
+const tournamentEras = [
+  {
+    era: '1960 — 1980',
+    title: 'The Pioneers & Total Football',
+    subtitle: 'From Lev Yashin\'s heroics to Cruyff and Beckenbauer redefining modern tactics.',
+    color: 'from-amber-500/20 to-transparent',
+    borderColor: 'border-amber-500/30',
+    tag: '4 to 8 Teams',
+    stars: ['Lev Yashin \'60', 'Franz Beckenbauer \'72', 'Johan Cruyff \'76', 'Antonin Panenka \'76']
+  },
+  {
+    era: '1984 — 1992',
+    title: 'The Golden Age of Strikers',
+    subtitle: 'Platini\'s magical 9-goal masterpiece, Van Basten\'s volley, and Denmark\'s fairytale.',
+    color: 'from-emerald-500/20 to-transparent',
+    borderColor: 'border-emerald-500/30',
+    tag: '8 Teams Era',
+    stars: ['Michel Platini \'84', 'Marco van Basten \'88', 'Ruud Gullit \'88', 'Peter Schmeichel \'92']
+  },
+  {
+    era: '1996 — 2004',
+    title: 'Superstars & Golden Goals',
+    subtitle: 'Zidane, Figo, Nedved, and the golden goal drama before Greece shocked the world.',
+    color: 'from-blue-500/20 to-transparent',
+    borderColor: 'border-blue-500/30',
+    tag: '16 Teams Era',
+    stars: ['Zinedine Zidane \'00', 'Pavel Nedved \'04', 'Thierry Henry \'00', 'Wayne Rooney \'04']
+  },
+  {
+    era: '2008 — 2024',
+    title: 'Dynasties & Next Generation',
+    subtitle: 'Spain\'s back-to-back dominance, CR7\'s triumph, and Yamal\'s historic 2024 arrival.',
+    color: 'from-purple-500/20 to-transparent',
+    borderColor: 'border-purple-500/30',
+    tag: '24 Teams Era',
+    stars: ['Andres Iniesta \'12', 'Cristiano Ronaldo \'16', 'Toni Kroos \'24', 'Lamine Yamal \'24']
+  }
+]
 </script>
 
 <template>
-  <div class="hero-safe flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
-    <!-- Background: radial glow orbs -->
+  <div class="relative overflow-hidden">
+    <!-- Stadium Night Lighting Atmosphere -->
     <div
-      class="absolute inset-0 pointer-events-none"
+      class="absolute inset-0 pointer-events-none overflow-hidden"
       aria-hidden="true"
     >
-      <div
-        class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20"
-        style="background: radial-gradient(circle, rgba(16,185,129,0.4) 0%, transparent 70%)"
-      />
-      <div
-        class="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-10"
-        style="background: radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)"
-      />
+      <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/10 dark:bg-emerald-500/8 blur-[120px] rounded-full" />
+      <div class="absolute top-1/3 -right-40 w-[600px] h-[600px] bg-blue-500/8 dark:bg-blue-600/6 blur-[140px] rounded-full" />
+      <div class="absolute bottom-10 -left-40 w-[600px] h-[600px] bg-amber-500/8 dark:bg-amber-500/6 blur-[140px] rounded-full" />
     </div>
 
-    <!-- Content -->
-    <div class="relative z-10 max-w-xl mx-auto space-y-8">
-      <!-- Eyebrow -->
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary-500/30 bg-primary-500/10 text-primary-400 text-[11px] uppercase tracking-[0.18em] font-medium">
-        <UIcon
-          name="i-lucide-trophy"
-          class="size-3"
-        />
-        Euro 1960 — 2024
-      </div>
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 lg:pt-12 lg:pb-32">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <!-- Left: Headline, Value Prop & CTAs -->
+        <div class="lg:col-span-7 space-y-8 text-left">
+          <!-- Championship Eyebrow Badge -->
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
+            <span class="size-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span class="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-300">
+              UEFA EURO 1960 — 2024
+            </span>
+          </div>
 
-      <!-- Headline -->
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight text-white">
-        {{ $t('landing.headline') }}
-      </h1>
+          <!-- Main Championship Headline -->
+          <h1 class="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.05]">
+            Draft Europe's <br>
+            <span class="gold-text">Greatest Squads.</span>
+          </h1>
 
-      <p class="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-[55ch] mx-auto">
-        {{ $t('landing.subline') }}
-      </p>
+          <!-- Value Prop Paragraph -->
+          <p class="text-base sm:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-2xl">
+            Choose your tactical formation, spin historical nations across 64 years of European Championship history, and build the ultimate XI to conquer the tournament.
+          </p>
 
-      <!-- CTA -->
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <UButton
-          to="/draft/formation"
-          size="lg"
-          color="primary"
-          class="w-full sm:w-auto font-semibold px-8"
-          :label="$t('landing.cta_start')"
-          trailing-icon="i-lucide-arrow-right"
-        />
-        <UButton
-          size="lg"
-          color="neutral"
-          variant="ghost"
-          class="w-full sm:w-auto"
-          :label="$t('landing.cta_learn')"
-        />
-      </div>
-    </div>
+          <!-- CTAs with Button-in-Button Architecture -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+            <NuxtLink
+              to="/draft/formation"
+              class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25 justify-between sm:justify-start"
+            >
+              <span>{{ $t('landing.cta_start') }}</span>
+              <span class="btn-nested-icon bg-emerald-600">
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-white"
+                />
+              </span>
+            </NuxtLink>
 
-    <!-- How It Works — 3 steps -->
-    <div class="relative z-10 mt-24 w-full max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div
-        v-for="(step, i) in [
-          { icon: 'i-lucide-layout-grid', title: $t('landing.step1_title'), desc: $t('landing.step1_desc') },
-          { icon: 'i-lucide-dices', title: $t('landing.step2_title'), desc: $t('landing.step2_desc') },
-          { icon: 'i-lucide-swords', title: $t('landing.step3_title'), desc: $t('landing.step3_desc') }
-        ]"
-        :key="i"
-        class="rounded-2xl border border-white/8 p-5 text-left"
-        style="background: rgba(255,255,255,0.03)"
-      >
-        <!-- Double-bezel step icon -->
-        <div class="mb-4 size-10 rounded-xl flex items-center justify-center border border-white/10 bg-white/5">
-          <UIcon
-            :name="step.icon"
-            class="size-5 text-primary-400"
-          />
+            <UButton
+              to="#roulette-preview"
+              size="xl"
+              variant="outline"
+              color="neutral"
+              class="rounded-full px-6 font-semibold"
+              label="Explore Eras & Roster"
+            />
+          </div>
+
+          <!-- Live Database Stats Ticker -->
+          <div class="pt-6 border-t border-zinc-200 dark:border-white/10 grid grid-cols-3 gap-4 max-w-lg">
+            <div>
+              <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
+                17
+              </p>
+              <p class="text-xs text-zinc-500 font-medium uppercase tracking-wider">
+                Tournaments
+              </p>
+            </div>
+            <div>
+              <p class="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
+                4,658
+              </p>
+              <p class="text-xs text-zinc-500 font-medium uppercase tracking-wider">
+                Real Players
+              </p>
+            </div>
+            <div>
+              <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
+                205
+              </p>
+              <p class="text-xs text-zinc-500 font-medium uppercase tracking-wider">
+                Historic Squads
+              </p>
+            </div>
+          </div>
         </div>
-        <p class="text-[10px] uppercase tracking-[0.15em] text-zinc-500 mb-1">
-          Step {{ i + 1 }}
-        </p>
-        <h3 class="font-semibold text-white mb-1.5 text-sm">
-          {{ step.title }}
-        </h3>
-        <p class="text-zinc-400 text-xs leading-relaxed">
-          {{ step.desc }}
+
+        <!-- Right: Interactive Tactical Legend Card Fan -->
+        <div class="lg:col-span-5 flex flex-col items-center">
+          <div class="w-full max-w-md space-y-4">
+            <!-- Active Legendary Card -->
+            <div class="bezel-card relative">
+              <div class="bezel-inner p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-emerald-400">
+                    Featured Legend
+                  </span>
+                  <UBadge
+                    color="primary"
+                    variant="subtle"
+                    size="xs"
+                    class="font-mono font-bold"
+                  >
+                    Authentic FIFA OVR
+                  </UBadge>
+                </div>
+
+                <!-- Foil Card Display -->
+                <PlayerFoilCard
+                  :player="currentLegend"
+                  :is-interactive="true"
+                />
+
+                <!-- Interactive Legend Switcher Tabs -->
+                <div class="grid grid-cols-4 gap-1.5 pt-2">
+                  <button
+                    v-for="(leg, idx) in showcaseLegends"
+                    :key="leg.id"
+                    type="button"
+                    class="py-1.5 px-2 rounded-lg text-center font-mono text-xs font-bold transition-all border cursor-pointer"
+                    :class="activeLegendIndex === idx
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-sm'
+                      : 'bg-zinc-800/60 border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-700/60'"
+                    @click="activeLegendIndex = idx"
+                  >
+                    '{{ String(leg.year).slice(2) }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LIVE ROULETTE DEMO SECTION ==================== -->
+    <section
+      id="roulette-preview"
+      class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-zinc-200 dark:border-white/10"
+    >
+      <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+        <h2 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
+          How the Roulette Works
+        </h2>
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base">
+          Each draft round, the tournament wheel spins a random historical nation and year. Pick one player from that squad to lock into your tactical formation!
         </p>
       </div>
-    </div>
+
+      <!-- Live Spin Widget -->
+      <div class="max-w-xl mx-auto bezel-card">
+        <div class="bezel-inner p-6 text-center space-y-6">
+          <div class="flex items-center justify-center gap-3">
+            <CountryFlag
+              :country="previewSpinCountry"
+              size="lg"
+            />
+            <div class="text-left">
+              <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest block">
+                Euro {{ previewSpinYear }}
+              </span>
+              <h3 class="text-2xl font-black text-white tracking-tight">
+                {{ previewSpinCountryName }}
+              </h3>
+            </div>
+          </div>
+
+          <div class="flex justify-center gap-3">
+            <UButton
+              size="lg"
+              color="primary"
+              variant="solid"
+              leading-icon="i-lucide-dices"
+              :label="isSpinningPreview ? 'Spinning Wheel...' : 'Test Spin the Wheel'"
+              :loading="isSpinningPreview"
+              class="rounded-full px-6 font-bold"
+              @click="spinPreview"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4 ERAS BENTO GRID ==================== -->
+    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-200 dark:border-white/10">
+      <div class="max-w-2xl mb-12 space-y-3">
+        <span class="text-[10px] font-mono uppercase tracking-[0.2em] font-bold text-emerald-600 dark:text-emerald-400">
+          Historical Depth
+        </span>
+        <h2 class="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
+          Four Eras of Legends.
+        </h2>
+        <p class="text-zinc-600 dark:text-zinc-400 text-base">
+          Every Euro tournament generation brings unique legends, iconic tactical styles, and authentic player ratings.
+        </p>
+      </div>
+
+      <!-- Bento Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          v-for="(era, i) in tournamentEras"
+          :key="i"
+          class="bezel-card group"
+        >
+          <div class="bezel-inner p-6 space-y-4 h-full flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                  {{ era.era }}
+                </span>
+                <UBadge
+                  color="neutral"
+                  variant="subtle"
+                  size="xs"
+                  class="font-mono text-[10px]"
+                >
+                  {{ era.tag }}
+                </UBadge>
+              </div>
+              <h3 class="text-xl font-bold text-white tracking-tight">
+                {{ era.title }}
+              </h3>
+              <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                {{ era.subtitle }}
+              </p>
+            </div>
+
+            <!-- Notable Stars Tags -->
+            <div class="pt-4 border-t border-white/5">
+              <p class="text-[10px] uppercase font-mono tracking-widest text-zinc-500 mb-2 font-semibold">
+                Notable Icons
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                <span
+                  v-for="star in era.stars"
+                  :key="star"
+                  class="px-2 py-0.5 rounded text-[11px] font-medium bg-white/5 border border-white/8 text-zinc-300"
+                >
+                  {{ star }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FOOTER CTA ==================== -->
+    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center border-t border-zinc-200 dark:border-white/10">
+      <div class="bezel-card max-w-3xl mx-auto">
+        <div class="bezel-inner p-10 sm:p-16 space-y-6">
+          <UIcon
+            name="i-lucide-trophy"
+            class="size-12 text-gold-400 mx-auto"
+          />
+          <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Ready to Build Your Champion XI?
+          </h2>
+          <p class="text-zinc-400 text-sm sm:text-base max-w-lg mx-auto">
+            Choose your formation, conquer the draft roulette, and test your dream team in a simulated European Championship.
+          </p>
+          <div>
+            <NuxtLink
+              to="/draft/formation"
+              class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/20"
+            >
+              <span>{{ $t('landing.cta_start') }}</span>
+              <span class="btn-nested-icon bg-emerald-600">
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-white"
+                />
+              </span>
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
