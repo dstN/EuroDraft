@@ -13,10 +13,6 @@ const draft = useDraftStore()
 // Squad view tab: 'pitch' | 'cards'
 const squadViewMode = ref<'pitch' | 'cards'>('pitch')
 
-// Live simulation match tracking
-const currentSimMatchIndex = ref(0)
-const isSimulationCompleted = ref(false)
-
 // Auto-init tournament on mount if draft is complete
 onMounted(() => {
   if (!draft.isComplete) {
@@ -26,45 +22,30 @@ onMounted(() => {
   if (tournament.groups.length === 0) {
     tournament.initTournament()
   }
-  // Start with match 1
-  currentSimMatchIndex.value = 0
 })
 
 // Current player match being simulated live
 const activePlayerMatch = computed<MatchResult | null>(() => {
-  if (isSimulationCompleted.value) return null
-  const matches = tournament.playerMatches
-  if (currentSimMatchIndex.value < matches.length) {
-    return matches[currentSimMatchIndex.value] ?? null
-  }
-  return null
+  return tournament.currentLiveMatch
+})
+
+// Is the entire tournament run simulation completed?
+const isSimulationCompleted = computed(() => {
+  return tournament.tournamentPhase === 'complete' || (tournament.simulationStep >= 3 && tournament.currentLiveMatch === null)
 })
 
 // Completed matches so far
 const completedPlayerMatches = computed<MatchResult[]>(() => {
-  if (isSimulationCompleted.value) return tournament.playerMatches
-  return tournament.playerMatches.slice(0, currentSimMatchIndex.value)
+  return tournament.playerMatches
 })
 
 // Called when active match broadcast finishes
 function onLiveMatchCompleted() {
-  // Advance tournament simulation step
   tournament.advanceSimulationStep()
-  currentSimMatchIndex.value++
-
-  // Check if all player matches are complete
-  if (currentSimMatchIndex.value >= tournament.playerMatches.length || tournament.tournamentPhase === 'complete') {
-    // If the team qualified and there are knockouts, advance until next player match or complete
-    if (tournament.tournamentPhase === 'complete') {
-      isSimulationCompleted.value = true
-    }
-  }
 }
 
 function skipAllToResults() {
   tournament.skipAllSimulation()
-  currentSimMatchIndex.value = tournament.playerMatches.length
-  isSimulationCompleted.value = true
 }
 
 function matchResultLabel(match: MatchResult): string {
@@ -110,7 +91,7 @@ const draftedPlayersList = computed(() => {
 })
 
 const playerGroup = computed(() => {
-  return tournament.groups.find(g => g.teams.some(t => t.id === tournament.playerTeam?.id)) ?? null
+  return tournament.playerGroup
 })
 </script>
 
@@ -204,7 +185,7 @@ const playerGroup = computed(() => {
       >
         <h2 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
           <span class="size-2.5 rounded-full bg-rose-500 animate-ping" />
-          <span>Match {{ currentSimMatchIndex + 1 }}: vs {{ opponentTeam(activePlayerMatch).countryName }} '{{ opponentTeam(activePlayerMatch).year }}</span>
+          <span>Live: vs {{ opponentTeam(activePlayerMatch).countryName }} '{{ opponentTeam(activePlayerMatch).year }}</span>
         </h2>
 
         <LiveMatchBroadcast
@@ -718,7 +699,7 @@ const playerGroup = computed(() => {
 
         <div class="space-y-3">
           <NuxtLink
-            v-for="match in tournament.playerMatches"
+            v-for="match in completedPlayerMatches"
             :key="match.id"
             :to="`/match/${match.id}`"
             class="bezel-card block cursor-pointer transition-transform hover:-translate-y-0.5"

@@ -87,23 +87,94 @@ export const useTournamentStore = defineStore('tournament', () => {
   const tournamentPhase = ref<TournamentPhase>('group')
   const playerTeam = ref<TournamentTeam | null>(null)
 
-  // Progressive simulation steps: 0 = not started, 1 = MD1, 2 = MD2, 3 = MD3, 4 = QF, 5 = SF, 6 = Final (Complete)
+  // Simulation step: 0 = MD1 live, 1 = MD2 live, 2 = MD3 live, 3 = QF live, 4 = SF live, 5 = Final live, 6 = Completed
   const simulationStep = ref<number>(0)
   const isSimulating = ref<boolean>(false)
 
-  /** Player's team journey */
+  // All precalculated matches stored internally
+  const _allGroupMatches = ref<Map<string, MatchResult[]>>(new Map())
+
+  /** Player's group */
+  const playerGroup = computed<Group | null>(() => {
+    if (!playerTeam.value) return null
+    return groups.value.find(g => g.teams.some(t => t.id === playerTeam.value?.id)) ?? null
+  })
+
+  /** Get player match for group matchday 0, 1, or 2 */
+  function _getPlayerGroupMatch(matchdayIndex: number): MatchResult | null {
+    if (!playerGroup.value || !playerTeam.value) return null
+    const fullList = _allGroupMatches.value.get(playerGroup.value.id) ?? []
+    const startIdx = matchdayIndex * 2
+    const mdMatches = fullList.slice(startIdx, startIdx + 2)
+    return mdMatches.find(m => m.teamA.team.id === playerTeam.value?.id || m.teamB.team.id === playerTeam.value?.id) ?? null
+  }
+
+  /** Current active live match being broadcast on the tournament arena */
+  const currentLiveMatch = computed<MatchResult | null>(() => {
+    if (!playerTeam.value || simulationStep.value >= 6) return null
+    const pid = playerTeam.value.id
+
+    if (simulationStep.value === 0) {
+      return _getPlayerGroupMatch(0)
+    }
+    if (simulationStep.value === 1) {
+      return _getPlayerGroupMatch(1)
+    }
+    if (simulationStep.value === 2) {
+      return _getPlayerGroupMatch(2)
+    }
+    if (simulationStep.value === 3) {
+      // Quarter final
+      return knockoutBracket.value.quarterFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid) ?? null
+    }
+    if (simulationStep.value === 4) {
+      // Semi final
+      return knockoutBracket.value.semiFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid) ?? null
+    }
+    if (simulationStep.value === 5) {
+      // Final
+      const f = knockoutBracket.value.final
+      if (f && (f.teamA.team.id === pid || f.teamB.team.id === pid)) return f
+      return null
+    }
+    return null
+  })
+
+  /** Completed player matches up to the current simulation step */
   const playerMatches = computed((): MatchResult[] => {
     if (!playerTeam.value) return []
     const pid = playerTeam.value.id
-    const allMatches = [
-      ...groups.value.flatMap(g => g.matches),
-      ...knockoutBracket.value.quarterFinals,
-      ...knockoutBracket.value.semiFinals,
-      ...(knockoutBracket.value.final ? [knockoutBracket.value.final] : [])
-    ]
-    return allMatches.filter(m =>
-      m.teamA.team.id === pid || m.teamB.team.id === pid
-    )
+    const list: MatchResult[] = []
+
+    // Add completed group matches
+    if (simulationStep.value >= 1) {
+      const m1 = _getPlayerGroupMatch(0)
+      if (m1) list.push(m1)
+    }
+    if (simulationStep.value >= 2) {
+      const m2 = _getPlayerGroupMatch(1)
+      if (m2) list.push(m2)
+    }
+    if (simulationStep.value >= 3) {
+      const m3 = _getPlayerGroupMatch(2)
+      if (m3) list.push(m3)
+    }
+
+    // Add completed knockouts
+    if (simulationStep.value >= 4) {
+      const qf = knockoutBracket.value.quarterFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
+      if (qf) list.push(qf)
+    }
+    if (simulationStep.value >= 5) {
+      const sf = knockoutBracket.value.semiFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
+      if (sf) list.push(sf)
+    }
+    if (simulationStep.value >= 6) {
+      const fin = knockoutBracket.value.final
+      if (fin && (fin.teamA.team.id === pid || fin.teamB.team.id === pid)) list.push(fin)
+    }
+
+    return list
   })
 
   const isChampion = computed(() => {
@@ -214,7 +285,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     const assisters = [...playerStatsList].filter(p => p.assists > 0).sort((a, b) => b.assists - a.assists)
     const topAssister = assisters[0] ?? null
 
-    // MVP (Highest G+A or highest rated player)
+    // MVP
     const topGA = playerStatsList[0]
     const mvp: PlayerTournamentStats | null = (topGA && topGA.ga > 0)
       ? topGA
@@ -238,9 +309,6 @@ export const useTournamentStore = defineStore('tournament', () => {
       playerStats: playerStatsList
     }
   })
-
-  // All precalculated matches stored internally to reveal progressively
-  const _allGroupMatches = ref<Map<string, MatchResult[]>>(new Map())
 
   function initTournament() {
     if (!draft.formation || !draft.isComplete) {
@@ -307,29 +375,40 @@ export const useTournamentStore = defineStore('tournament', () => {
   function advanceSimulationStep() {
     if (simulationStep.value >= 6) return
 
-    simulationStep.value++
+    const nextStep = simulationStep.value + 1
 
-    if (simulationStep.value <= 3) {
-      // Reveal group matchday
-      const matchLimit = simulationStep.value * 2 // 2 matches per matchday
+    if (nextStep <= 3) {
+      // Reveal group matchday matches for all groups
+      const matchLimit = nextStep * 2
       for (const group of groups.value) {
         const fullList = _allGroupMatches.value.get(group.id) ?? []
         group.matches = fullList.slice(0, matchLimit)
         group.standings = buildGroupStandings(group.teams, group.matches)
       }
-    } else if (simulationStep.value === 4) {
-      // Simulate Quarter-Finals
-      const [groupA, groupB, groupC, groupD] = groups.value
-      if (groupA && groupB && groupC && groupD) {
-        let seed = Date.now() + 2000
-        const qf1 = simulateMatch(groupA.standings[0]!.team, groupB.standings[1]!.team, 'quarter-final', seed++)
-        const qf2 = simulateMatch(groupC.standings[0]!.team, groupD.standings[1]!.team, 'quarter-final', seed++)
-        const qf3 = simulateMatch(groupB.standings[0]!.team, groupA.standings[1]!.team, 'quarter-final', seed++)
-        const qf4 = simulateMatch(groupD.standings[0]!.team, groupC.standings[1]!.team, 'quarter-final', seed)
-        knockoutBracket.value.quarterFinals = [qf1, qf2, qf3, qf4]
+      simulationStep.value = nextStep
+
+      // If group stage just completed (step 3), prepare Quarter-Finals!
+      if (nextStep === 3) {
+        const [groupA, groupB, groupC, groupD] = groups.value
+        if (groupA && groupB && groupC && groupD) {
+          let seed = Date.now() + 2000
+          const qf1 = simulateMatch(groupA.standings[0]!.team, groupB.standings[1]!.team, 'quarter-final', seed++)
+          const qf2 = simulateMatch(groupC.standings[0]!.team, groupD.standings[1]!.team, 'quarter-final', seed++)
+          const qf3 = simulateMatch(groupB.standings[0]!.team, groupA.standings[1]!.team, 'quarter-final', seed++)
+          const qf4 = simulateMatch(groupD.standings[0]!.team, groupC.standings[1]!.team, 'quarter-final', seed)
+          knockoutBracket.value.quarterFinals = [qf1, qf2, qf3, qf4]
+
+          // Check if player qualified
+          const pid = playerTeam.value?.id
+          const playerInQf = [qf1, qf2, qf3, qf4].some(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
+          if (!playerInQf) {
+            // Player eliminated in group stage, simulate rest of tournament
+            _simulateRestOfTournament()
+          }
+        }
       }
-    } else if (simulationStep.value === 5) {
-      // Simulate Semi-Finals
+    } else if (nextStep === 4) {
+      // Quarter-Finals completed -> setup Semi-Finals
       const qfs = knockoutBracket.value.quarterFinals
       if (qfs.length === 4) {
         let seed = Date.now() + 3000
@@ -340,9 +419,18 @@ export const useTournamentStore = defineStore('tournament', () => {
         const sf1 = simulateMatch(getWinner(qfs[0]!), getWinner(qfs[1]!), 'semi-final', seed++)
         const sf2 = simulateMatch(getWinner(qfs[2]!), getWinner(qfs[3]!), 'semi-final', seed)
         knockoutBracket.value.semiFinals = [sf1, sf2]
+
+        simulationStep.value = nextStep
+
+        // Check if player won QF
+        const pid = playerTeam.value?.id
+        const playerInSf = [sf1, sf2].some(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
+        if (!playerInSf) {
+          _simulateRestOfTournament()
+        }
       }
-    } else if (simulationStep.value === 6) {
-      // Simulate Final
+    } else if (nextStep === 5) {
+      // Semi-Finals completed -> setup Final
       const sfs = knockoutBracket.value.semiFinals
       if (sfs.length === 2) {
         const seed = Date.now() + 4000
@@ -352,17 +440,59 @@ export const useTournamentStore = defineStore('tournament', () => {
         }
         const final = simulateMatch(getWinner(sfs[0]!), getWinner(sfs[1]!), 'final', seed)
         knockoutBracket.value.final = final
-        tournamentPhase.value = 'complete'
+        simulationStep.value = nextStep
       }
+    } else if (nextStep === 6) {
+      simulationStep.value = 6
+      tournamentPhase.value = 'complete'
     }
+  }
+
+  function _simulateRestOfTournament() {
+    // If not in QFs, simulate QFs
+    const [groupA, groupB, groupC, groupD] = groups.value
+    if (knockoutBracket.value.quarterFinals.length === 0 && groupA && groupB && groupC && groupD) {
+      let seed = Date.now() + 2000
+      const qf1 = simulateMatch(groupA.standings[0]!.team, groupB.standings[1]!.team, 'quarter-final', seed++)
+      const qf2 = simulateMatch(groupC.standings[0]!.team, groupD.standings[1]!.team, 'quarter-final', seed++)
+      const qf3 = simulateMatch(groupB.standings[0]!.team, groupA.standings[1]!.team, 'quarter-final', seed++)
+      const qf4 = simulateMatch(groupD.standings[0]!.team, groupC.standings[1]!.team, 'quarter-final', seed)
+      knockoutBracket.value.quarterFinals = [qf1, qf2, qf3, qf4]
+    }
+
+    const qfs = knockoutBracket.value.quarterFinals
+    const getWinner = (m: MatchResult): TournamentTeam => {
+      if (m.penalties) return m.penalties.teamA > m.penalties.teamB ? m.teamA.team : m.teamB.team
+      return m.teamA.goals >= m.teamB.goals ? m.teamA.team : m.teamB.team
+    }
+
+    if (knockoutBracket.value.semiFinals.length === 0 && qfs.length === 4) {
+      let seed = Date.now() + 3000
+      const sf1 = simulateMatch(getWinner(qfs[0]!), getWinner(qfs[1]!), 'semi-final', seed++)
+      const sf2 = simulateMatch(getWinner(qfs[2]!), getWinner(qfs[3]!), 'semi-final', seed)
+      knockoutBracket.value.semiFinals = [sf1, sf2]
+    }
+
+    const sfs = knockoutBracket.value.semiFinals
+    if (!knockoutBracket.value.final && sfs.length === 2) {
+      const seed = Date.now() + 4000
+      const final = simulateMatch(getWinner(sfs[0]!), getWinner(sfs[1]!), 'final', seed)
+      knockoutBracket.value.final = final
+    }
+
+    simulationStep.value = 6
+    tournamentPhase.value = 'complete'
   }
 
   // Fast forward all rounds immediately
   function skipAllSimulation() {
-    while (simulationStep.value < 6) {
-      advanceSimulationStep()
+    // Commit all group matches
+    for (const group of groups.value) {
+      const fullList = _allGroupMatches.value.get(group.id) ?? []
+      group.matches = fullList
+      group.standings = buildGroupStandings(group.teams, group.matches)
     }
-    tournamentPhase.value = 'complete'
+    _simulateRestOfTournament()
   }
 
   function reset() {
@@ -380,7 +510,9 @@ export const useTournamentStore = defineStore('tournament', () => {
     knockoutBracket,
     tournamentPhase,
     playerTeam,
+    playerGroup,
     playerMatches,
+    currentLiveMatch,
     isChampion,
     runStats,
     simulationStep,
