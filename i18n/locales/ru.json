@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Собери свою команду мечты Евро",
+    "description": "Выбирай игроков из исторических составов UEFA Euro и участвуй в полной симуляции турнира."
+  },
+  "nav": { "draft": "Драфт", "tournament": "Турнир", "impressum": "Правовая информация" },
+  "landing": {
+    "headline": "Собери свою команду мечты Евро",
+    "subline": "Выбирай легенд из каждого UEFA Euro с 1960 года и сражайся за славу.",
+    "cta_start": "Начать драфт",
+    "cta_learn": "Как это работает",
+    "step1_title": "Выбери расстановку",
+    "step1_desc": "Выбери из 3 случайных расстановок. Твои позиции заблокированы.",
+    "step2_title": "Крути рулетку",
+    "step2_desc": "Появляется случайный исторический состав Euro. Выбери ОДНОГО игрока.",
+    "step3_title": "Соревнуйся",
+    "step3_desc": "Твоя сборная всех времён участвует в симулированном турнире Euro. Сможешь выиграть всё?"
+  },
+  "formation": {
+    "select_title": "Выбери расстановку",
+    "select_subtitle": "Для тебя были выбраны три расстановки. Выбери одну, чтобы зафиксировать позиции.",
+    "slots": "позиций",
+    "confirm": "Играть с {formation}"
+  },
+  "draft": {
+    "progress": "{filled} из 11 игроков выбрано",
+    "rerolls_remaining": "Осталось переброшек: {count}",
+    "reroll_year": "Сменить год",
+    "reroll_nation": "Сменить нацию",
+    "reroll_year_hint": "Сохранить {nation}, новый год",
+    "reroll_nation_hint": "Сохранить {year}, новую нацию",
+    "no_rerolls": "Переброшек не осталось",
+    "spin": "Крутить",
+    "pick_player": "Выбери игрока",
+    "player_greyed": "Не подходит ни к одному слоту",
+    "already_drafted": "Уже в твоей команде",
+    "select_slot": "Выбери позицию",
+    "draft_complete_title": "Состав укомплектован!",
+    "draft_complete_subtitle": "Твоя команда мечты готова. Пора соревноваться.",
+    "go_to_tournament": "Симулировать турнир",
+    "positions": { "GK": "ВР", "CB": "ЦЗ", "LB": "ЛЗ", "RB": "ПЗ", "CDM": "ОПМ", "CM": "ЦПМ", "CAM": "АПМ", "LM": "ЛПМ", "RM": "ППМ", "LW": "ЛН", "RW": "ПН", "ST": "НП", "CF": "ЦФ" },
+    "position_labels": {
+      "GK": "Вратарь", "CB": "Центральный защитник", "LB": "Левый защитник", "RB": "Правый защитник",
+      "CDM": "Опорный полузащитник", "CM": "Центральный полузащитник", "CAM": "Атакующий полузащитник",
+      "LM": "Левый полузащитник", "RM": "Правый полузащитник",
+      "LW": "Левый вингер", "RW": "Правый вингер", "ST": "Нападающий", "CF": "Центрфорвард"
+    },
+    "stats": { "overall": "ОБЩ", "pace": "СКО", "shooting": "УДА", "passing": "ПАС", "dribbling": "ДРИ", "defending": "ЗАЩ", "physical": "ФИЗ" }
+  },
+  "tournament": {
+    "title": "Турнир", "your_journey": "Твой путь", "group_stage": "Групповой этап",
+    "group": "Группа {id}", "matchday": "Тур {n}", "quarter_final": "Четвертьфинал",
+    "semi_final": "Полуфинал", "final": "Финал",
+    "table_team": "Команда", "table_played": "И", "table_won": "П", "table_drawn": "Н",
+    "table_lost": "П", "table_gf": "ЗГ", "table_ga": "ПГ", "table_gd": "РЗ", "table_points": "Очк",
+    "vs": "–", "score": "{goalsA} – {goalsB}", "aet": "д.в.", "pens": "({penA} – {penB} по пен.)",
+    "player_team": "Твоя команда", "view_match": "Матчрепорт"
+  },
+  "match": {
+    "title": "{teamA} – {teamB}", "live_ticker": "Матчрепорт", "stats_title": "Статистика матча",
+    "ovr_label": "ОБЩ команды", "attack_label": "Атака", "midfield_label": "Полузащита", "defense_label": "Защита"
+  },
+  "results": {
+    "champion_title": "Чемпионы Европы!", "champion_subtitle": "Твоя команда мечты покорила Европу!",
+    "eliminated_title": "Выбыл", "eliminated_subtitle": "Путь твоей команды на Euro завершился в {phase}.",
+    "play_again": "Играть снова", "share": "Поделиться результатом"
+  },
+  "legal": { "impressum_title": "Правовая информация", "impressum_note": "Сведения в соответствии с применимым законодательством" }
+}

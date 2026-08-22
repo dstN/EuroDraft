@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Hayal Euro takımını kur",
+    "description": "UEFA Avrupa Şampiyonası tarihsel kadrolarından oyuncu seç ve tam bir simülasyonda yarış."
+  },
+  "nav": { "draft": "Draft", "tournament": "Turnuva", "impressum": "Yasal Bilgi" },
+  "landing": {
+    "headline": "Hayal Euro takımını kur",
+    "subline": "1960'tan bu yana her UEFA Euro'sunun efsanelerini seç ve zafer için savaş.",
+    "cta_start": "Drafta Başla",
+    "cta_learn": "Nasıl Çalışır",
+    "step1_title": "Dizilişi Seç",
+    "step1_desc": "3 rastgele dizilişten birini seç. Pozisyon slotların draft için kilitlenir.",
+    "step2_title": "Ruleti Çevir",
+    "step2_desc": "Rastgele tarihsel bir Euro kadrosu belirir. Dizilişine uyan BİR oyuncu seç.",
+    "step3_title": "Yarış",
+    "step3_desc": "Tüm zamanların 11'in simüle edilmiş bir Euro turnuvasına girer. Her şeyi kazanabilir misin?"
+  },
+  "formation": {
+    "select_title": "Dizilişini Seç",
+    "select_subtitle": "Senin için üç diziliş çekildi. Pozisyonlarını kilitlemek için birini seç.",
+    "slots": "pozisyon",
+    "confirm": "{formation} ile Oyna"
+  },
+  "draft": {
+    "progress": "11 oyuncudan {filled}'i seçildi",
+    "rerolls_remaining": "{count} yeniden çevirme hakkı kaldı",
+    "reroll_year": "Yılı Yenile",
+    "reroll_nation": "Ülkeyi Yenile",
+    "reroll_year_hint": "{nation}'u tut, yılı değiştir",
+    "reroll_nation_hint": "{year}'ı tut, ülkeyi değiştir",
+    "no_rerolls": "Yeniden çevirme hakkı kalmadı",
+    "spin": "Çevir",
+    "pick_player": "Oyuncu seç",
+    "player_greyed": "Açık slota uymuyor",
+    "already_drafted": "Zaten kadrodaydı",
+    "select_slot": "Pozisyon seç",
+    "draft_complete_title": "Kadro Tamam!",
+    "draft_complete_subtitle": "Hayal takımın hazır. Rekabet etme zamanı.",
+    "go_to_tournament": "Turnuvayı Simüle Et",
+    "positions": { "GK": "KL", "CB": "STO", "LB": "SOB", "RB": "SAB", "CDM": "DM", "CM": "OM", "CAM": "SAM", "LM": "SOO", "RM": "SAO", "LW": "SK", "RW": "SAK", "ST": "ST", "CF": "MF" },
+    "position_labels": {
+      "GK": "Kaleci", "CB": "Stoper", "LB": "Sol Bek", "RB": "Sağ Bek",
+      "CDM": "Defansif Orta Saha", "CM": "Orta Saha", "CAM": "Ofansif Orta Saha",
+      "LM": "Sol Orta Saha", "RM": "Sağ Orta Saha",
+      "LW": "Sol Kanat", "RW": "Sağ Kanat", "ST": "Forvet", "CF": "Santrafor"
+    },
+    "stats": { "overall": "GEN", "pace": "HİZ", "shooting": "ŞUT", "passing": "PAS", "dribbling": "DRI", "defending": "SAV", "physical": "FİZ" }
+  },
+  "tournament": {
+    "title": "Turnuva", "your_journey": "Yolculuğun", "group_stage": "Grup Aşaması",
+    "group": "Grup {id}", "matchday": "Maç Günü {n}", "quarter_final": "Çeyrek Final",
+    "semi_final": "Yarı Final", "final": "Final",
+    "table_team": "Takım", "table_played": "O", "table_won": "G", "table_drawn": "B",
+    "table_lost": "M", "table_gf": "AS", "table_ga": "YS", "table_gd": "AV", "table_points": "Puan",
+    "vs": "vs", "score": "{goalsA} – {goalsB}", "aet": "u.s.", "pens": "({penA} – {penB} pen.)",
+    "player_team": "Senin Takımın", "view_match": "Maç Raporu"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}", "live_ticker": "Maç Raporu", "stats_title": "Maç İstatistikleri",
+    "ovr_label": "Takım GEN", "attack_label": "Hücum", "midfield_label": "Orta Saha", "defense_label": "Savunma"
+  },
+  "results": {
+    "champion_title": "Avrupa Şampiyonları!", "champion_subtitle": "Hayal takımın Avrupa'yı fethetti!",
+    "eliminated_title": "Elendi", "eliminated_subtitle": "Takımın Euro yolculuğu {phase} aşamasında sona erdi.",
+    "play_again": "Tekrar Oyna", "share": "Sonucu Paylaş"
+  },
+  "legal": { "impressum_title": "Yasal Bilgi", "impressum_note": "Geçerli mevzuata uygun bilgiler" }
+}

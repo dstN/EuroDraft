@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Stel je Euro-droomteam samen",
+    "description": "Kies spelers uit historische UEFA Euro-selecties en neem deel aan een volledige simulatie."
+  },
+  "nav": { "draft": "Draft", "tournament": "Toernooi", "impressum": "Colofon" },
+  "landing": {
+    "headline": "Stel je Euro-droomteam samen",
+    "subline": "Kies legendes uit elk UEFA Euro sinds 1960 en strijdt voor de glorie.",
+    "cta_start": "Start de draft",
+    "cta_learn": "Hoe het werkt",
+    "step1_title": "Kies een formatie",
+    "step1_desc": "Kies uit 3 willekeurige formaties. Je positieslots zijn vergrendeld voor de draft.",
+    "step2_title": "Draai het wiel",
+    "step2_desc": "Een willekeurige historische Euro-selectie verschijnt. Kies ÉÉN speler die past.",
+    "step3_title": "Deelnemen",
+    "step3_desc": "Jouw all-time XI doet mee aan een gesimuleerd Euro-toernooi. Kun je alles winnen?"
+  },
+  "formation": {
+    "select_title": "Kies je formatie",
+    "select_subtitle": "Er zijn drie formaties voor je getrokken. Kies er een om je posities te vergrendelen.",
+    "slots": "posities",
+    "confirm": "Spelen met {formation}"
+  },
+  "draft": {
+    "progress": "{filled} van 11 spelers gekozen",
+    "rerolls_remaining": "{count} herdraaien over",
+    "reroll_year": "Jaar opnieuw gooien",
+    "reroll_nation": "Natie opnieuw gooien",
+    "reroll_year_hint": "{nation} houden, nieuw jaar",
+    "reroll_nation_hint": "{year} houden, nieuwe natie",
+    "no_rerolls": "Geen herdraaien meer beschikbaar",
+    "spin": "Draaien",
+    "pick_player": "Kies een speler",
+    "player_greyed": "Past in geen enkel open slot",
+    "already_drafted": "Al in je selectie",
+    "select_slot": "Selecteer positie",
+    "draft_complete_title": "Selectie compleet!",
+    "draft_complete_subtitle": "Jouw droomteam is klaar. Tijd om te spelen.",
+    "go_to_tournament": "Simuleer toernooi",
+    "positions": { "GK": "DV", "CB": "CV", "LB": "LV", "RB": "RV", "CDM": "DM", "CM": "CM", "CAM": "CAM", "LM": "LM", "RM": "RM", "LW": "LV", "RW": "RV", "ST": "SP", "CF": "CF" },
+    "position_labels": {
+      "GK": "Doelverdediger", "CB": "Centrale verdediger", "LB": "Linksback", "RB": "Rechtsback",
+      "CDM": "Defensieve middenvelder", "CM": "Centrale middenvelder", "CAM": "Aanvallende middenvelder",
+      "LM": "Linkse middenvelder", "RM": "Rechtse middenvelder",
+      "LW": "Linksbuiten", "RW": "Rechtsbuiten", "ST": "Spits", "CF": "Centrumspits"
+    },
+    "stats": { "overall": "TOT", "pace": "SNE", "shooting": "SCH", "passing": "PAS", "dribbling": "DRI", "defending": "VED", "physical": "FYS" }
+  },
+  "tournament": {
+    "title": "Toernooi", "your_journey": "Jouw reis", "group_stage": "Groepsfase",
+    "group": "Groep {id}", "matchday": "Speeldag {n}", "quarter_final": "Kwartfinale",
+    "semi_final": "Halve finale", "final": "Finale",
+    "table_team": "Team", "table_played": "G", "table_won": "W", "table_drawn": "G",
+    "table_lost": "V", "table_gf": "VV", "table_ga": "TV", "table_gd": "DS", "table_points": "Ptn",
+    "vs": "vs", "score": "{goalsA} – {goalsB}", "aet": "n.v.t.", "pens": "({penA} – {penB} na strafschoppen)",
+    "player_team": "Jouw team", "view_match": "Wedstrijdverslag"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}", "live_ticker": "Wedstrijdverslag", "stats_title": "Statistieken",
+    "ovr_label": "Team TOT", "attack_label": "Aanval", "midfield_label": "Middenveld", "defense_label": "Verdediging"
+  },
+  "results": {
+    "champion_title": "Europees kampioen!", "champion_subtitle": "Jouw droomteam veroverde Europa!",
+    "eliminated_title": "Uitgeschakeld", "eliminated_subtitle": "De Euro-reis van jouw team eindigde in de {phase}.",
+    "play_again": "Opnieuw spelen", "share": "Resultaat delen"
+  },
+  "legal": { "impressum_title": "Colofon", "impressum_note": "Informatie conform toepasselijke wetgeving" }
+}

@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Compose ton équipe de rêve de l'Euro",
+    "description": "Sélectionne des joueurs dans les effectifs historiques des Championnats d'Europe de l'UEFA et dispute une simulation complète."
+  },
+  "nav": {
+    "draft": "Draft",
+    "tournament": "Tournoi",
+    "impressum": "Mentions légales"
+  },
+  "landing": {
+    "headline": "Compose ton équipe de rêve de l'Euro",
+    "subline": "Sélectionne des légendes de chaque Championnat d'Europe de l'UEFA depuis 1960 et bats-toi pour la gloire.",
+    "cta_start": "Commencer le draft",
+    "cta_learn": "Comment ça marche",
+    "step1_title": "Choisir une formation",
+    "step1_desc": "Choisis parmi 3 formations aléatoires. Tes slots de position sont verrouillés pour le draft.",
+    "step2_title": "Tourner la roulette",
+    "step2_desc": "Un effectif Euro historique aléatoire apparaît. Choisis UN joueur adapté à ta formation.",
+    "step3_title": "Compétition",
+    "step3_desc": "Ton XI all-time dispute un tournoi Euro simulé. Peux-tu tout gagner ?"
+  },
+  "formation": {
+    "select_title": "Choisir ta formation",
+    "select_subtitle": "Trois formations ont été tirées pour toi. Choisis-en une pour verrouiller tes slots de position.",
+    "slots": "postes",
+    "confirm": "Jouer en {formation}"
+  },
+  "draft": {
+    "progress": "{filled} joueurs sur 11 draftés",
+    "rerolls_remaining": "{count} rerolls restants",
+    "reroll_year": "Relancer l'année",
+    "reroll_nation": "Relancer la nation",
+    "reroll_year_hint": "Garder {nation}, changer d'année",
+    "reroll_nation_hint": "Garder {year}, changer de nation",
+    "no_rerolls": "Plus de rerolls disponibles",
+    "spin": "Tourner",
+    "pick_player": "Choisir un joueur",
+    "player_greyed": "Ne correspond à aucun slot ouvert",
+    "already_drafted": "Déjà dans ton équipe",
+    "select_slot": "Sélectionner un poste",
+    "draft_complete_title": "Équipe complète !",
+    "draft_complete_subtitle": "Ton équipe de rêve est prête. C'est l'heure de concourir.",
+    "go_to_tournament": "Simuler le tournoi",
+    "positions": {
+      "GK": "GB",
+      "CB": "DC",
+      "LB": "DG",
+      "RB": "DD",
+      "CDM": "MDC",
+      "CM": "MC",
+      "CAM": "CAM",
+      "LM": "MG",
+      "RM": "MD",
+      "LW": "AG",
+      "RW": "AD",
+      "ST": "BU",
+      "CF": "CF"
+    },
+    "position_labels": {
+      "GK": "Gardien de but",
+      "CB": "Défenseur central",
+      "LB": "Arrière gauche",
+      "RB": "Arrière droit",
+      "CDM": "Milieu défensif",
+      "CM": "Milieu central",
+      "CAM": "Milieu offensif",
+      "LM": "Milieu gauche",
+      "RM": "Milieu droit",
+      "LW": "Ailier gauche",
+      "RW": "Ailier droit",
+      "ST": "Avant-centre",
+      "CF": "Avant-centre"
+    },
+    "stats": {
+      "overall": "GEN",
+      "pace": "VIT",
+      "shooting": "TIR",
+      "passing": "PAS",
+      "dribbling": "DRI",
+      "defending": "DEF",
+      "physical": "PHY"
+    }
+  },
+  "tournament": {
+    "title": "Tournoi",
+    "your_journey": "Ton parcours",
+    "group_stage": "Phase de groupes",
+    "group": "Groupe {id}",
+    "matchday": "Journée {n}",
+    "quarter_final": "Quart de finale",
+    "semi_final": "Demi-finale",
+    "final": "Finale",
+    "table_team": "Équipe",
+    "table_played": "J",
+    "table_won": "V",
+    "table_drawn": "N",
+    "table_lost": "D",
+    "table_gf": "BP",
+    "table_ga": "BC",
+    "table_gd": "DB",
+    "table_points": "Pts",
+    "vs": "vs",
+    "score": "{goalsA} – {goalsB}",
+    "aet": "a.p.",
+    "pens": "({penA} – {penB} t.a.b.)",
+    "player_team": "Ton équipe",
+    "view_match": "Rapport de match"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}",
+    "live_ticker": "Rapport de match",
+    "stats_title": "Statistiques du match",
+    "ovr_label": "GEN de l'équipe",
+    "attack_label": "Attaque",
+    "midfield_label": "Milieu",
+    "defense_label": "Défense"
+  },
+  "results": {
+    "champion_title": "Champion d'Europe !",
+    "champion_subtitle": "Ton équipe de rêve a conquis l'Europe !",
+    "eliminated_title": "Éliminé",
+    "eliminated_subtitle": "Le parcours Euro de ton équipe s'est terminé en {phase}.",
+    "play_again": "Rejouer",
+    "share": "Partager le résultat"
+  },
+  "legal": {
+    "impressum_title": "Mentions légales",
+    "impressum_note": "Informations conformément à la législation applicable"
+  }
+}

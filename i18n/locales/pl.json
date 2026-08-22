@@ -1,0 +1,70 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Stwórz swoją wymarzoną drużynę Euro",
+    "description": "Wybierz zawodników z historycznych składów UEFA Euro i rywalizuj w pełnej symulacji turnieju."
+  },
+  "nav": { "draft": "Draft", "tournament": "Turniej", "impressum": "Nota prawna" },
+  "landing": {
+    "headline": "Stwórz swoją wymarzoną drużynę Euro",
+    "subline": "Wybierz legendy z każdego UEFA Euro od 1960 roku i walcz o chwałę.",
+    "cta_start": "Rozpocznij draft",
+    "cta_learn": "Jak to działa",
+    "step1_title": "Wybierz ustawienie",
+    "step1_desc": "Wybierz spośród 3 losowych ustawień. Twoje sloty pozycji są zablokowane.",
+    "step2_title": "Zakręć ruletką",
+    "step2_desc": "Pojawi się losowy historyczny skład Euro. Wybierz JEDNEGO gracza pasującego do ustawienia.",
+    "step3_title": "Rywalizuj",
+    "step3_desc": "Twoja jedenastka wszech czasów weźmie udział w symulowanym turnieju Euro. Czy wygrasz wszystko?"
+  },
+  "formation": {
+    "select_title": "Wybierz ustawienie",
+    "select_subtitle": "Wylosowano dla Ciebie trzy ustawienia. Wybierz jedno, aby zablokować swoje pozycje.",
+    "slots": "pozycje",
+    "confirm": "Graj z {formation}"
+  },
+  "draft": {
+    "progress": "{filled} z 11 zawodników wybranych",
+    "rerolls_remaining": "Pozostało {count} rerollów",
+    "reroll_year": "Losuj rok",
+    "reroll_nation": "Losuj naród",
+    "reroll_year_hint": "Zachowaj {nation}, zmień rok",
+    "reroll_nation_hint": "Zachowaj {year}, zmień naród",
+    "no_rerolls": "Brak rerollów",
+    "spin": "Kręć",
+    "pick_player": "Wybierz zawodnika",
+    "player_greyed": "Nie pasuje do żadnego wolnego slotu",
+    "already_drafted": "Już w twoim składzie",
+    "select_slot": "Wybierz pozycję",
+    "draft_complete_title": "Skład kompletny!",
+    "draft_complete_subtitle": "Twoja wymarzona drużyna jest gotowa. Czas rywalizować.",
+    "go_to_tournament": "Symuluj turniej",
+    "positions": { "GK": "BR", "CB": "ŚO", "LB": "LO", "RB": "PO", "CDM": "DM", "CM": "ŚP", "CAM": "AP", "LM": "LH", "RM": "PH", "LW": "LN", "RW": "PN", "ST": "NA", "CF": "ŚN" },
+    "position_labels": {
+      "GK": "Bramkarz", "CB": "Środkowy obrońca", "LB": "Lewy obrońca", "RB": "Prawy obrońca",
+      "CDM": "Defensywny pomocnik", "CM": "Środkowy pomocnik", "CAM": "Ofensywny pomocnik",
+      "LM": "Lewy pomocnik", "RM": "Prawy pomocnik",
+      "LW": "Lewy skrzydłowy", "RW": "Prawy skrzydłowy", "ST": "Napastnik", "CF": "Środkowy napastnik"
+    },
+    "stats": { "overall": "OGÓ", "pace": "SZY", "shooting": "STR", "passing": "POD", "dribbling": "DRY", "defending": "OBR", "physical": "FIZ" }
+  },
+  "tournament": {
+    "title": "Turniej", "your_journey": "Twoja droga", "group_stage": "Faza grupowa",
+    "group": "Grupa {id}", "matchday": "Kolejka {n}", "quarter_final": "Ćwierćfinał",
+    "semi_final": "Półfinał", "final": "Finał",
+    "table_team": "Drużyna", "table_played": "M", "table_won": "W", "table_drawn": "R",
+    "table_lost": "P", "table_gf": "BZ", "table_ga": "BS", "table_gd": "RB", "table_points": "Pkt",
+    "vs": "vs", "score": "{goalsA} – {goalsB}", "aet": "po dogrywce", "pens": "({penA} – {penB} po karnych)",
+    "player_team": "Twoja drużyna", "view_match": "Raport meczowy"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}", "live_ticker": "Raport meczowy", "stats_title": "Statystyki meczu",
+    "ovr_label": "OGÓ drużyny", "attack_label": "Atak", "midfield_label": "Pomoc", "defense_label": "Obrona"
+  },
+  "results": {
+    "champion_title": "Mistrzowie Europy!", "champion_subtitle": "Twoja wymarzona drużyna podbiła Europę!",
+    "eliminated_title": "Wyeliminowany", "eliminated_subtitle": "Podróż Euro Twojej drużyny zakończyła się w fazie {phase}.",
+    "play_again": "Zagraj ponownie", "share": "Udostępnij wynik"
+  },
+  "legal": { "impressum_title": "Nota prawna", "impressum_note": "Informacje zgodne z obowiązującymi przepisami" }
+}

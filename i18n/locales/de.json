@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Stelle dein Euro-Traumteam auf",
+    "description": "Wähle Spieler aus historischen UEFA-Europameisterschaftskadern und bestreite eine vollständige Euro-Simulation."
+  },
+  "nav": {
+    "draft": "Draft",
+    "tournament": "Turnier",
+    "impressum": "Impressum"
+  },
+  "landing": {
+    "headline": "Stelle dein Euro-Traumteam auf",
+    "subline": "Wähle Legenden aus jeder UEFA-Europameisterschaft seit 1960 und kämpfe um den Ruhm.",
+    "cta_start": "Draft starten",
+    "cta_learn": "Wie es funktioniert",
+    "step1_title": "Formation wählen",
+    "step1_desc": "Wähle aus 3 zufälligen Formationen. Deine Positionen sind für den Draft gesperrt.",
+    "step2_title": "Roulette drehen",
+    "step2_desc": "Ein zufälliger historischer Euro-Kader erscheint. Wähle EINEN Spieler, der zu deiner Formation passt.",
+    "step3_title": "Antreten",
+    "step3_desc": "Dein All-Time-XI tritt in einem simulierten Euro-Turnier an. Kannst du alles gewinnen?"
+  },
+  "formation": {
+    "select_title": "Wähle deine Formation",
+    "select_subtitle": "Drei Formationen wurden für dich gezogen. Wähle eine, um deine Positionen zu sperren.",
+    "slots": "Positionen",
+    "confirm": "{formation} spielen"
+  },
+  "draft": {
+    "progress": "{filled} von 11 Spielern gedraftet",
+    "rerolls_remaining": "{count} Rerolls übrig",
+    "reroll_year": "Jahr neu würfeln",
+    "reroll_nation": "Nation neu würfeln",
+    "reroll_year_hint": "{nation} behalten, neues Jahr",
+    "reroll_nation_hint": "{year} behalten, neue Nation",
+    "no_rerolls": "Keine Rerolls mehr übrig",
+    "spin": "Drehen",
+    "pick_player": "Spieler wählen",
+    "player_greyed": "Passt in keinen offenen Slot",
+    "already_drafted": "Bereits in deinem Kader",
+    "select_slot": "Position wählen",
+    "draft_complete_title": "Kader vollständig!",
+    "draft_complete_subtitle": "Dein Traumteam ist bereit. Zeit anzutreten.",
+    "go_to_tournament": "Turnier simulieren",
+    "positions": {
+      "GK": "TW",
+      "CB": "IV",
+      "LB": "LV",
+      "RB": "RV",
+      "CDM": "DM",
+      "CM": "ZM",
+      "CAM": "OM",
+      "LM": "LM",
+      "RM": "RM",
+      "LW": "LA",
+      "RW": "RA",
+      "ST": "ST",
+      "CF": "MF"
+    },
+    "position_labels": {
+      "GK": "Torwart",
+      "CB": "Innenverteidiger",
+      "LB": "Linksverteidiger",
+      "RB": "Rechtsverteidiger",
+      "CDM": "Defensives Mittelfeld",
+      "CM": "Zentrales Mittelfeld",
+      "CAM": "Offensives Mittelfeld",
+      "LM": "Linkes Mittelfeld",
+      "RM": "Rechtes Mittelfeld",
+      "LW": "Linksaußen",
+      "RW": "Rechtsaußen",
+      "ST": "Stürmer",
+      "CF": "Mittelstürmer"
+    },
+    "stats": {
+      "overall": "GES",
+      "pace": "TEM",
+      "shooting": "SCH",
+      "passing": "PAS",
+      "dribbling": "DRI",
+      "defending": "DEF",
+      "physical": "PHY"
+    }
+  },
+  "tournament": {
+    "title": "Turnier",
+    "your_journey": "Dein Weg",
+    "group_stage": "Gruppenphase",
+    "group": "Gruppe {id}",
+    "matchday": "Spieltag {n}",
+    "quarter_final": "Viertelfinale",
+    "semi_final": "Halbfinale",
+    "final": "Finale",
+    "table_team": "Team",
+    "table_played": "Sp",
+    "table_won": "S",
+    "table_drawn": "U",
+    "table_lost": "N",
+    "table_gf": "Tore",
+    "table_ga": "Geg.",
+    "table_gd": "Diff.",
+    "table_points": "Pkt",
+    "vs": "vs",
+    "score": "{goalsA} – {goalsB}",
+    "aet": "n.V.",
+    "pens": "({penA} – {penB} i.E.)",
+    "player_team": "Dein Team",
+    "view_match": "Spielbericht"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}",
+    "live_ticker": "Spielbericht",
+    "stats_title": "Spielstatistiken",
+    "ovr_label": "Team-GES",
+    "attack_label": "Angriff",
+    "midfield_label": "Mittelfeld",
+    "defense_label": "Abwehr"
+  },
+  "results": {
+    "champion_title": "Europameister!",
+    "champion_subtitle": "Dein Traumteam hat Europa erobert!",
+    "eliminated_title": "Ausgeschieden",
+    "eliminated_subtitle": "Deine Euro-Reise endete im {phase}.",
+    "play_again": "Nochmal spielen",
+    "share": "Ergebnis teilen"
+  },
+  "legal": {
+    "impressum_title": "Impressum",
+    "impressum_note": "Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "EuroDraft",
+    "tagline": "Draft your Euro dream team",
+    "description": "Pick players from historical UEFA European Championship squads and compete in a full Euro simulation."
+  },
+  "nav": {
+    "draft": "Draft",
+    "tournament": "Tournament",
+    "impressum": "Imprint"
+  },
+  "landing": {
+    "headline": "Draft Your Euro Dream Team",
+    "subline": "Pick legendary players from every UEFA European Championship since 1960 and battle for glory.",
+    "cta_start": "Start Drafting",
+    "cta_learn": "How It Works",
+    "step1_title": "Choose a Formation",
+    "step1_desc": "Pick from 3 random formations. Your position slots are locked for the draft.",
+    "step2_title": "Spin the Roulette",
+    "step2_desc": "A random historical Euro squad appears. Pick ONE player that fits your formation.",
+    "step3_title": "Compete",
+    "step3_desc": "Your all-time XI enters a full simulated Euro tournament. Can you win it all?"
+  },
+  "formation": {
+    "select_title": "Choose Your Formation",
+    "select_subtitle": "Three formations have been drawn for you. Pick one to lock your position slots.",
+    "slots": "slots",
+    "confirm": "Play {formation}"
+  },
+  "draft": {
+    "progress": "{filled} of 11 players drafted",
+    "rerolls_remaining": "{count} rerolls left",
+    "reroll_year": "Reroll Year",
+    "reroll_nation": "Reroll Nation",
+    "reroll_year_hint": "Keep {nation}, get a new year",
+    "reroll_nation_hint": "Keep {year}, get a new nation",
+    "no_rerolls": "No rerolls remaining",
+    "spin": "Spin",
+    "pick_player": "Pick a player",
+    "player_greyed": "Does not fit any open slot",
+    "already_drafted": "Already in your squad",
+    "select_slot": "Select position",
+    "draft_complete_title": "Squad Complete!",
+    "draft_complete_subtitle": "Your dream team is ready. Time to compete.",
+    "go_to_tournament": "Simulate Tournament",
+    "positions": {
+      "GK": "GK",
+      "CB": "CB",
+      "LB": "LB",
+      "RB": "RB",
+      "CDM": "CDM",
+      "CM": "CM",
+      "CAM": "CAM",
+      "LM": "LM",
+      "RM": "RM",
+      "LW": "LW",
+      "RW": "RW",
+      "ST": "ST",
+      "CF": "CF"
+    },
+    "position_labels": {
+      "GK": "Goalkeeper",
+      "CB": "Centre-Back",
+      "LB": "Left-Back",
+      "RB": "Right-Back",
+      "CDM": "Def. Midfielder",
+      "CM": "Midfielder",
+      "CAM": "Att. Midfielder",
+      "LM": "Left Midfielder",
+      "RM": "Right Midfielder",
+      "LW": "Left Wing",
+      "RW": "Right Wing",
+      "ST": "Striker",
+      "CF": "Centre Forward"
+    },
+    "stats": {
+      "overall": "OVR",
+      "pace": "PAC",
+      "shooting": "SHO",
+      "passing": "PAS",
+      "dribbling": "DRI",
+      "defending": "DEF",
+      "physical": "PHY"
+    }
+  },
+  "tournament": {
+    "title": "Tournament",
+    "your_journey": "Your Journey",
+    "group_stage": "Group Stage",
+    "group": "Group {id}",
+    "matchday": "Matchday {n}",
+    "quarter_final": "Quarter-Final",
+    "semi_final": "Semi-Final",
+    "final": "Final",
+    "table_team": "Team",
+    "table_played": "P",
+    "table_won": "W",
+    "table_drawn": "D",
+    "table_lost": "L",
+    "table_gf": "GF",
+    "table_ga": "GA",
+    "table_gd": "GD",
+    "table_points": "Pts",
+    "vs": "vs",
+    "score": "{goalsA} – {goalsB}",
+    "aet": "a.e.t.",
+    "pens": "({penA} – {penB} on pens)",
+    "player_team": "Your Team",
+    "view_match": "Match Report"
+  },
+  "match": {
+    "title": "{teamA} vs {teamB}",
+    "live_ticker": "Match Report",
+    "stats_title": "Match Stats",
+    "ovr_label": "Team OVR",
+    "attack_label": "Attack",
+    "midfield_label": "Midfield",
+    "defense_label": "Defense"
+  },
+  "results": {
+    "champion_title": "Euro Champions!",
+    "champion_subtitle": "Your dream team conquered Europe!",
+    "eliminated_title": "Eliminated",
+    "eliminated_subtitle": "Your team's Euro journey ended in the {phase}.",
+    "play_again": "Play Again",
+    "share": "Share Result"
+  },
+  "legal": {
+    "impressum_title": "Imprint",
+    "impressum_note": "Information according to § 5 DDG (Digitale-Dienste-Gesetz)"
+  }
+}
