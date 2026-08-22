@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type {
   TournamentTeam, Group, GroupStanding, KnockoutBracket,
-  MatchResult, TournamentPhase, Player
+  MatchResult, TournamentPhase, Player,
+  TournamentRunStats, PlayerTournamentStats
 } from '~/types'
 import { useDatabase } from '~/composables/useDatabase'
 import { useDraftStore } from '~/stores/draft'
@@ -113,6 +114,129 @@ export const useTournamentStore = defineStore('tournament', () => {
       ? (final.penalties.teamA > final.penalties.teamB ? final.teamA.team.id : final.teamB.team.id)
       : (final.teamA.goals > final.teamB.goals ? final.teamA.team.id : final.teamB.team.id)
     return winner === pid
+  })
+
+  /** Detailed Tournament Run Performance Statistics for the Drafted Squad */
+  const runStats = computed((): TournamentRunStats | null => {
+    if (!playerTeam.value) return null
+    const pid = playerTeam.value.id
+    const matches = playerMatches.value
+    if (matches.length === 0) return null
+
+    const statsMap = new Map<string, PlayerTournamentStats>()
+    for (const player of playerTeam.value.squad) {
+      statsMap.set(player.id, {
+        player,
+        matches: 0,
+        minutes: 0,
+        goals: 0,
+        assists: 0,
+        ga: 0,
+        yellowCards: 0,
+        redCards: 0,
+        cleanSheets: 0,
+        gaPer90: 0,
+        rating: 6.0
+      })
+    }
+
+    let totalGoalsFor = 0
+    let totalGoalsAgainst = 0
+    let cleanSheets = 0
+    let totalYellowCards = 0
+    let totalRedCards = 0
+
+    for (const match of matches) {
+      const isTeamA = match.teamA.team.id === pid
+      const myGoals = isTeamA ? match.teamA.goals : match.teamB.goals
+      const theirGoals = isTeamA ? match.teamB.goals : match.teamA.goals
+      const isCleanSheet = theirGoals === 0
+
+      totalGoalsFor += myGoals
+      totalGoalsAgainst += theirGoals
+      if (isCleanSheet) cleanSheets++
+
+      const matchDuration = match.extraTime ? 120 : 90
+
+      // Add appearances and minutes for all starters
+      for (const player of playerTeam.value.squad) {
+        const pStats = statsMap.get(player.id)!
+        pStats.matches++
+        pStats.minutes += matchDuration
+        if (isCleanSheet && (player.primaryPosition === 'GK' || ['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(player.primaryPosition))) {
+          pStats.cleanSheets++
+        }
+      }
+
+      // Process events from this match
+      for (const ev of match.events) {
+        const isMyTeam = (isTeamA && ev.team === 'A') || (!isTeamA && ev.team === 'B')
+        if (!isMyTeam) continue
+
+        if (ev.type === 'goal' && ev.playerId && statsMap.has(ev.playerId)) {
+          statsMap.get(ev.playerId)!.goals++
+        }
+        if (ev.type === 'goal' && ev.assistPlayerId && statsMap.has(ev.assistPlayerId)) {
+          statsMap.get(ev.assistPlayerId)!.assists++
+        }
+        if (ev.type === 'yellow-card') {
+          totalYellowCards++
+          if (ev.playerId && statsMap.has(ev.playerId)) {
+            statsMap.get(ev.playerId)!.yellowCards++
+          }
+        }
+        if (ev.type === 'red-card') {
+          totalRedCards++
+          if (ev.playerId && statsMap.has(ev.playerId)) {
+            statsMap.get(ev.playerId)!.redCards++
+          }
+        }
+      }
+    }
+
+    // Calculate G+A, G+A per 90, and match rating
+    const playerStatsList = [...statsMap.values()].map((p) => {
+      p.ga = p.goals + p.assists
+      p.gaPer90 = p.minutes > 0 ? Number(((p.ga / p.minutes) * 90).toFixed(2)) : 0
+      const rawRating = 6.2 + (p.goals * 0.85) + (p.assists * 0.55) + (p.cleanSheets * 0.4) - (p.yellowCards * 0.4) - (p.redCards * 1.5)
+      p.rating = Number(Math.min(9.9, Math.max(5.5, rawRating)).toFixed(1))
+      return p
+    })
+
+    // Sort by G+A desc, then Goals desc, then Rating desc
+    playerStatsList.sort((a, b) => b.ga !== a.ga ? b.ga - a.ga : (b.goals !== a.goals ? b.goals - a.goals : b.rating - a.rating))
+
+    // Top Scorer
+    const scorers = [...playerStatsList].filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals)
+    const topScorer = scorers[0] ?? null
+
+    // Top Assister
+    const assisters = [...playerStatsList].filter(p => p.assists > 0).sort((a, b) => b.assists - a.assists)
+    const topAssister = assisters[0] ?? null
+
+    // MVP (Highest G+A or highest rated player)
+    const topGA = playerStatsList[0]
+    const mvp: PlayerTournamentStats | null = (topGA && topGA.ga > 0)
+      ? topGA
+      : (playerStatsList.length > 0 ? [...playerStatsList].sort((a, b) => b.rating - a.rating)[0] ?? null : null)
+
+    // Best G+A per 90
+    const gaContributors = [...playerStatsList].filter(p => p.ga > 0).sort((a, b) => b.gaPer90 - a.gaPer90)
+    const bestGAPer90 = gaContributors[0] ?? null
+
+    return {
+      totalMatches: matches.length,
+      totalGoalsFor,
+      totalGoalsAgainst,
+      cleanSheets,
+      totalYellowCards,
+      totalRedCards,
+      topScorer,
+      topAssister,
+      mvp,
+      bestGAPer90,
+      playerStats: playerStatsList
+    }
   })
 
   // All precalculated matches stored internally to reveal progressively
@@ -258,6 +382,7 @@ export const useTournamentStore = defineStore('tournament', () => {
     playerTeam,
     playerMatches,
     isChampion,
+    runStats,
     simulationStep,
     isSimulating,
     initTournament,

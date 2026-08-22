@@ -116,12 +116,42 @@ export interface MatchEvent {
   minute: number
   type: 'kickoff' | 'goal' | 'yellow-card' | 'red-card' | 'chance' | 'save' | 'halftime' | 'fulltime'
   team: 'A' | 'B' | null
+  playerId?: string
   playerName?: string
+  assistPlayerId?: string
   assistPlayerName?: string
   description: string
   // Running score at this moment
   scoreA: number
   scoreB: number
+}
+
+export interface PlayerTournamentStats {
+  player: Player
+  matches: number
+  minutes: number
+  goals: number
+  assists: number
+  ga: number
+  yellowCards: number
+  redCards: number
+  cleanSheets: number
+  gaPer90: number
+  rating: number
+}
+
+export interface TournamentRunStats {
+  totalMatches: number
+  totalGoalsFor: number
+  totalGoalsAgainst: number
+  cleanSheets: number
+  totalYellowCards: number
+  totalRedCards: number
+  topScorer: PlayerTournamentStats | null
+  topAssister: PlayerTournamentStats | null
+  mvp: PlayerTournamentStats | null
+  bestGAPer90: PlayerTournamentStats | null
+  playerStats: PlayerTournamentStats[]
 }
 
 export interface MatchResult {

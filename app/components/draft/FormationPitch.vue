@@ -23,65 +23,97 @@ function isSlotHighlighted(slot: DraftSlot): boolean {
   return false
 }
 
-// Pitch layout coordinate mapping based on position type and index
+// Pitch layout coordinate mapping based on position type and index (zero-overlap staggered layout)
 function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
   const pos = slot.position
+  const allSlots = props.slots
+  const hasCDM = allSlots.some(s => s.position === 'CDM')
+  const hasCM = allSlots.some(s => s.position === 'CM')
+  const hasCAM = allSlots.some(s => s.position === 'CAM')
+
   let top = 50
   let left = 50
 
-  // Standard pitch layout (GK at bottom = 87%, Def at 68%, Mid at 45%, Fwd at 20%)
   if (pos === 'GK') {
-    top = 87
+    top = 88
     left = 50
   } else if (pos === 'CB') {
-    top = 69
-    const cbSlots = props.slots.filter(s => s.position === 'CB')
-    const cbIdx = cbSlots.findIndex(s => s.id === slot.id)
-    if (cbSlots.length === 2) {
-      left = cbIdx === 0 ? 37 : 63
-    } else if (cbSlots.length === 3) {
-      left = cbIdx === 0 ? 28 : cbIdx === 1 ? 50 : 72
-    }
+    top = 74
+    const cbSlots = allSlots.filter(s => s.position === 'CB')
+    const idx = cbSlots.findIndex(s => s.id === slot.id)
+    if (cbSlots.length === 2) left = idx === 0 ? 37 : 63
+    else if (cbSlots.length === 3) left = idx === 0 ? 26 : idx === 1 ? 50 : 74
   } else if (pos === 'LB') {
-    top = 67
-    left = 15
+    top = 70
+    left = 14
   } else if (pos === 'RB') {
-    top = 67
-    left = 85
+    top = 70
+    left = 86
   } else if (pos === 'CDM') {
-    top = 55
-    const cdmSlots = props.slots.filter(s => s.position === 'CDM')
+    const cdmSlots = allSlots.filter(s => s.position === 'CDM')
     const idx = cdmSlots.findIndex(s => s.id === slot.id)
-    left = cdmSlots.length > 1 ? (idx === 0 ? 37 : 63) : 50
+    top = 60
+    if (cdmSlots.length > 1) {
+      left = idx === 0 ? 36 : 64
+    } else {
+      left = 50
+    }
   } else if (pos === 'CM') {
-    top = 45
-    const cmSlots = props.slots.filter(s => s.position === 'CM')
+    const cmSlots = allSlots.filter(s => s.position === 'CM')
     const idx = cmSlots.findIndex(s => s.id === slot.id)
-    if (cmSlots.length === 1) left = 50
-    else if (cmSlots.length === 2) left = idx === 0 ? 34 : 66
-    else if (cmSlots.length === 3) left = idx === 0 ? 24 : idx === 1 ? 50 : 76
+
+    // Stagger when CDM and/or CAM exist so they never overlap
+    if (hasCDM && hasCAM) {
+      top = 47
+      left = cmSlots.length === 1 ? 36 : (idx === 0 ? 34 : 66)
+    } else if (hasCDM && !hasCAM) {
+      top = 43
+      left = cmSlots.length === 1 ? 50 : (idx === 0 ? 33 : 67)
+    } else if (!hasCDM && hasCAM) {
+      top = 50
+      left = cmSlots.length === 1 ? 36 : (idx === 0 ? 35 : 65)
+    } else {
+      if (cmSlots.length === 1) {
+        top = 48
+        left = 50
+      } else if (cmSlots.length === 2) {
+        top = 48
+        left = idx === 0 ? 35 : 65
+      } else if (cmSlots.length === 3) {
+        top = 52
+        left = idx === 0 ? 24 : idx === 1 ? 50 : 76
+      }
+    }
   } else if (pos === 'CAM') {
-    top = 34
-    const camSlots = props.slots.filter(s => s.position === 'CAM')
+    const camSlots = allSlots.filter(s => s.position === 'CAM')
     const idx = camSlots.findIndex(s => s.id === slot.id)
-    left = camSlots.length > 1 ? (idx === 0 ? 35 : 65) : 50
+    top = 33
+    if (camSlots.length > 1) {
+      left = idx === 0 ? 35 : 65
+    } else {
+      if (hasCDM && hasCM) {
+        left = 60
+      } else {
+        left = 50
+      }
+    }
   } else if (pos === 'LM') {
-    top = 45
+    top = hasCDM ? 48 : 46
     left = 14
   } else if (pos === 'RM') {
-    top = 45
+    top = hasCDM ? 48 : 46
     left = 86
   } else if (pos === 'LW') {
-    top = 22
+    top = 20
     left = 18
   } else if (pos === 'RW') {
-    top = 22
+    top = 20
     left = 82
   } else if (pos === 'ST' || pos === 'CF') {
-    top = 17
-    const stSlots = props.slots.filter(s => s.position === 'ST' || s.position === 'CF')
+    const stSlots = allSlots.filter(s => s.position === 'ST' || s.position === 'CF')
     const idx = stSlots.findIndex(s => s.id === slot.id)
-    left = stSlots.length > 1 ? (idx === 0 ? 36 : 64) : 50
+    top = 15
+    left = stSlots.length > 1 ? (idx === 0 ? 35 : 65) : 50
   }
 
   return {
@@ -132,7 +164,7 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
       >
         <!-- Slot Token / Disc -->
         <div
-          class="size-10 sm:size-12 rounded-full flex flex-col items-center justify-center border shadow-lg transition-all duration-200"
+          class="size-9 sm:size-11 rounded-full flex flex-col items-center justify-center border shadow-lg transition-all duration-200"
           :class="[
             slot.player
               ? slot.player.stats.overall >= 90
@@ -151,13 +183,13 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
             >
               {{ slot.player.stats.overall }}
             </span>
-            <span class="font-mono text-[8px] text-zinc-400 leading-none">
+            <span class="font-mono text-[7px] sm:text-[8px] text-zinc-400 leading-none">
               {{ slot.position }}
             </span>
           </template>
           <template v-else>
             <span
-              class="font-mono text-[11px] sm:text-xs font-black transition-colors"
+              class="font-mono text-[10px] sm:text-xs font-black transition-colors"
               :class="isSlotHighlighted(slot) ? 'text-emerald-100 font-extrabold' : 'text-zinc-400 group-hover:text-emerald-300'"
             >
               {{ slot.position }}
@@ -165,9 +197,9 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
           </template>
         </div>
 
-        <!-- Name / Action Pill -->
+        <!-- Name / Action Pill (compact, non-overlapping) -->
         <div
-          class="mt-1 px-2 py-0.5 rounded text-[9px] font-bold tracking-tight max-w-[5.5rem] sm:max-w-[6.5rem] truncate text-center shadow-md transition-all font-mono"
+          class="mt-0.5 px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold tracking-tight max-w-[4.8rem] sm:max-w-[5.8rem] truncate text-center shadow-md transition-all font-mono"
           :class="slot.player
             ? slot.player.stats.overall >= 90
               ? 'bg-zinc-900/95 text-gold-300 border border-gold-500/40'
@@ -176,7 +208,7 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
               ? 'bg-emerald-500 text-black font-extrabold border border-emerald-300 shadow-lg'
               : 'bg-black/70 text-zinc-300 border border-white/10'"
         >
-          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? 'Tap to Place' : slot.position }}
+          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? 'Place' : slot.position }}
         </div>
       </button>
     </div>
