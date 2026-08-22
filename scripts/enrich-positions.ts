@@ -22,18 +22,48 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const ROOT = join(__dirname, '..')
 const CACHE_DIR = join(__dirname, 'cache', 'positions')
 
-// Source base URL — injected from environment, never hardcoded
+// Auto-load .env file if POSITION_SOURCE_BASE_URL is not already exported in process.env
+if (!process.env['POSITION_SOURCE_BASE_URL']) {
+  const envPath = join(ROOT, '.env')
+  if (existsSync(envPath)) {
+    try {
+      if (typeof process.loadEnvFile === 'function') {
+        process.loadEnvFile(envPath)
+      } else {
+        const envContent = readFileSync(envPath, 'utf8')
+        for (const line of envContent.split('\n')) {
+          const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/)
+          if (match) {
+            const key = match[1]!
+            let val = match[2]?.trim() ?? ''
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith('\'') && val.endsWith('\''))) {
+              val = val.slice(1, -1)
+            }
+            if (!process.env[key]) {
+              process.env[key] = val
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignore env file parsing error
+    }
+  }
+}
+
+// Source base URL — injected from environment or .env, never hardcoded
 const SOURCE_BASE_URL = process.env['POSITION_SOURCE_BASE_URL'] ?? ''
 if (!SOURCE_BASE_URL) {
   console.error('❌ POSITION_SOURCE_BASE_URL environment variable not set.')
-  console.error('   Set it to the base URL of your player data source.')
+  console.error('   Add POSITION_SOURCE_BASE_URL to your .env file or set it in your environment.')
   process.exit(1)
 }
 
