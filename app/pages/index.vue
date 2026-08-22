@@ -102,19 +102,19 @@ function spinPreview() {
       clearInterval(interval)
       isSpinningPreview.value = false
     }
-  }, 80)
+  }, 75)
 }
 
-// 4 Tournament Era Bento Data
+// 4 Eras Bento Grid Data
 const tournamentEras = [
   {
     era: '1960 — 1980',
-    title: 'The Pioneers & Total Football',
-    subtitle: 'From Lev Yashin\'s heroics to Cruyff and Beckenbauer redefining modern tactics.',
+    title: 'The Pioneer Era',
+    subtitle: 'From Yashin\'s penalty saves to Panenka\'s daring chip that created football history.',
     color: 'from-amber-500/20 to-transparent',
     borderColor: 'border-amber-500/30',
-    tag: '4 to 8 Teams',
-    stars: ['Lev Yashin \'60', 'Franz Beckenbauer \'72', 'Johan Cruyff \'76', 'Antonin Panenka \'76']
+    tag: '4 Teams Era',
+    stars: ['Lev Yashin \'60', 'Gerd Müller \'72', 'Franz Beckenbauer \'72', 'Antonín Panenka \'76']
   },
   {
     era: '1984 — 1992',
@@ -147,7 +147,7 @@ const tournamentEras = [
 </script>
 
 <template>
-  <div class="relative overflow-hidden">
+  <div class="relative overflow-hidden space-y-16">
     <!-- Stadium Night Lighting Atmosphere -->
     <div
       class="absolute inset-0 pointer-events-none overflow-hidden"
@@ -159,10 +159,10 @@ const tournamentEras = [
     </div>
 
     <!-- ==================== HERO SECTION ==================== -->
-    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 lg:pt-12 lg:pb-32">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <!-- Left: Headline, Value Prop & CTAs -->
-        <div class="lg:col-span-7 space-y-8 text-left">
+        <div class="lg:col-span-7 space-y-6 text-left">
           <!-- Championship Eyebrow Badge -->
           <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
             <span class="size-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -172,18 +172,18 @@ const tournamentEras = [
           </div>
 
           <!-- Main Championship Headline -->
-          <h1 class="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.05]">
+          <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
             Draft Europe's <br>
             <span class="gold-text">Greatest Squads.</span>
           </h1>
 
           <!-- Value Prop Paragraph -->
-          <p class="text-base sm:text-xl text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-2xl">
+          <p class="text-base sm:text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed max-w-xl">
             Choose your tactical formation, spin historical nations across 64 years of European Championship history, and build the ultimate XI to conquer the tournament.
           </p>
 
           <!-- CTAs with Button-in-Button Architecture -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
             <NuxtLink
               to="/draft/formation"
               class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/25 justify-between sm:justify-start"
@@ -199,16 +199,16 @@ const tournamentEras = [
 
             <UButton
               to="#roulette-preview"
-              size="xl"
+              size="lg"
               variant="outline"
               color="neutral"
-              class="rounded-full px-6 font-semibold"
+              class="rounded-full px-5 font-semibold"
               label="Explore Eras & Roster"
             />
           </div>
 
           <!-- Live Database Stats Ticker -->
-          <div class="pt-6 border-t border-zinc-200 dark:border-white/10 grid grid-cols-3 gap-4 max-w-lg">
+          <div class="pt-6 border-t border-zinc-200 dark:border-white/10 grid grid-cols-3 gap-4 max-w-md">
             <div>
               <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
                 17
@@ -238,45 +238,43 @@ const tournamentEras = [
 
         <!-- Right: Interactive Tactical Legend Card Fan -->
         <div class="lg:col-span-5 flex flex-col items-center">
-          <div class="w-full max-w-md space-y-4">
-            <!-- Active Legendary Card -->
-            <div class="bezel-card relative">
-              <div class="bezel-inner p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-emerald-400">
-                    Featured Legend
-                  </span>
-                  <UBadge
-                    color="primary"
-                    variant="subtle"
-                    size="xs"
-                    class="font-mono font-bold"
-                  >
-                    Authentic FIFA OVR
-                  </UBadge>
-                </div>
+          <div class="w-full max-w-sm space-y-3">
+            <!-- Active Legendary Card (Clean single surface-card) -->
+            <div class="surface-card p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-emerald-400">
+                  Featured Legend
+                </span>
+                <UBadge
+                  color="primary"
+                  variant="subtle"
+                  size="xs"
+                  class="font-mono font-bold"
+                >
+                  Authentic FIFA OVR
+                </UBadge>
+              </div>
 
-                <!-- Foil Card Display -->
-                <PlayerFoilCard
-                  :player="currentLegend"
-                  :is-interactive="true"
-                />
+              <!-- Foil Card Display -->
+              <PlayerFoilCard
+                :player="currentLegend"
+                :is-interactive="true"
+              />
 
-                <!-- Interactive Legend Switcher Tabs -->
-                <div class="grid grid-cols-4 gap-1.5 pt-2">
-                  <button
-                    v-for="(leg, idx) in showcaseLegends"
-                    :key="leg.id"
-                    type="button"
-                    class="py-1.5 px-2 rounded-lg text-center font-mono text-xs font-bold transition-all border cursor-pointer"
-                    :class="activeLegendIndex === idx
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-sm'
-                      : 'bg-zinc-800/60 border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-700/60'"
-                    @click="activeLegendIndex = idx"
-                  >
-                    '{{ String(leg.year).slice(2) }}
-                  </button>
-                </div>
+              <!-- Interactive Legend Switcher Tabs -->
+              <div class="grid grid-cols-4 gap-1.5 pt-1">
+                <button
+                  v-for="(leg, idx) in showcaseLegends"
+                  :key="leg.id"
+                  type="button"
+                  class="py-1.5 px-2 rounded-lg text-center font-mono text-xs font-bold transition-all border cursor-pointer"
+                  :class="activeLegendIndex === idx
+                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-sm'
+                    : 'bg-zinc-800/60 border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-700/60'"
+                  @click="activeLegendIndex = idx"
+                >
+                  '{{ String(leg.year).slice(2) }}
+                </button>
               </div>
             </div>
           </div>
@@ -287,109 +285,105 @@ const tournamentEras = [
     <!-- ==================== LIVE ROULETTE DEMO SECTION ==================== -->
     <section
       id="roulette-preview"
-      class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-zinc-200 dark:border-white/10"
+      class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-200 dark:border-white/10"
     >
-      <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
-        <h2 class="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
+      <div class="text-center max-w-xl mx-auto mb-8 space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
           How the Roulette Works
         </h2>
-        <p class="text-zinc-600 dark:text-zinc-400 text-sm sm:text-base">
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm">
           Each draft round, the tournament wheel spins a random historical nation and year. Pick one player from that squad to lock into your tactical formation!
         </p>
       </div>
 
-      <!-- Live Spin Widget -->
-      <div class="max-w-xl mx-auto bezel-card">
-        <div class="bezel-inner p-6 text-center space-y-6">
-          <div class="flex items-center justify-center gap-3">
-            <CountryFlag
-              :country="previewSpinCountry"
-              size="lg"
-            />
-            <div class="text-left">
-              <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest block">
-                Euro {{ previewSpinYear }}
-              </span>
-              <h3 class="text-2xl font-black text-white tracking-tight">
-                {{ previewSpinCountryName }}
-              </h3>
-            </div>
+      <!-- Live Spin Widget (Clean single surface-card) -->
+      <div class="max-w-md mx-auto surface-card p-6 text-center space-y-5">
+        <div class="flex items-center justify-center gap-3">
+          <CountryFlag
+            :country="previewSpinCountry"
+            size="lg"
+          />
+          <div class="text-left">
+            <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest block">
+              Euro {{ previewSpinYear }}
+            </span>
+            <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+              {{ previewSpinCountryName }}
+            </h3>
           </div>
+        </div>
 
-          <div class="flex justify-center gap-3">
-            <UButton
-              size="lg"
-              color="primary"
-              variant="solid"
-              leading-icon="i-lucide-dices"
-              :label="isSpinningPreview ? 'Spinning Wheel...' : 'Test Spin the Wheel'"
-              :loading="isSpinningPreview"
-              class="rounded-full px-6 font-bold"
-              @click="spinPreview"
-            />
-          </div>
+        <div class="flex justify-center gap-3">
+          <UButton
+            size="md"
+            color="primary"
+            variant="solid"
+            leading-icon="i-lucide-dices"
+            :label="isSpinningPreview ? 'Spinning Wheel...' : 'Test Spin the Wheel'"
+            :loading="isSpinningPreview"
+            class="rounded-full px-6 font-bold cursor-pointer"
+            @click="spinPreview"
+          />
         </div>
       </div>
     </section>
 
     <!-- ==================== 4 ERAS BENTO GRID ==================== -->
-    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-zinc-200 dark:border-white/10">
-      <div class="max-w-2xl mb-12 space-y-3">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 border-t border-zinc-200 dark:border-white/10">
+      <div class="max-w-xl mb-8 space-y-2">
         <span class="text-[10px] font-mono uppercase tracking-[0.2em] font-bold text-emerald-600 dark:text-emerald-400">
           Historical Depth
         </span>
-        <h2 class="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
+        <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
           Four Eras of Legends.
         </h2>
-        <p class="text-zinc-600 dark:text-zinc-400 text-base">
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm">
           Every Euro tournament generation brings unique legends, iconic tactical styles, and authentic player ratings.
         </p>
       </div>
 
-      <!-- Bento Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Bento Grid (Clean single surface-cards) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div
           v-for="(era, i) in tournamentEras"
           :key="i"
-          class="bezel-card group"
+          class="surface-card p-6 space-y-4 flex flex-col justify-between"
         >
-          <div class="bezel-inner p-6 space-y-4 h-full flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
-                  {{ era.era }}
-                </span>
-                <UBadge
-                  color="neutral"
-                  variant="subtle"
-                  size="xs"
-                  class="font-mono text-[10px]"
-                >
-                  {{ era.tag }}
-                </UBadge>
-              </div>
-              <h3 class="text-xl font-bold text-white tracking-tight">
-                {{ era.title }}
-              </h3>
-              <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
-                {{ era.subtitle }}
-              </p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                {{ era.era }}
+              </span>
+              <UBadge
+                color="neutral"
+                variant="subtle"
+                size="xs"
+                class="font-mono text-[10px]"
+              >
+                {{ era.tag }}
+              </UBadge>
             </div>
+            <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">
+              {{ era.title }}
+            </h3>
+            <p class="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm leading-relaxed">
+              {{ era.subtitle }}
+            </p>
+          </div>
 
-            <!-- Notable Stars Tags -->
-            <div class="pt-4 border-t border-white/5">
-              <p class="text-[10px] uppercase font-mono tracking-widest text-zinc-500 mb-2 font-semibold">
-                Notable Icons
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="star in era.stars"
-                  :key="star"
-                  class="px-2 py-0.5 rounded text-[11px] font-medium bg-white/5 border border-white/8 text-zinc-300"
-                >
-                  {{ star }}
-                </span>
-              </div>
+          <!-- Notable Stars Tags -->
+          <div class="pt-3 border-t border-zinc-200 dark:border-white/5">
+            <p class="text-[10px] uppercase font-mono tracking-widest text-zinc-500 mb-1.5 font-semibold">
+              Notable Icons
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                v-for="star in era.stars"
+                :key="star"
+                class="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/8 text-zinc-700 dark:text-zinc-300"
+              >
+                {{ star }}
+              </span>
             </div>
           </div>
         </div>
@@ -397,33 +391,31 @@ const tournamentEras = [
     </section>
 
     <!-- ==================== FOOTER CTA ==================== -->
-    <section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center border-t border-zinc-200 dark:border-white/10">
-      <div class="bezel-card max-w-3xl mx-auto">
-        <div class="bezel-inner p-10 sm:p-16 space-y-6">
-          <UIcon
-            name="i-lucide-trophy"
-            class="size-12 text-gold-400 mx-auto"
-          />
-          <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
-            Ready to Build Your Champion XI?
-          </h2>
-          <p class="text-zinc-400 text-sm sm:text-base max-w-lg mx-auto">
-            Choose your formation, conquer the draft roulette, and test your dream team in a simulated European Championship.
-          </p>
-          <div>
-            <NuxtLink
-              to="/draft/formation"
-              class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/20"
-            >
-              <span>{{ $t('landing.cta_start') }}</span>
-              <span class="btn-nested-icon bg-emerald-600">
-                <UIcon
-                  name="i-lucide-arrow-right"
-                  class="size-4 text-white"
-                />
-              </span>
-            </NuxtLink>
-          </div>
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12 text-center border-t border-zinc-200 dark:border-white/10">
+      <div class="surface-card p-8 sm:p-12 space-y-5 max-w-2xl mx-auto">
+        <UIcon
+          name="i-lucide-trophy"
+          class="size-10 text-gold-400 mx-auto"
+        />
+        <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+          Ready to Build Your Champion XI?
+        </h2>
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm max-w-md mx-auto">
+          Choose your formation, conquer the draft roulette, and test your dream team in a simulated European Championship.
+        </p>
+        <div class="pt-2">
+          <NuxtLink
+            to="/draft/formation"
+            class="btn-nested bg-emerald-500 hover:bg-emerald-400 text-white shadow-xl shadow-emerald-500/20 mx-auto inline-flex"
+          >
+            <span>{{ $t('landing.cta_start') }}</span>
+            <span class="btn-nested-icon bg-emerald-600">
+              <UIcon
+                name="i-lucide-arrow-right"
+                class="size-4 text-white"
+              />
+            </span>
+          </NuxtLink>
         </div>
       </div>
     </section>

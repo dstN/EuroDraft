@@ -53,7 +53,7 @@ function showAll() {
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
     <!-- Back to tournament -->
     <div>
       <UButton
@@ -68,81 +68,79 @@ function showAll() {
     </div>
 
     <template v-if="match">
-      <!-- Scoreboard Header Card (Bezel architecture) -->
-      <div class="bezel-card">
-        <div class="bezel-inner p-6 sm:p-8 space-y-6">
-          <div class="text-center">
-            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
-              {{ match.phase }}
-            </span>
+      <!-- Scoreboard Header Card (Clean surface-card) -->
+      <div class="surface-card p-6 sm:p-8 space-y-6">
+        <div class="text-center">
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-mono tracking-[0.2em] font-bold">
+            {{ match.phase }}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+          <!-- Team A -->
+          <div class="flex-1 flex flex-col items-center text-center space-y-2">
+            <CountryFlag
+              :country="match.teamA.team.country"
+              size="lg"
+            />
+            <h2 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+              {{ match.teamA.team.countryName }}
+            </h2>
+            <p class="text-xs text-zinc-400 font-mono font-bold">
+              OVR {{ match.teamA.team.averageOVR }}
+            </p>
           </div>
 
-          <div class="flex items-center justify-between gap-4">
-            <!-- Team A -->
-            <div class="flex-1 flex flex-col items-center text-center space-y-2">
-              <CountryFlag
-                :country="match.teamA.team.country"
-                size="lg"
-              />
-              <h2 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-                {{ match.teamA.team.countryName }}
-              </h2>
-              <p class="text-xs text-zinc-400 font-mono font-bold">
-                OVR {{ match.teamA.team.averageOVR }}
-              </p>
+          <!-- Score -->
+          <div class="text-center px-4">
+            <div class="font-mono text-4xl sm:text-5xl font-black text-emerald-500 dark:text-emerald-400 tracking-wider drop-shadow-md">
+              {{ match.teamA.goals }} – {{ match.teamB.goals }}
             </div>
-
-            <!-- Score -->
-            <div class="text-center px-4">
-              <div class="font-mono text-4xl sm:text-5xl font-black text-emerald-500 dark:text-emerald-400 tracking-wider drop-shadow-md">
-                {{ match.teamA.goals }} – {{ match.teamB.goals }}
-              </div>
-              <p
-                v-if="match.penalties"
-                class="text-xs text-zinc-400 mt-1 font-mono font-bold"
-              >
-                ({{ match.penalties.teamA }} – {{ match.penalties.teamB }} penalties)
-              </p>
-              <p
-                v-else-if="match.extraTime"
-                class="text-xs text-zinc-400 mt-1 font-mono font-semibold"
-              >
-                after extra time
-              </p>
-            </div>
-
-            <!-- Team B -->
-            <div class="flex-1 flex flex-col items-center text-center space-y-2">
-              <CountryFlag
-                :country="match.teamB.team.country"
-                size="lg"
-              />
-              <h2 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-                {{ match.teamB.team.countryName }}
-              </h2>
-              <p class="text-xs text-zinc-400 font-mono font-bold">
-                OVR {{ match.teamB.team.averageOVR }}
-              </p>
-            </div>
+            <p
+              v-if="match.penalties"
+              class="text-xs text-zinc-400 mt-1 font-mono font-bold"
+            >
+              ({{ match.penalties.teamA }} – {{ match.penalties.teamB }} penalties)
+            </p>
+            <p
+              v-else-if="match.extraTime"
+              class="text-xs text-zinc-400 mt-1 font-mono font-semibold"
+            >
+              after extra time
+            </p>
           </div>
 
-          <!-- Section Comparison Tactical Bars -->
-          <div class="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-2 text-xs">
-            <div class="flex justify-between items-center text-zinc-400 font-mono">
-              <span class="font-bold text-zinc-300">{{ match.teamA.team.attackRating }}</span>
-              <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Attack</span>
-              <span class="font-bold text-zinc-300">{{ match.teamB.team.attackRating }}</span>
-            </div>
-            <div class="flex justify-between items-center text-zinc-400 font-mono">
-              <span class="font-bold text-zinc-300">{{ match.teamA.team.midfieldRating }}</span>
-              <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Midfield</span>
-              <span class="font-bold text-zinc-300">{{ match.teamB.team.midfieldRating }}</span>
-            </div>
-            <div class="flex justify-between items-center text-zinc-400 font-mono">
-              <span class="font-bold text-zinc-300">{{ match.teamA.team.defenseRating }}</span>
-              <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Defense</span>
-              <span class="font-bold text-zinc-300">{{ match.teamB.team.defenseRating }}</span>
-            </div>
+          <!-- Team B -->
+          <div class="flex-1 flex flex-col items-center text-center space-y-2">
+            <CountryFlag
+              :country="match.teamB.team.country"
+              size="lg"
+            />
+            <h2 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight">
+              {{ match.teamB.team.countryName }}
+            </h2>
+            <p class="text-xs text-zinc-400 font-mono font-bold">
+              OVR {{ match.teamB.team.averageOVR }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Section Comparison Tactical Bars -->
+        <div class="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-2 text-xs">
+          <div class="flex justify-between items-center text-zinc-400 font-mono">
+            <span class="font-bold text-zinc-300">{{ match.teamA.team.attackRating }}</span>
+            <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Attack</span>
+            <span class="font-bold text-zinc-300">{{ match.teamB.team.attackRating }}</span>
+          </div>
+          <div class="flex justify-between items-center text-zinc-400 font-mono">
+            <span class="font-bold text-zinc-300">{{ match.teamA.team.midfieldRating }}</span>
+            <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Midfield</span>
+            <span class="font-bold text-zinc-300">{{ match.teamB.team.midfieldRating }}</span>
+          </div>
+          <div class="flex justify-between items-center text-zinc-400 font-mono">
+            <span class="font-bold text-zinc-300">{{ match.teamA.team.defenseRating }}</span>
+            <span class="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">Defense</span>
+            <span class="font-bold text-zinc-300">{{ match.teamB.team.defenseRating }}</span>
           </div>
         </div>
       </div>

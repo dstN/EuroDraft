@@ -59,25 +59,25 @@ const currentLocaleName = computed(() => {
 
 <template>
   <div class="min-h-dvh flex flex-col bg-zinc-50 dark:bg-pitch-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
-    <!-- Floating glass nav pill -->
-    <header class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-3xl">
-      <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-2.5 rounded-full border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+    <!-- Top Sticky Navigation Bar (Aligned with max-w-5xl container) -->
+    <header class="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-[#06090e]/90 backdrop-blur-xl">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <!-- Logo -->
         <NuxtLink
           to="/"
-          class="flex items-center gap-2.5 shrink-0"
+          class="flex items-center gap-2.5 shrink-0 group"
         >
-          <div class="size-7 rounded-full bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
+          <div class="size-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
             <UIcon
               name="i-lucide-trophy"
-              class="size-3.5 text-white"
+              class="size-4 text-white"
             />
           </div>
-          <span class="font-black text-base tracking-tight text-zinc-900 dark:text-white">EuroDraft</span>
+          <span class="font-black text-lg tracking-tight text-zinc-900 dark:text-white">EuroDraft</span>
         </NuxtLink>
 
         <!-- Nav links + Active Draft Pill -->
-        <nav class="flex items-center gap-1.5">
+        <nav class="flex items-center gap-2">
           <UButton
             v-for="link in navLinks"
             :key="link.to"
@@ -86,13 +86,13 @@ const currentLocaleName = computed(() => {
             color="neutral"
             size="sm"
             :label="link.label"
-            class="font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-full px-3"
+            class="font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg px-3"
           />
 
           <NuxtLink
             v-if="draft.filledSlots.length > 0 && !draft.isComplete"
             to="/draft"
-            class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold"
+            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold"
           >
             <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>Draft ({{ draft.filledSlots.length }}/11)</span>
@@ -100,16 +100,16 @@ const currentLocaleName = computed(() => {
         </nav>
 
         <!-- Right side: Language + Theme Toggle -->
-        <div class="flex items-center gap-1.5 shrink-0">
+        <div class="flex items-center gap-2 shrink-0">
           <!-- Language selector dropdown with flag -->
           <UDropdownMenu :items="languageItems">
             <UButton
               size="xs"
-              variant="ghost"
+              variant="outline"
               color="neutral"
               :leading-icon="`i-circle-flags-${currentLocaleFlag}`"
               :label="currentLocaleName"
-              class="font-mono font-bold text-xs rounded-full"
+              class="font-mono font-bold text-xs rounded-lg px-2.5 py-1"
             />
           </UDropdownMenu>
 
@@ -120,21 +120,21 @@ const currentLocaleName = computed(() => {
             color="neutral"
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-            class="rounded-full"
+            class="rounded-lg"
             @click="isDark = !isDark"
           />
         </div>
       </div>
     </header>
 
-    <!-- Page content with top padding for the floating nav -->
-    <main class="flex-1 pt-20">
+    <!-- Page content with consistent container spacing -->
+    <main class="flex-1 py-8">
       <slot />
     </main>
 
-    <!-- Minimal footer -->
-    <footer class="border-t border-zinc-200 dark:border-white/5 py-6 px-6 mt-12">
-      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-medium">
+    <!-- Minimal footer with aligned max-w-5xl container -->
+    <footer class="border-t border-zinc-200 dark:border-white/5 py-6 mt-12">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-medium">
         <span>EuroDraft — The Historical European Championship Simulator</span>
         <div class="flex items-center gap-6">
           <NuxtLink
