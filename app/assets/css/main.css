@@ -68,6 +68,11 @@ body {
   overflow-x: hidden;
   width: 100%;
   min-width: 0;
+  /* scrollbar-gutter isn't inherited, and it's *body* whose overflow the dropdown/
+     modal library actually toggles (verified: it sets an inline `overflow: hidden`
+     on body when a menu opens), not html -- so the reservation has to live here too,
+     not just on html above. */
+  scrollbar-gutter: stable;
 }
 
 #__nuxt {
