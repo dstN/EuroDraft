@@ -298,6 +298,19 @@ body {
 }
 
 /* ============================================================
+   Nav Scroll (horizontal, scrollbar hidden -- for the top nav on
+   narrow viewports where the link list is wider than the header)
+   ============================================================ */
+.nav-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================
    Custom Scrollbar
    ============================================================ */
 .custom-scroll {

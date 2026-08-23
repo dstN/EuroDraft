@@ -91,9 +91,11 @@ const currentLocaleName = computed(() => {
           <AppLogo variant="horizontal" />
         </NuxtLink>
 
-        <!-- Nav links + Active Draft Pill -->
+        <!-- Nav links + Active Draft Pill (horizontally scrollable so it never pushes
+             the language/theme controls off-screen once it has more links than a
+             narrow viewport can show at once) -->
         <nav
-          class="flex items-center gap-1 sm:gap-2"
+          class="nav-scroll flex items-center gap-1 sm:gap-2 min-w-0 overflow-x-auto"
           aria-label="Main navigation"
         >
           <UButton
@@ -104,13 +106,13 @@ const currentLocaleName = computed(() => {
             color="neutral"
             size="sm"
             :label="link.label"
-            class="font-semibold text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-1.5 sm:px-3 py-1"
+            class="font-semibold text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-1.5 sm:px-3 py-1 shrink-0"
           />
 
           <NuxtLink
             v-if="draft.filledSlots.length > 0 && !draft.isComplete"
             to="/draft"
-            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold"
+            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold shrink-0"
           >
             <span
               class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
