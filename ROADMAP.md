@@ -73,10 +73,10 @@ This document tracks all planned features by milestone.
 
 ---
 
-## Milestone 6 — Extended Content 📋 Planned
+## Milestone 6 — Extended Content 🚧 In Progress
 
-- [ ] Global tournament edition (International squads, 1958–2022) (#19)
-- [ ] European Club edition (Top continental club squads) (#20)
-- [ ] "Legend Mode": only players with 90+ rating available (#21)
-- [ ] Custom formation builder (#22)
-- [ ] Save/load drafts (localStorage) (#23)
+- [ ] Global tournament edition (International squads, 1958–2022) (#19) — needs a new data pipeline, deferred
+- [ ] European Club edition (Top continental club squads) (#20) — needs a new data pipeline, deferred
+- [x] "Legend Mode": only players with 90+ rating available (#21)
+- [x] Custom formation builder (#22)
+- [x] Save/load drafts (localStorage) (#23)
