@@ -6,7 +6,7 @@ import LiveMatchBroadcast from '~/components/tournament/LiveMatchBroadcast.vue'
 import TournamentShareModal from '~/components/tournament/TournamentShareModal.vue'
 import PlayerStatCardModal from '~/components/draft/PlayerStatCardModal.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', middleware: ['ensure-database'] })
 
 const tournament = useTournamentStore()
 const draft = useDraftStore()

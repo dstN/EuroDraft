@@ -6,7 +6,7 @@ import RouletteWheelReel from '~/components/draft/RouletteWheelReel.vue'
 import PlayerStatCardModal from '~/components/draft/PlayerStatCardModal.vue'
 import AppLogo from '~/components/shared/AppLogo.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', middleware: ['ensure-database'] })
 
 const draft = useDraftStore()
 const roulette = useRouletteStore()

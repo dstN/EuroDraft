@@ -43,10 +43,6 @@ useSeoMeta({
   twitterImage: '/og-image.svg'
 })
 
-// Load the database once at app root
-const db = useDatabase()
-await db.load()
-
 const appLoading = useAppLoading()
 const isInitialLoading = ref(true)
 

@@ -4,7 +4,7 @@ import type { Formation, PositionCode } from '~/types'
 import MiniFormationPitch from '~/components/draft/MiniFormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', middleware: ['ensure-database'] })
 const draft = useDraftStore()
 const roulette = useRouletteStore()
 const audio = useAudioStore()
