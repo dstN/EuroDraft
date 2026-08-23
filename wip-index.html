@@ -93,6 +93,30 @@
     }
   }
 
+  /* The app's real loading screen folds these cards in once per mount, then holds --
+     fine for a screen that appears between page transitions, but easy to miss
+     entirely on a page a visitor might sit on for a while. Looped here instead, so
+     the cards keep gently rocking in place the whole time the page is open. */
+  .card-gold {
+    transform-origin: center;
+    animation: rockGold 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .card-green {
+    transform-origin: center;
+    animation: rockGreen 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  @keyframes rockGold {
+    0%, 15%, 100% { transform: rotate(-12deg) translate(-22px, -12px); }
+    50% { transform: rotate(-16deg) translate(-27px, -15px); }
+  }
+
+  @keyframes rockGreen {
+    0%, 15%, 100% { transform: rotate(8deg) translate(16px, 8px); }
+    50% { transform: rotate(12deg) translate(21px, 11px); }
+  }
+
   .wordmark {
     display: flex;
     align-items: center;
@@ -179,7 +203,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .logo, .glow-green, .badge-dot, .bar-fill { animation: none; }
+    .logo, .glow-green, .badge-dot, .bar-fill, .card-gold, .card-green { animation: none; }
+    .card-gold { transform: rotate(-12deg) translate(-22px, -12px); }
+    .card-green { transform: rotate(8deg) translate(16px, 8px); }
   }
 </style>
 </head>
@@ -205,12 +231,12 @@
         </filter>
       </defs>
       <g transform="translate(120, 120)">
-        <g transform="rotate(-12) translate(-22, -12)" filter="url(#cardShadow)">
+        <g class="card-gold" filter="url(#cardShadow)">
           <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#gold)" />
           <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
           <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
         </g>
-        <g transform="rotate(8) translate(16, 8)" filter="url(#cardShadow)">
+        <g class="card-green" filter="url(#cardShadow)">
           <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#green)" />
           <polygon points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10" fill="#060b10" transform="translate(0, 4) scale(1.15)" />
         </g>
