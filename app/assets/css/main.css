@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 /* ============================================================
    EuroDraft Bespoke Stadium Tokens & Design System
