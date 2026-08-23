@@ -38,6 +38,20 @@ onMounted(() => {
   }
   if (tournament.groups.length === 0) {
     tournament.initTournament()
+    // Save a local snapshot once per completed run (this branch only runs on a
+    // genuinely new tournament, not on revisiting an already-initialized one --
+    // see app/utils/draftHistory.ts for why this can't create duplicates)
+    saveDraftToHistory({
+      teamName: draft.teamName || 'Dream XI',
+      teamEmblem: draft.teamEmblem || 'eu',
+      formation: draft.formation?.id || '4-3-3',
+      teamOVR: draft.teamOVR,
+      outcome: tournamentOutcome.value,
+      lineRatings: squadLineRatings.value,
+      runStats: tournament.runStats,
+      squad: tournament.playerTeam?.squad || [],
+      matches: tournament.playerMatches
+    })
   }
 })
 
@@ -753,6 +767,17 @@ function restartDraft() {
             />
             <span>Share Result</span>
           </button>
+
+          <NuxtLink
+            to="/history"
+            class="rounded-full px-5 py-2.5 font-bold text-sm bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white inline-flex items-center gap-2 transition-colors"
+          >
+            <UIcon
+              name="i-lucide-history"
+              class="size-4"
+            />
+            <span>View History</span>
+          </NuxtLink>
 
           <NuxtLink
             to="/"
