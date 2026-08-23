@@ -159,7 +159,7 @@ const sizeClasses = computed(() => {
             Euro
           </span>
           <span
-            class="text-amber-600 dark:text-amber-400 font-black"
+            class="text-amber-500 dark:text-amber-400 font-black"
             :class="animated ? 'anim-text-draft' : ''"
           >
             Draft
@@ -228,7 +228,7 @@ const sizeClasses = computed(() => {
 
       <div class="flex items-center text-3xl sm:text-5xl font-black tracking-tight leading-none">
         <span class="text-zinc-900 dark:text-white anim-text-euro">Euro</span>
-        <span class="text-amber-800 dark:text-amber-400 anim-text-draft">Draft</span>
+        <span class="text-amber-500 dark:text-amber-400 anim-text-draft">Draft</span>
       </div>
     </div>
 
