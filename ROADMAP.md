@@ -30,7 +30,7 @@ This document tracks all planned features by milestone.
 - [x] Calibrated star ratings (Zidane 94, Blanc 90, etc.)
 - [x] LM/RM positions playable by wide midfielders + wingers
 - [x] **Position enrichment pipeline for authentic player roles** (#8)
-- [ ] **Full DB re-scrape with enriched positions** (#9)
+- [x] **Full DB re-scrape with enriched positions** (#9)
 - [ ] Player position correction workflow (issue template + PR flow) (#10)
 
 ---
