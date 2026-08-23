@@ -115,7 +115,7 @@ export interface TournamentTeam {
 
 export interface MatchEvent {
   minute: number
-  type: 'kickoff' | 'goal' | 'yellow-card' | 'red-card' | 'chance' | 'save' | 'halftime' | 'fulltime'
+  type: 'kickoff' | 'goal' | 'yellow-card' | 'red-card' | 'chance' | 'save' | 'halftime' | 'fulltime' | 'extra-time' | 'penalty-shootout'
   team: 'A' | 'B' | null
   playerId?: string
   playerName?: string

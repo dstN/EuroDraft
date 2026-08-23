@@ -153,7 +153,9 @@ function skipCurrentMatch() {
             ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-500/30 shadow-sm'
             : ev.type === 'yellow-card' || ev.type === 'red-card'
               ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30'
-              : 'bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200'
+              : ev.type === 'extra-time' || ev.type === 'penalty-shootout'
+                ? 'bg-violet-500/15 text-violet-800 dark:text-violet-300 font-bold border border-violet-500/30 shadow-sm'
+                : 'bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200'
         ]"
       >
         <span class="font-mono font-bold text-zinc-600 dark:text-zinc-400 w-7 shrink-0">{{ ev.minute }}'</span>

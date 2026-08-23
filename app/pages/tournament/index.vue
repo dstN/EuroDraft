@@ -103,8 +103,9 @@ function matchResultLabel(match: MatchResult): string {
     return `${myGoals}–${theirGoals} (${myPens}–${theirPens} pens) ${won ? '✓ Won' : '✗ Lost'}`
   }
 
-  if (myGoals > theirGoals) return `${myGoals}–${theirGoals} ✓ Won`
-  if (myGoals < theirGoals) return `${myGoals}–${theirGoals} ✗ Lost`
+  const aetSuffix = match.extraTime ? ' (AET)' : ''
+  if (myGoals > theirGoals) return `${myGoals}–${theirGoals}${aetSuffix} ✓ Won`
+  if (myGoals < theirGoals) return `${myGoals}–${theirGoals}${aetSuffix} ✗ Lost`
   return `${myGoals}–${theirGoals} Draw`
 }
 
@@ -498,6 +499,12 @@ function restartDraft() {
               <span v-else-if="ev.type === 'red-card'">
                 🟥 Red Card: <strong class="text-rose-600 dark:text-rose-400 font-bold">{{ ev.playerName }}</strong>
               </span>
+              <span
+                v-else-if="ev.type === 'penalty-shootout'"
+                class="font-semibold text-violet-700 dark:text-violet-400"
+              >
+                {{ ev.description }}
+              </span>
             </div>
           </div>
         </div>
@@ -611,6 +618,12 @@ function restartDraft() {
               </span>
               <span v-else-if="ev.type === 'red-card'">
                 🟥 Red Card: <strong class="text-rose-600 dark:text-rose-400 font-bold">{{ ev.playerName }}</strong>
+              </span>
+              <span
+                v-else-if="ev.type === 'penalty-shootout'"
+                class="font-semibold text-violet-700 dark:text-violet-400"
+              >
+                {{ ev.description }}
               </span>
             </div>
           </div>

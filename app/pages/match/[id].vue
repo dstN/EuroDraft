@@ -178,7 +178,9 @@ function showAll() {
                 ? 'bg-emerald-500/15 dark:bg-emerald-950/40 border-emerald-500/50 text-emerald-900 dark:text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                 : event.type === 'yellow-card' || event.type === 'red-card'
                   ? 'bg-amber-500/10 dark:bg-amber-950/30 border-amber-500/40 text-amber-900 dark:text-amber-100'
-                  : 'bg-white/80 dark:bg-zinc-900/60 border-zinc-200 dark:border-white/5 text-zinc-700 dark:text-zinc-300'
+                  : event.type === 'extra-time' || event.type === 'penalty-shootout'
+                    ? 'bg-violet-500/10 dark:bg-violet-950/30 border-violet-500/40 text-violet-900 dark:text-violet-100'
+                    : 'bg-white/80 dark:bg-zinc-900/60 border-zinc-200 dark:border-white/5 text-zinc-700 dark:text-zinc-300'
             ]"
           >
             <span class="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400 w-8 shrink-0">

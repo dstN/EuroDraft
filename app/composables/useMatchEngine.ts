@@ -116,21 +116,22 @@ export function useMatchEngine() {
     const lambdaA = Math.max(0.25, 1.15 + attackDomA * 0.03)
     const lambdaB = Math.max(0.25, 1.15 + attackDomB * 0.03)
 
-    let goalsA = poissonRandom(lambdaA, rng)
-    let goalsB = poissonRandom(lambdaB, rng)
+    const regGoalsA = poissonRandom(lambdaA, rng)
+    const regGoalsB = poissonRandom(lambdaB, rng)
 
     let extraTime = false
+    let etGoalsA = 0
+    let etGoalsB = 0
     let penalties: { teamA: number, teamB: number } | undefined = undefined
-    if (phase !== 'group' && goalsA === goalsB) {
-      extraTime = true
-      // Extra time goal check
-      const extraGoalA = rng() > 0.6 ? 1 : 0
-      const extraGoalB = rng() > 0.6 ? 1 : 0
-      goalsA += extraGoalA
-      goalsB += extraGoalB
 
-      if (goalsA === goalsB) {
-        // Penalty shootout
+    // Knockout matches (never group stage) that are level after 90' go to extra time
+    if (phase !== 'group' && regGoalsA === regGoalsB) {
+      extraTime = true
+      etGoalsA = rng() > 0.6 ? 1 : 0
+      etGoalsB = rng() > 0.6 ? 1 : 0
+
+      if (regGoalsA + etGoalsA === regGoalsB + etGoalsB) {
+        // Still level after extra time — penalty shootout
         const pensA = randomInt(3, 5, rng)
         const pensB = pensA === 5 ? (rng() > 0.5 ? 4 : 3) : (pensA + (rng() > 0.5 ? 1 : -1))
         penalties = {
@@ -140,7 +141,10 @@ export function useMatchEngine() {
       }
     }
 
-    const events = _generateEvents(teamA, teamB, goalsA, goalsB, rng)
+    const goalsA = regGoalsA + etGoalsA
+    const goalsB = regGoalsB + etGoalsB
+
+    const events = _generateEvents(teamA, teamB, regGoalsA, regGoalsB, etGoalsA, etGoalsB, extraTime, penalties, rng)
 
     return {
       id: `${phase}-${teamA.id}-vs-${teamB.id}-${seed}`,
@@ -170,23 +174,24 @@ export function useMatchEngine() {
     }
   }
 
-  function _generateEvents(
+  /** Generate goal events for a stretch of the match, continuing from a running score baseline */
+  function _generateGoalEvents(
     teamA: TournamentTeam,
     teamB: TournamentTeam,
     goalsA: number,
     goalsB: number,
+    minMinute: number,
+    maxMinute: number,
+    baseScoreA: number,
+    baseScoreB: number,
     rng: () => number
-  ): MatchEvent[] {
+  ): { events: MatchEvent[], scoreA: number, scoreB: number } {
     const events: MatchEvent[] = []
-    let scoreA = 0
-    let scoreB = 0
+    let scoreA = baseScoreA
+    let scoreB = baseScoreB
 
-    // Kickoff
-    events.push({ minute: 1, type: 'kickoff', team: null, description: '⚽ Kick-off!', scoreA: 0, scoreB: 0 })
-
-    // Generate goal minutes (distributed across 90')
     const totalGoals = goalsA + goalsB
-    const goalMinutes = Array.from({ length: totalGoals }, () => randomInt(3, 90, rng)).sort((a, b) => a - b)
+    const goalMinutes = Array.from({ length: totalGoals }, () => randomInt(minMinute, maxMinute, rng)).sort((a, b) => a - b)
     const goalAssignment = [
       ...Array(goalsA).fill('A'),
       ...Array(goalsB).fill('B')
@@ -235,20 +240,43 @@ export function useMatchEngine() {
       })
     }
 
-    // Halftime
-    const halfScoreA = events.filter(e => e.type === 'goal' && e.minute <= 45).length > 0
-      ? events.filter(e => e.type === 'goal').find(e => e.minute > 45)?.scoreA ?? scoreA
-      : scoreA
+    return { events, scoreA, scoreB }
+  }
+
+  function _generateEvents(
+    teamA: TournamentTeam,
+    teamB: TournamentTeam,
+    regGoalsA: number,
+    regGoalsB: number,
+    etGoalsA: number,
+    etGoalsB: number,
+    extraTime: boolean,
+    penalties: { teamA: number, teamB: number } | undefined,
+    rng: () => number
+  ): MatchEvent[] {
+    const events: MatchEvent[] = []
+
+    // Kickoff
+    events.push({ minute: 1, type: 'kickoff', team: null, description: '⚽ Kick-off!', scoreA: 0, scoreB: 0 })
+
+    // Regulation time goals (minutes 3-90)
+    const reg = _generateGoalEvents(teamA, teamB, regGoalsA, regGoalsB, 3, 90, 0, 0, rng)
+    events.push(...reg.events)
+
+    // Halftime — score at the 45' mark
+    const goalsBeforeHalf = reg.events.filter(e => e.minute <= 45)
+    const halfScoreA = goalsBeforeHalf.length > 0 ? goalsBeforeHalf[goalsBeforeHalf.length - 1]!.scoreA : 0
+    const halfScoreB = goalsBeforeHalf.length > 0 ? goalsBeforeHalf[goalsBeforeHalf.length - 1]!.scoreB : 0
     events.push({
       minute: 45,
       type: 'halftime',
       team: null,
-      description: `Half-time: ${teamA.countryName} ${halfScoreA}–${scoreB} ${teamB.countryName}`,
+      description: `Half-time: ${teamA.countryName} ${halfScoreA}–${halfScoreB} ${teamB.countryName}`,
       scoreA: halfScoreA,
-      scoreB
+      scoreB: halfScoreB
     })
 
-    // Random close chances
+    // Random close chances (regulation time)
     const numChances = randomInt(2, 4, rng)
     for (let i = 0; i < numChances; i++) {
       const team = rng() > 0.5 ? 'A' : 'B'
@@ -263,12 +291,12 @@ export function useMatchEngine() {
         playerId: player.id,
         playerName: player.name,
         description: chanceTpl(player.name),
-        scoreA,
-        scoreB
+        scoreA: reg.scoreA,
+        scoreB: reg.scoreB
       })
     }
 
-    // Random cards
+    // Random cards (regulation time)
     const numCards = randomInt(1, 3, rng)
     for (let i = 0; i < numCards; i++) {
       const team = rng() > 0.5 ? 'A' : 'B'
@@ -283,20 +311,62 @@ export function useMatchEngine() {
         playerId: player.id,
         playerName: player.name,
         description: isRed ? CARD_TEMPLATES.red(player.name) : CARD_TEMPLATES.yellow(player.name),
-        scoreA,
-        scoreB
+        scoreA: reg.scoreA,
+        scoreB: reg.scoreB
       })
     }
 
-    // Full time
+    // Full-time (regulation)
     events.push({
       minute: 90,
       type: 'fulltime',
       team: null,
-      description: `Full-time: ${teamA.countryName} ${scoreA}–${scoreB} ${teamB.countryName}`,
-      scoreA,
-      scoreB
+      description: extraTime
+        ? `Full-time: ${teamA.countryName} ${reg.scoreA}–${reg.scoreB} ${teamB.countryName} — scores level, the match goes to extra time!`
+        : `Full-time: ${teamA.countryName} ${reg.scoreA}–${reg.scoreB} ${teamB.countryName}`,
+      scoreA: reg.scoreA,
+      scoreB: reg.scoreB
     })
+
+    if (extraTime) {
+      events.push({
+        minute: 91,
+        type: 'extra-time',
+        team: null,
+        description: '⏱️ Extra time begins! Two 15-minute periods to separate these sides.',
+        scoreA: reg.scoreA,
+        scoreB: reg.scoreB
+      })
+
+      // Extra time goals (minutes 92-120), continuing the running score
+      const et = _generateGoalEvents(teamA, teamB, etGoalsA, etGoalsB, 92, 120, reg.scoreA, reg.scoreB, rng)
+      events.push(...et.events)
+
+      const decidedInExtraTime = et.scoreA !== et.scoreB
+      events.push({
+        minute: 120,
+        type: 'fulltime',
+        team: null,
+        description: decidedInExtraTime
+          ? `Full-time (AET): ${teamA.countryName} ${et.scoreA}–${et.scoreB} ${teamB.countryName}`
+          : `Full-time (AET): ${teamA.countryName} ${et.scoreA}–${et.scoreB} ${teamB.countryName} — still level, it's going to penalties!`,
+        scoreA: et.scoreA,
+        scoreB: et.scoreB
+      })
+
+      if (penalties) {
+        const teamAWins = penalties.teamA > penalties.teamB
+        const winnerName = teamAWins ? teamA.countryName : teamB.countryName
+        events.push({
+          minute: 121,
+          type: 'penalty-shootout',
+          team: teamAWins ? 'A' : 'B',
+          description: `🥅 Penalty shootout! ${winnerName} win it ${Math.max(penalties.teamA, penalties.teamB)}–${Math.min(penalties.teamA, penalties.teamB)} on penalties!`,
+          scoreA: et.scoreA,
+          scoreB: et.scoreB
+        })
+      }
+    }
 
     return events.sort((a, b) => a.minute - b.minute)
   }
