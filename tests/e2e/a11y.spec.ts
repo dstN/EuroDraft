@@ -20,8 +20,8 @@ const staticPages = [
   { name: 'Home (Light)', path: '/', theme: 'light' as const },
   { name: 'Formation Picker (Dark)', path: '/draft/formation', theme: 'dark' as const },
   { name: 'Formation Picker (Light)', path: '/draft/formation', theme: 'light' as const },
-  { name: 'Impressum (Dark)', path: '/legal/impressum', theme: 'dark' as const },
-  { name: 'Impressum (Light)', path: '/legal/impressum', theme: 'light' as const },
+  { name: 'Legal Hub (Dark)', path: '/legal', theme: 'dark' as const },
+  { name: 'Legal Hub (Light)', path: '/legal', theme: 'light' as const },
   { name: 'Tournament Hub (Dark)', path: '/tournament', theme: 'dark' as const },
   { name: 'Tournament Hub (Light)', path: '/tournament', theme: 'light' as const }
 ]

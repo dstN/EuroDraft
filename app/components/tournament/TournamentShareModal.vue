@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Player, TournamentRunStats, MatchResult } from '~/types'
+import type { Player, TournamentRunStats, MatchResult, PositionCode } from '~/types'
 import { loadFlagImage } from '~/utils/flagSvg'
 
 const props = defineProps<{

@@ -7,7 +7,8 @@ const draft = useDraftStore()
 
 const navLinks = computed(() => [
   { label: t('nav.draft'), to: '/draft/formation' },
-  { label: t('nav.tournament'), to: '/tournament' }
+  { label: t('nav.tournament'), to: '/tournament' },
+  { label: t('nav.legal'), to: '/legal' }
 ])
 
 const isDark = computed({
@@ -162,10 +163,16 @@ const currentLocaleName = computed(() => {
         <span>EuroDraft — Historical Continental Tournament Simulator</span>
         <div class="flex items-center gap-6">
           <NuxtLink
-            to="/legal/impressum"
+            to="/legal"
             class="text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors underline-offset-4 hover:underline font-bold"
           >
-            {{ $t('nav.impressum') }}
+            {{ $t('nav.legal') }}
+          </NuxtLink>
+          <NuxtLink
+            to="/legal?tab=contact"
+            class="text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors underline-offset-4 hover:underline font-bold"
+          >
+            {{ $t('legal.tab_contact') }}
           </NuxtLink>
         </div>
       </div>
