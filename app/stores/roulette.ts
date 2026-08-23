@@ -17,6 +17,10 @@ export const useRouletteStore = defineStore('roulette', () => {
   const currentSquad = ref<Player[]>([])
   const usedTeamKeys = ref<Set<string>>(new Set())
   const isSpinning = ref(false)
+  /** True when spin() found no remaining team with a draftable player (e.g. Legend Mode
+   *  running out of 90+ rated players for a scarce position). UI should offer a way out
+   *  (change formation / restart) rather than leaving the user stuck on a stale squad. */
+  const noValidSquadsRemaining = ref(false)
 
   // ---- Getters ----
   const currentTeamKey = computed(() =>
@@ -115,11 +119,13 @@ export const useRouletteStore = defineStore('roulette', () => {
     try {
       const result = _findValidTeam()
       if (!result) {
-        // Extremely rare edge case — no teams left with draftable players
-        console.warn('[Roulette] No valid teams remaining')
+        // No remaining team has a draftable player for the open slots (can happen in
+        // Legend Mode, where only 90+ rated players qualify and some positions are scarce)
+        noValidSquadsRemaining.value = true
         return
       }
 
+      noValidSquadsRemaining.value = false
       const key = `${result.country}-${result.year}`
       usedTeamKeys.value.add(key)
       currentCountry.value = result.country
@@ -137,6 +143,7 @@ export const useRouletteStore = defineStore('roulette', () => {
     const country = currentCountry.value
     const availableYears = db.getYearsForCountry(country)
       .filter(y => y !== currentYear.value && !usedTeamKeys.value.has(`${country}-${y}`))
+      .filter(y => db.getSquad(country, y).some(p => draft.canDraftToAnySlot(p)))
 
     if (availableYears.length === 0) return // No alternative years available
 
@@ -156,6 +163,7 @@ export const useRouletteStore = defineStore('roulette', () => {
     const year = currentYear.value
     const availableCountries = db.getCountriesForYear(year)
       .filter(c => c !== currentCountry.value && !usedTeamKeys.value.has(`${c}-${year}`))
+      .filter(c => db.getSquad(c, year).some(p => draft.canDraftToAnySlot(p)))
 
     if (availableCountries.length === 0) return // No alternative nations available
 
@@ -174,6 +182,7 @@ export const useRouletteStore = defineStore('roulette', () => {
     currentSquad.value = []
     usedTeamKeys.value = new Set()
     isSpinning.value = false
+    noValidSquadsRemaining.value = false
   }
 
   return {
@@ -182,6 +191,7 @@ export const useRouletteStore = defineStore('roulette', () => {
     currentSquad,
     usedTeamKeys,
     isSpinning,
+    noValidSquadsRemaining,
     currentTeamKey,
     squadWithEligibility,
     hasAnyCandidates,

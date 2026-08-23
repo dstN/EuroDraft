@@ -18,6 +18,8 @@ export const useDraftStore = defineStore('draft', () => {
   const draftPhase = ref<'formation-select' | 'drafting' | 'complete'>('formation-select')
   /** Challenge Mode: formation is randomly assigned (not chosen) and no rerolls are available */
   const isChallengeMode = ref(false)
+  /** Legend Mode: only players rated 90+ overall are draftable */
+  const isLegendMode = ref(false)
 
   // ---- Getters ----
   const filledSlots = computed(() => slots.value.filter(s => s.player !== null))
@@ -43,6 +45,7 @@ export const useDraftStore = defineStore('draft', () => {
     draftedPlayerKeys.value = new Set()
     rerollsRemaining.value = 3
     isChallengeMode.value = false
+    isLegendMode.value = false
     draftPhase.value = 'drafting'
   }
 
@@ -77,6 +80,7 @@ export const useDraftStore = defineStore('draft', () => {
   function canDraftToAnySlot(player: Player): boolean {
     const playerKey = `${player.nameNormalized}|${player.country}`
     if (draftedPlayerKeys.value.has(playerKey)) return false
+    if (isLegendMode.value && player.stats.overall < 90) return false
     return emptySlots.value.some(slot => player.positions.includes(slot.position))
   }
 
@@ -86,6 +90,7 @@ export const useDraftStore = defineStore('draft', () => {
   function getCompatibleSlots(player: Player): DraftSlot[] {
     const playerKey = `${player.nameNormalized}|${player.country}`
     if (draftedPlayerKeys.value.has(playerKey)) return []
+    if (isLegendMode.value && player.stats.overall < 90) return []
     return emptySlots.value.filter(slot => player.positions.includes(slot.position))
   }
 
@@ -95,6 +100,7 @@ export const useDraftStore = defineStore('draft', () => {
     draftedPlayerKeys.value = new Set()
     rerollsRemaining.value = 3
     isChallengeMode.value = false
+    isLegendMode.value = false
     draftPhase.value = 'formation-select'
   }
 
@@ -108,6 +114,7 @@ export const useDraftStore = defineStore('draft', () => {
     rerollsRemaining,
     draftPhase,
     isChallengeMode,
+    isLegendMode,
     // Getters
     filledSlots,
     emptySlots,

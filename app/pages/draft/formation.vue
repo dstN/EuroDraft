@@ -28,6 +28,9 @@ function reassignChallengeFormation() {
   challengeFormation.value = pickRandomFormations(1)[0]!
 }
 
+// Legend Mode: only 90+ rated players are draftable. Independent of Challenge Mode -- either can be on alone or together.
+const legendModeToggle = ref(false)
+
 // Top Picked Popular Nationalities
 const TOP_EMBLEM_CHOICES = [
   { code: 'eu', label: 'Europe (All-Stars)' },
@@ -124,6 +127,7 @@ function selectFormation(f: Formation) {
   draft.teamEmblem = selectedEmblem.value
   roulette.reset()
   draft.selectFormation(f)
+  draft.isLegendMode = legendModeToggle.value
 }
 
 function startChallenge() {
@@ -134,6 +138,7 @@ function startChallenge() {
   draft.selectFormation(challengeFormation.value)
   draft.isChallengeMode = true
   draft.rerollsRemaining = 0
+  draft.isLegendMode = legendModeToggle.value
 }
 </script>
 
@@ -273,19 +278,34 @@ function startChallenge() {
         Select Starting Formation
       </h2>
 
-      <!-- Challenge Mode Toggle -->
-      <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
-        <USwitch v-model="challengeModeToggle" />
-        <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
-          🎲 Challenge Mode
-        </span>
-        <UTooltip text="Formation is randomly assigned and there are no rerolls — you must draft from whatever squad the roulette lands on.">
-          <UIcon
-            name="i-lucide-info"
-            class="size-3.5 text-zinc-500"
-          />
-        </UTooltip>
-      </label>
+      <!-- Mode Toggles -->
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
+          <USwitch v-model="challengeModeToggle" />
+          <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
+            🎲 Challenge Mode
+          </span>
+          <UTooltip text="Formation is randomly assigned and there are no rerolls — you must draft from whatever squad the roulette lands on.">
+            <UIcon
+              name="i-lucide-info"
+              class="size-3.5 text-zinc-500"
+            />
+          </UTooltip>
+        </label>
+
+        <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
+          <USwitch v-model="legendModeToggle" />
+          <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
+            ⭐ Legend Mode
+          </span>
+          <UTooltip text="Only players rated 90+ overall are draftable. Combinable with Challenge Mode for an even harder run.">
+            <UIcon
+              name="i-lucide-info"
+              class="size-3.5 text-zinc-500"
+            />
+          </UTooltip>
+        </label>
+      </div>
     </div>
 
     <!-- Challenge Mode: single assigned formation -->

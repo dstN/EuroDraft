@@ -379,8 +379,14 @@ const formationShortName = computed(() => {
           </div>
         </div>
 
-        <!-- Right: Formation badge only (short title) -->
-        <div class="shrink-0">
+        <!-- Right: Formation + mode badges -->
+        <div class="shrink-0 flex items-center gap-1.5">
+          <span
+            v-if="draft.isLegendMode"
+            class="px-3 py-1 rounded-full border border-amber-500/40 bg-amber-500/15 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 font-mono font-black text-xs shadow-xs"
+          >
+            ⭐ Legend
+          </span>
           <span class="px-3 py-1 rounded-full border border-zinc-300 dark:border-white/15 bg-zinc-100/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 font-mono font-black text-xs shadow-xs">
             {{ formationShortName }}
           </span>
@@ -447,8 +453,36 @@ const formationShortName = computed(() => {
             </div>
           </Transition>
 
+          <!-- Dead-end: no remaining squad has a draftable player for the open slots -->
+          <div
+            v-if="roulette.noValidSquadsRemaining"
+            class="flex flex-col items-center text-center gap-3 py-10 px-4"
+          >
+            <UIcon
+              name="i-lucide-shield-alert"
+              class="size-10 text-amber-500"
+            />
+            <h3 class="text-base font-black text-zinc-900 dark:text-white">
+              No More Eligible Squads
+            </h3>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 max-w-xs">
+              {{ draft.isLegendMode
+                ? "No remaining historical squad has a 90+ rated player for your open positions. Try a different formation — some position combinations are too scarce in Legend Mode."
+                : "No remaining historical squad has a player who fits your open positions." }}
+            </p>
+            <UButton
+              color="primary"
+              label="Choose a Different Formation"
+              class="rounded-full font-bold"
+              @click="navigateTo('/draft/formation')"
+            />
+          </div>
+
           <!-- Team header with Animated Roulette Reel -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
+          <div
+            v-else
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-white/5"
+          >
             <RouletteWheelReel
               :is-spinning="isSpinningReel"
               :spin-type="currentSpinType"
@@ -516,6 +550,7 @@ const formationShortName = computed(() => {
 
           <!-- Squad list (Position-sorted: Goalkeepers -> Defenders -> Midfielders -> Forwards) -->
           <div
+            v-if="!roulette.noValidSquadsRemaining"
             ref="squadScrollRef"
             class="space-y-2 max-h-[60vh] lg:max-h-[62vh] overflow-y-auto custom-scroll p-1.5 flex-1"
           >
