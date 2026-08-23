@@ -2,6 +2,7 @@
 import type { Player } from '~/types'
 import PlayerFoilCard from '~/components/draft/PlayerFoilCard.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
+import AppLogo from '~/components/shared/AppLogo.vue'
 
 definePageMeta({ layout: 'default' })
 
@@ -145,9 +146,12 @@ const tournamentEras = [
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <!-- Left: Headline, Value Prop & CTAs -->
         <div class="lg:col-span-7 space-y-6 text-left">
-          <!-- Championship Eyebrow Badge (WCAG AA Compliant High Contrast) -->
-          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
-            <span class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+          <!-- Championship Eyebrow Badge (WCAG AAA Compliant High Contrast) -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
+            <AppLogo
+              variant="icon"
+              size="sm"
+            />
             <span class="text-xs font-mono font-bold uppercase tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
               UEFA EURO 1960 — 2024
             </span>

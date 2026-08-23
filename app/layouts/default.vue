@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppLogo from '~/components/shared/AppLogo.vue'
+
 const { t, locale, locales, setLocale } = useI18n()
 const colorMode = useColorMode()
 const draft = useDraftStore()
@@ -76,20 +78,13 @@ const currentLocaleName = computed(() => {
     <!-- Top Sticky Navigation Bar (Seamless glass, zero hard borders) -->
     <header class="sticky top-0 z-50 w-full bg-white/40 dark:bg-[#060b10]/40 backdrop-blur-md border-b border-black/[0.04] dark:border-white/[0.04] transition-colors">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <!-- Logo -->
+        <!-- Official App Logo -->
         <NuxtLink
           to="/"
-          class="flex items-center gap-2.5 shrink-0 group"
+          class="flex items-center gap-2.5 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
           aria-label="EuroDraft Homepage"
         >
-          <div class="size-7 rounded-lg bg-emerald-700 dark:bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
-            <UIcon
-              name="i-lucide-trophy"
-              class="size-4 text-white"
-              aria-hidden="true"
-            />
-          </div>
-          <span class="font-black text-lg tracking-tight text-zinc-900 dark:text-white">EuroDraft</span>
+          <AppLogo variant="horizontal" />
         </NuxtLink>
 
         <!-- Nav links + Active Draft Pill -->
