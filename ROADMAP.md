@@ -60,13 +60,13 @@ This document tracks all planned features by milestone.
 
 ---
 
-## Milestone 5 — Community & Sharing 🚧 In Progress
- 
+## Milestone 5 — Community & Sharing ✅ Complete
+
 - [x] Share your drafted XI as a canvas image card
 - [x] Wordle-style text summary share with top scorers and line ratings
 - [x] Dedicated result sharing API and public view route (`/r/[id]`) on `ed.rntm.de`
 - [x] Opt-in explicit database storage consent
-- [ ] Global Leaderboard: submit your squad OVR score (#15)
+- [x] Global Leaderboard: submit your squad OVR score (#15)
 - [x] "Challenge" mode: given a random formation, must pick exactly 1 player per roulette spin (#16)
 - [x] Compare two squads head-to-head (#17)
 - [x] Twitter/X card meta tags for shareable results (#18)
