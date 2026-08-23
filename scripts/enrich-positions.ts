@@ -341,7 +341,7 @@ async function findUrlWithPlaywright(searchVariants: string[]): Promise<string |
         }
 
         const links = await page.$$eval('a[href*="/profil/spieler/"]', (els, base) =>
-          els.slice(0, 5).map(el => {
+          els.slice(0, 5).map((el) => {
             const h = el.getAttribute('href') ?? ''
             return h.startsWith('http') ? h : base + (h.startsWith('/') ? '' : '/') + h
           }),
@@ -560,7 +560,7 @@ async function main() {
     console.log(`// Total Enriched Players: ${Object.keys(registryEntries).length}`)
     console.log('export const HISTORICAL_PLAYER_REGISTRY: Record<string, PlayerPositionProfile> = {')
     for (const [k, v] of Object.entries(registryEntries).sort(([a], [b]) => a.localeCompare(b))) {
-      console.log(`  '${k}': { primary: '${v.primary}', positions: ['${v.positions.join("', '")}'], base: '${v.base}' },`)
+      console.log(`  '${k}': { primary: '${v.primary}', positions: ['${v.positions.join('\', \'')}'], base: '${v.base}' },`)
     }
     console.log('}')
     console.error(`✅ Successfully exported ${Object.keys(registryEntries).length} entries.`)
@@ -600,7 +600,7 @@ async function main() {
 
     if (retryFailed) {
       await mkdir(CACHE_DIR, { recursive: true })
-      playerNames = allNames.filter(name => {
+      playerNames = allNames.filter((name) => {
         const cacheKey = normalizeRegistryKey(name).replace(/\s+/g, '-')
         const cacheFile = join(CACHE_DIR, `${cacheKey}.json`)
         return !existsSync(cacheFile)

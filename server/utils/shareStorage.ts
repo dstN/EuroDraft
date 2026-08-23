@@ -8,9 +8,9 @@ interface SharedRunRecord {
   teamOVR: number
   outcome: string
   lineRatings: { def: number, mid: number, att: number, overall: number }
-  runStats: any
-  squad: any[]
-  matches: any[]
+  runStats: Record<string, unknown> | null
+  squad: Record<string, unknown>[]
+  matches: Record<string, unknown>[]
 }
 
 const sharedRunsStore = new Map<string, SharedRunRecord>()

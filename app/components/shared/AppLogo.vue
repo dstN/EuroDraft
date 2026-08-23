@@ -56,35 +56,115 @@ const sizeClasses = computed(() => {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="appLogoGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#10b981" />
-          <stop offset="50%" stop-color="#059669" />
-          <stop offset="100%" stop-color="#047857" />
+        <linearGradient
+          id="appLogoGreenGrad"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop
+            offset="0%"
+            stop-color="#10b981"
+          />
+          <stop
+            offset="50%"
+            stop-color="#059669"
+          />
+          <stop
+            offset="100%"
+            stop-color="#047857"
+          />
         </linearGradient>
-        <linearGradient id="appLogoGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#fbbf24" />
-          <stop offset="50%" stop-color="#f59e0b" />
-          <stop offset="100%" stop-color="#d97706" />
+        <linearGradient
+          id="appLogoGoldGrad"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop
+            offset="0%"
+            stop-color="#fbbf24"
+          />
+          <stop
+            offset="50%"
+            stop-color="#f59e0b"
+          />
+          <stop
+            offset="100%"
+            stop-color="#d97706"
+          />
         </linearGradient>
-        <filter id="appLogoShadow" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="2" dy="6" stdDeviation="4" flood-color="#000000" flood-opacity="0.35" />
+        <filter
+          id="appLogoShadow"
+          x="-30%"
+          y="-30%"
+          width="160%"
+          height="160%"
+        >
+          <feDropShadow
+            dx="2"
+            dy="6"
+            stdDeviation="4"
+            flood-color="#000000"
+            flood-opacity="0.35"
+          />
         </filter>
       </defs>
 
       <g transform="translate(120, 120)">
         <!-- Gold Card Wrapper -->
         <g :class="[animated ? 'anim-wrap-gold' : '', loop ? 'anim-pulse-gold' : '']">
-          <g transform="rotate(-12) translate(-22, -12)" filter="url(#appLogoShadow)">
-            <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGoldGrad)" />
-            <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
-            <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+          <g
+            transform="rotate(-12) translate(-22, -12)"
+            filter="url(#appLogoShadow)"
+          >
+            <rect
+              x="-44"
+              y="-62"
+              width="88"
+              height="124"
+              rx="10"
+              fill="url(#appLogoGoldGrad)"
+            />
+            <line
+              x1="-30"
+              y1="-38"
+              x2="30"
+              y2="-38"
+              stroke="#060b10"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity="0.35"
+            />
+            <line
+              x1="-30"
+              y1="-22"
+              x2="8"
+              y2="-22"
+              stroke="#060b10"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity="0.35"
+            />
           </g>
         </g>
 
         <!-- Green Card Wrapper -->
         <g :class="[animated ? 'anim-wrap-green' : '', loop ? 'anim-pulse-green' : '']">
-          <g transform="rotate(8) translate(16, 8)" filter="url(#appLogoShadow)">
-            <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGreenGrad)" />
+          <g
+            transform="rotate(8) translate(16, 8)"
+            filter="url(#appLogoShadow)"
+          >
+            <rect
+              x="-44"
+              y="-62"
+              width="88"
+              height="124"
+              rx="10"
+              fill="url(#appLogoGreenGrad)"
+            />
             <polygon
               points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
               fill="#060b10"
@@ -111,33 +191,113 @@ const sizeClasses = computed(() => {
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="appLogoGreenGradH" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#10b981" />
-              <stop offset="50%" stop-color="#059669" />
-              <stop offset="100%" stop-color="#047857" />
+            <linearGradient
+              id="appLogoGreenGradH"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#10b981"
+              />
+              <stop
+                offset="50%"
+                stop-color="#059669"
+              />
+              <stop
+                offset="100%"
+                stop-color="#047857"
+              />
             </linearGradient>
-            <linearGradient id="appLogoGoldGradH" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fbbf24" />
-              <stop offset="50%" stop-color="#f59e0b" />
-              <stop offset="100%" stop-color="#d97706" />
+            <linearGradient
+              id="appLogoGoldGradH"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#fbbf24"
+              />
+              <stop
+                offset="50%"
+                stop-color="#f59e0b"
+              />
+              <stop
+                offset="100%"
+                stop-color="#d97706"
+              />
             </linearGradient>
-            <filter id="appLogoShadowH" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.3" />
+            <filter
+              id="appLogoShadowH"
+              x="-30%"
+              y="-30%"
+              width="160%"
+              height="160%"
+            >
+              <feDropShadow
+                dx="2"
+                dy="5"
+                stdDeviation="4"
+                flood-color="#000000"
+                flood-opacity="0.3"
+              />
             </filter>
           </defs>
 
           <g transform="translate(120, 120)">
             <g :class="animated ? 'anim-wrap-gold' : ''">
-              <g transform="rotate(-12) translate(-22, -12)" filter="url(#appLogoShadowH)">
-                <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGoldGradH)" />
-                <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
-                <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+              <g
+                transform="rotate(-12) translate(-22, -12)"
+                filter="url(#appLogoShadowH)"
+              >
+                <rect
+                  x="-44"
+                  y="-62"
+                  width="88"
+                  height="124"
+                  rx="10"
+                  fill="url(#appLogoGoldGradH)"
+                />
+                <line
+                  x1="-30"
+                  y1="-38"
+                  x2="30"
+                  y2="-38"
+                  stroke="#060b10"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity="0.35"
+                />
+                <line
+                  x1="-30"
+                  y1="-22"
+                  x2="8"
+                  y2="-22"
+                  stroke="#060b10"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity="0.35"
+                />
               </g>
             </g>
 
             <g :class="animated ? 'anim-wrap-green' : ''">
-              <g transform="rotate(8) translate(16, 8)" filter="url(#appLogoShadowH)">
-                <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGreenGradH)" />
+              <g
+                transform="rotate(8) translate(16, 8)"
+                filter="url(#appLogoShadowH)"
+              >
+                <rect
+                  x="-44"
+                  y="-62"
+                  width="88"
+                  height="124"
+                  rx="10"
+                  fill="url(#appLogoGreenGradH)"
+                />
                 <polygon
                   points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
                   fill="#060b10"
@@ -188,33 +348,113 @@ const sizeClasses = computed(() => {
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="appLogoGreenGradL" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#10b981" />
-              <stop offset="50%" stop-color="#059669" />
-              <stop offset="100%" stop-color="#047857" />
+            <linearGradient
+              id="appLogoGreenGradL"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#10b981"
+              />
+              <stop
+                offset="50%"
+                stop-color="#059669"
+              />
+              <stop
+                offset="100%"
+                stop-color="#047857"
+              />
             </linearGradient>
-            <linearGradient id="appLogoGoldGradL" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fbbf24" />
-              <stop offset="50%" stop-color="#f59e0b" />
-              <stop offset="100%" stop-color="#d97706" />
+            <linearGradient
+              id="appLogoGoldGradL"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#fbbf24"
+              />
+              <stop
+                offset="50%"
+                stop-color="#f59e0b"
+              />
+              <stop
+                offset="100%"
+                stop-color="#d97706"
+              />
             </linearGradient>
-            <filter id="appLogoShadowL" x="-35%" y="-35%" width="170%" height="170%">
-              <feDropShadow dx="3" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+            <filter
+              id="appLogoShadowL"
+              x="-35%"
+              y="-35%"
+              width="170%"
+              height="170%"
+            >
+              <feDropShadow
+                dx="3"
+                dy="8"
+                stdDeviation="6"
+                flood-color="#000000"
+                flood-opacity="0.5"
+              />
             </filter>
           </defs>
 
           <g transform="translate(120, 120)">
             <g class="anim-wrap-gold">
-              <g transform="rotate(-12) translate(-22, -12)" filter="url(#appLogoShadowL)">
-                <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGoldGradL)" />
-                <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
-                <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+              <g
+                transform="rotate(-12) translate(-22, -12)"
+                filter="url(#appLogoShadowL)"
+              >
+                <rect
+                  x="-44"
+                  y="-62"
+                  width="88"
+                  height="124"
+                  rx="10"
+                  fill="url(#appLogoGoldGradL)"
+                />
+                <line
+                  x1="-30"
+                  y1="-38"
+                  x2="30"
+                  y2="-38"
+                  stroke="#060b10"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity="0.35"
+                />
+                <line
+                  x1="-30"
+                  y1="-22"
+                  x2="8"
+                  y2="-22"
+                  stroke="#060b10"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  opacity="0.35"
+                />
               </g>
             </g>
 
             <g class="anim-wrap-green">
-              <g transform="rotate(8) translate(16, 8)" filter="url(#appLogoShadowL)">
-                <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGreenGradL)" />
+              <g
+                transform="rotate(8) translate(16, 8)"
+                filter="url(#appLogoShadowL)"
+              >
+                <rect
+                  x="-44"
+                  y="-62"
+                  width="88"
+                  height="124"
+                  rx="10"
+                  fill="url(#appLogoGreenGradL)"
+                />
                 <polygon
                   points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
                   fill="#060b10"
@@ -243,7 +483,7 @@ const sizeClasses = computed(() => {
         src="/logo.svg"
         alt="EuroDraft — Build Your Legacy"
         class="w-full h-auto rounded-2xl shadow-2xl border border-white/10"
-      />
+      >
     </div>
   </div>
 </template>

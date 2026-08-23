@@ -62,7 +62,7 @@ async function handleSubmitContact() {
   isSubmitting.value = true
 
   try {
-    const res = await $fetch<{ success: boolean; message: string }>('/api/contact', {
+    const res = await $fetch<{ success: boolean, message: string }>('/api/contact', {
       method: 'POST',
       body: {
         name: contactForm.name,
@@ -83,7 +83,7 @@ async function handleSubmitContact() {
       contactForm.consent = false
     }
   } catch (err: unknown) {
-    const fetchErr = err as { data?: { statusMessage?: string }; statusMessage?: string; message?: string }
+    const fetchErr = err as { data?: { statusMessage?: string }, statusMessage?: string, message?: string }
     submitError.value = fetchErr.data?.statusMessage || fetchErr.statusMessage || fetchErr.message || t('legal.contact_error_generic')
   } finally {
     isSubmitting.value = false

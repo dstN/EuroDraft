@@ -51,11 +51,6 @@ const isSimulationCompleted = computed(() => {
   return tournament.tournamentPhase === 'complete' || (tournament.simulationStep >= 3 && tournament.currentLiveMatch === null)
 })
 
-// All completed matches so far
-const completedPlayerMatches = computed<MatchResult[]>(() => {
-  return tournament.playerMatches
-})
-
 // Completed group stage matches
 const completedGroupMatches = computed<MatchResult[]>(() => {
   return tournament.playerMatches.filter(m => m.phase === 'group')
@@ -882,7 +877,7 @@ function restartDraft() {
       </div>
 
       <!-- ==================================================================== -->
-      <!-- 6. PLAYER STATS DASHBOARD (Top Performers Spotlight & Extended Table)-->
+      <!-- 6. PLAYER STATS DASHBOARD (Top Performers Spotlight & Extended Table) -->
       <!-- ==================================================================== -->
       <div
         v-if="tournament.runStats"

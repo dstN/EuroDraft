@@ -2,6 +2,8 @@
 import type { Player, TournamentRunStats, MatchResult, PositionCode } from '~/types'
 import { loadFlagImage } from '~/utils/flagSvg'
 
+import { useDraftStore } from '~/stores/draft'
+
 const props = defineProps<{
   open: boolean
   teamName: string
@@ -27,8 +29,6 @@ const isGeneratingLink = ref(false)
 const copiedStatus = ref<'text' | 'image' | 'link' | null>(null)
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-
-import { useDraftStore } from '~/stores/draft'
 
 const draftStore = useDraftStore()
 
@@ -179,7 +179,9 @@ async function copyShareText() {
   try {
     await navigator.clipboard.writeText(wordleShareText.value)
     copiedStatus.value = 'text'
-    setTimeout(() => { copiedStatus.value = null }, 2000)
+    setTimeout(() => {
+      copiedStatus.value = null
+    }, 2000)
   } catch (err) {
     console.error('Failed to copy text', err)
   }
@@ -190,7 +192,9 @@ async function copyShareLink() {
   try {
     await navigator.clipboard.writeText(shareLinkUrl.value)
     copiedStatus.value = 'link'
-    setTimeout(() => { copiedStatus.value = null }, 2000)
+    setTimeout(() => {
+      copiedStatus.value = null
+    }, 2000)
   } catch (err) {
     console.error('Failed to copy link', err)
   }
@@ -223,7 +227,7 @@ async function renderCanvas() {
   const userTeamEmblem = props.teamEmblem || 'eu'
   const playerCountries = sortedSquad.value.slice(0, 11).map(p => p.country || 'eu')
   const performerCountries = topPerformers.value.map(p => p.player.country || 'eu')
-  const opponentCountries = (props.matches || []).map(m => {
+  const opponentCountries = (props.matches || []).map((m) => {
     return m.teamA.team.country === userTeamEmblem ? m.teamB.team.country : m.teamA.team.country
   })
 
@@ -662,7 +666,9 @@ async function copyCanvasImage() {
         new ClipboardItem({ 'image/png': blob })
       ])
       copiedStatus.value = 'image'
-      setTimeout(() => { copiedStatus.value = null }, 2000)
+      setTimeout(() => {
+        copiedStatus.value = null
+      }, 2000)
     } catch (err) {
       console.error('Failed to copy canvas image', err)
       downloadCanvasImage()

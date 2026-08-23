@@ -3358,5 +3358,5 @@ export const HISTORICAL_PLAYER_REGISTRY: Record<string, PlayerPositionProfile> =
   'zsolt nagy': { primary: 'RW', positions: ['RW', 'ST'], base: 'Forward' },
   'zuriko davitashvili': { primary: 'LW', positions: ['LW', 'CAM'], base: 'Forward' },
   'zvonimir boban': { primary: 'CAM', positions: ['CAM', 'CM'], base: 'Midfielder' },
-  'zvonimir soldo': { primary: 'CDM', positions: ['CDM', 'CB'], base: 'Midfielder' },
+  'zvonimir soldo': { primary: 'CDM', positions: ['CDM', 'CB'], base: 'Midfielder' }
 }
