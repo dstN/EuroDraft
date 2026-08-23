@@ -63,19 +63,21 @@
       }
     </style>
 
-    <!-- Gradients und DropShadow aus der 1. Version -->
+    <!-- Gradients und DropShadow abgestimmt auf das EuroDraft UEFA Farbschema -->
     <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f283" />
-      <stop offset="100%" stop-color="#00b35f" />
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
     </linearGradient>
     
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffcc00" />
-      <stop offset="100%" stop-color="#e69900" />
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
     </linearGradient>
 
-    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.4" />
+    <filter id="dropShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="3" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.45" />
     </filter>
 
     <!-- Clip Path für den Typewriter-Effekt -->
@@ -84,30 +86,28 @@
     </clipPath>
   </defs>
 
-  <!-- Einfarbiger dunkler Hintergrund -->
-  <rect width="100%" height="100%" fill="#0a1216" />
+  <!-- Stadium Dark Hintergrund -->
+  <rect width="100%" height="100%" fill="#060b10" />
 
   <!-- Logo Icon Gruppe (Zentriert) -->
   <g transform="translate(400, 240)">
     
-    <!-- Animierter Wrapper für Gold -->
+    <!-- Animierter Wrapper für Gold Card -->
     <g class="anim-wrap-gold">
-      <!-- ORIGINALES, UNANGETASTETES LAYOUT DER ERSTEN VERSION -->
       <g transform="rotate(-12) translate(-30, -20)" filter="url(#dropShadow)">
         <rect x="-60" y="-80" width="120" height="170" rx="12" fill="url(#goldGrad)" />
-        <line x1="-40" y1="-50" x2="40" y2="-50" stroke="#0a1216" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
-        <line x1="-40" y1="-30" x2="10" y2="-30" stroke="#0a1216" stroke-width="4" stroke-linecap="round" opacity="0.3"/>
+        <line x1="-40" y1="-50" x2="40" y2="-50" stroke="#060b10" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
+        <line x1="-40" y1="-30" x2="10" y2="-30" stroke="#060b10" stroke-width="4" stroke-linecap="round" opacity="0.35"/>
       </g>
     </g>
 
-    <!-- Animierter Wrapper für Grün -->
+    <!-- Animierter Wrapper für Green Card -->
     <g class="anim-wrap-green">
-      <!-- ORIGINALES, UNANGETASTETES LAYOUT DER ERSTEN VERSION -->
       <g transform="rotate(8) translate(20, 10)" filter="url(#dropShadow)">
         <rect x="-60" y="-80" width="120" height="170" rx="12" fill="url(#greenGrad)" />
         <polygon 
           points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10" 
-          fill="#0a1216" 
+          fill="#060b10" 
           transform="translate(0, 5) scale(1.6)" 
         />
       </g>
@@ -116,11 +116,11 @@
   </g>
 
   <!-- Typografie: Gesplittet für den Slide-In -->
-  <text x="400" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="900" text-anchor="end" fill="#ffffff" letter-spacing="1" class="text-euro">Euro</text>
-  <text x="400" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="900" text-anchor="start" fill="#ffcc00" letter-spacing="1" class="text-draft">Draft</text>
+  <text x="400" y="450" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="900" text-anchor="end" fill="#ffffff" letter-spacing="1" class="text-euro">Euro</text>
+  <text x="400" y="450" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="900" text-anchor="start" fill="#fbbf24" letter-spacing="1" class="text-draft">Draft</text>
   
   <!-- Sub-Slogan mit Typewriter-Clip -->
   <g class="slogan-wrapper" clip-path="url(#typewriter-clip)">
-    <text x="400" y="490" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="#00f283" letter-spacing="5">BUILD YOUR LEGACY</text>
+    <text x="400" y="490" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" text-anchor="middle" fill="#34d399" letter-spacing="4">BUILD YOUR LEGACY</text>
   </g>
 </svg>

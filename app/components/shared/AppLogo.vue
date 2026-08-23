@@ -44,12 +44,14 @@ const sizeClasses = computed(() => {
     >
       <defs>
         <linearGradient id="appLogoGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#00f283" />
-          <stop offset="100%" stop-color="#00b35f" />
+          <stop offset="0%" stop-color="#10b981" />
+          <stop offset="50%" stop-color="#059669" />
+          <stop offset="100%" stop-color="#047857" />
         </linearGradient>
         <linearGradient id="appLogoGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#ffcc00" />
-          <stop offset="100%" stop-color="#e69900" />
+          <stop offset="0%" stop-color="#fbbf24" />
+          <stop offset="50%" stop-color="#f59e0b" />
+          <stop offset="100%" stop-color="#d97706" />
         </linearGradient>
         <filter id="appLogoShadow" x="-30%" y="-30%" width="160%" height="160%">
           <feDropShadow dx="2" dy="6" stdDeviation="4" flood-color="#000000" flood-opacity="0.35" />
@@ -64,8 +66,8 @@ const sizeClasses = computed(() => {
           class="transition-transform duration-300 group-hover:rotate-[-16deg] group-hover:translate-x-[-26px]"
         >
           <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGoldGrad)" />
-          <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#0a1216" stroke-width="3" stroke-linecap="round" opacity="0.3" />
-          <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#0a1216" stroke-width="3" stroke-linecap="round" opacity="0.3" />
+          <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+          <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
         </g>
 
         <!-- Green Card with Star (Front Right) -->
@@ -77,7 +79,7 @@ const sizeClasses = computed(() => {
           <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGreenGrad)" />
           <polygon
             points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
-            fill="#0a1216"
+            fill="#060b10"
             transform="translate(0, 4) scale(1.15)"
           />
         </g>
@@ -98,12 +100,14 @@ const sizeClasses = computed(() => {
         >
           <defs>
             <linearGradient id="appLogoGreenGradH" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#00f283" />
-              <stop offset="100%" stop-color="#00b35f" />
+              <stop offset="0%" stop-color="#10b981" />
+              <stop offset="50%" stop-color="#059669" />
+              <stop offset="100%" stop-color="#047857" />
             </linearGradient>
             <linearGradient id="appLogoGoldGradH" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ffcc00" />
-              <stop offset="100%" stop-color="#e69900" />
+              <stop offset="0%" stop-color="#fbbf24" />
+              <stop offset="50%" stop-color="#f59e0b" />
+              <stop offset="100%" stop-color="#d97706" />
             </linearGradient>
             <filter id="appLogoShadowH" x="-30%" y="-30%" width="160%" height="160%">
               <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.3" />
@@ -116,8 +120,8 @@ const sizeClasses = computed(() => {
               filter="url(#appLogoShadowH)"
             >
               <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGoldGradH)" />
-              <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#0a1216" stroke-width="3" stroke-linecap="round" opacity="0.3" />
-              <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#0a1216" stroke-width="3" stroke-linecap="round" opacity="0.3" />
+              <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+              <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
             </g>
 
             <g
@@ -127,7 +131,7 @@ const sizeClasses = computed(() => {
               <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#appLogoGreenGradH)" />
               <polygon
                 points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
-                fill="#0a1216"
+                fill="#060b10"
                 transform="translate(0, 4) scale(1.15)"
               />
             </g>
@@ -138,9 +142,9 @@ const sizeClasses = computed(() => {
       <div class="flex flex-col leading-none">
         <span class="font-black text-lg tracking-tight flex items-center">
           <span class="text-zinc-900 dark:text-white">Euro</span>
-          <span class="text-amber-700 dark:text-[#ffcc00] font-black">Draft</span>
+          <span class="text-amber-600 dark:text-amber-400 font-black">Draft</span>
         </span>
-        <span class="text-[8px] font-mono uppercase tracking-[0.25em] font-bold text-emerald-800 dark:text-[#00f283] mt-0.5">
+        <span class="text-[8px] font-mono uppercase tracking-[0.25em] font-bold text-emerald-800 dark:text-emerald-400 mt-0.5">
           Build Your Legacy
         </span>
       </div>
