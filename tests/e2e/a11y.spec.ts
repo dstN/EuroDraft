@@ -68,6 +68,7 @@ for (const { name, theme } of interactivePages) {
     const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
     await expect(page).toHaveURL('/draft')
+    await page.locator('[role="status"][aria-label="Loading EuroDraft"]').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
     await page.waitForSelector('.custom-scroll', { state: 'visible' })
     await setTheme(page, theme)
     await page.waitForTimeout(400)
