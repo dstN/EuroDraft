@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { Formation } from '~/types'
+import type { Formation, PositionCode } from '~/types'
 import { expandFormationToSlots } from '~/composables/useFormations'
+import { getPitchCoordinates, samePositionIndex } from '~/utils/pitchLayout'
 
 const props = defineProps<{
   formation: Formation
@@ -16,63 +17,14 @@ function dotColor(pos: string): string {
   return '#f87171' // red
 }
 
-function getCoords(pos: string, idx: number, allSlots: string[]): { x: number, y: number } {
-  const same = allSlots.filter(p => p === pos)
-  const posIdx = same.indexOf(pos) < 0
-    ? 0
-    : (() => {
-        let count = 0
-        for (let i = 0; i < allSlots.length; i++) {
-          if (allSlots[i] === pos) {
-            if (i === idx) break
-            count++
-          }
-        }
-        return count
-      })()
-  const n = same.length
-  const hasCDM = allSlots.includes('CDM')
-  const hasCM = allSlots.includes('CM')
-  const hasCAM = allSlots.includes('CAM')
-
-  if (pos === 'GK') return { x: 50, y: 88 }
-  if (pos === 'LB') return { x: 14, y: 70 }
-  if (pos === 'RB') return { x: 86, y: 70 }
-  if (pos === 'CB') {
-    if (n === 2) return { x: posIdx === 0 ? 37 : 63, y: 74 }
-    if (n === 3) return { x: posIdx === 0 ? 26 : posIdx === 1 ? 50 : 74, y: 74 }
-  }
-  if (pos === 'CDM') {
-    return { x: n > 1 ? (posIdx === 0 ? 36 : 64) : 50, y: 60 }
-  }
-  if (pos === 'CM') {
-    if (hasCDM && hasCAM) {
-      return { x: n === 1 ? 36 : (posIdx === 0 ? 34 : 66), y: 47 }
-    } else if (hasCDM && !hasCAM) {
-      return { x: n === 1 ? 50 : (posIdx === 0 ? 33 : 67), y: 43 }
-    } else if (!hasCDM && hasCAM) {
-      if (n === 1) return { x: 36, y: 50 }
-      if (n === 3) return { x: posIdx === 0 ? 22 : posIdx === 1 ? 50 : 78, y: 50 }
-      return { x: posIdx === 0 ? 35 : 65, y: 50 }
-    } else {
-      if (n === 1) return { x: 50, y: 48 }
-      if (n === 2) return { x: posIdx === 0 ? 35 : 65, y: 48 }
-      if (n === 3) return { x: posIdx === 0 ? 24 : posIdx === 1 ? 50 : 76, y: 52 }
-    }
-  }
-  if (pos === 'CAM') {
-    if (n > 1) return { x: posIdx === 0 ? 35 : 65, y: 33 }
-    return { x: hasCDM && hasCM ? 60 : 50, y: 33 }
-  }
-  if (pos === 'LM') return { x: 14, y: hasCDM ? 48 : 46 }
-  if (pos === 'RM') return { x: 86, y: hasCDM ? 48 : 46 }
-  if (pos === 'LW') return { x: 18, y: 20 }
-  if (pos === 'RW') return { x: 82, y: 20 }
-  if (pos === 'ST' || pos === 'CF') {
-    if (n === 1) return { x: 50, y: 15 }
-    return { x: posIdx === 0 ? 35 : 65, y: 15 }
-  }
-  return { x: 50, y: 50 }
+function getCoords(pos: PositionCode, idx: number, allSlots: PositionCode[]): { x: number, y: number } {
+  const { sameIndex, sameCount } = samePositionIndex(pos, idx, allSlots)
+  const { top, left } = getPitchCoordinates(pos, sameIndex, sameCount, {
+    hasCDM: allSlots.includes('CDM'),
+    hasCM: allSlots.includes('CM'),
+    hasCAM: allSlots.includes('CAM')
+  })
+  return { x: left, y: top }
 }
 
 const dots = computed(() =>

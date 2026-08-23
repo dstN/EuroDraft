@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DraftSlot, Player } from '~/types'
+import { getPitchCoordinates, samePositionIndex } from '~/utils/pitchLayout'
 
 const props = defineProps<{
   slots: DraftSlot[]
@@ -34,95 +35,16 @@ function isSlotHighlighted(slot: DraftSlot): boolean {
 
 // Pitch layout coordinate mapping based on position type and index (zero-overlap staggered layout)
 function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
-  const pos = slot.position
   const allSlots = props.slots
-  const hasCDM = allSlots.some(s => s.position === 'CDM')
-  const hasCM = allSlots.some(s => s.position === 'CM')
-  const hasCAM = allSlots.some(s => s.position === 'CAM')
+  const positions = allSlots.map(s => s.position)
+  const slotIdx = allSlots.findIndex(s => s.id === slot.id)
+  const { sameIndex, sameCount } = samePositionIndex(slot.position, slotIdx, positions)
 
-  let top = 50
-  let left = 50
-
-  if (pos === 'GK') {
-    top = 88
-    left = 50
-  } else if (pos === 'CB') {
-    top = 74
-    const cbSlots = allSlots.filter(s => s.position === 'CB')
-    const idx = cbSlots.findIndex(s => s.id === slot.id)
-    if (cbSlots.length === 2) left = idx === 0 ? 37 : 63
-    else if (cbSlots.length === 3) left = idx === 0 ? 26 : idx === 1 ? 50 : 74
-  } else if (pos === 'LB') {
-    top = 70
-    left = 14
-  } else if (pos === 'RB') {
-    top = 70
-    left = 86
-  } else if (pos === 'CDM') {
-    const cdmSlots = allSlots.filter(s => s.position === 'CDM')
-    const idx = cdmSlots.findIndex(s => s.id === slot.id)
-    top = 60
-    if (cdmSlots.length > 1) {
-      left = idx === 0 ? 36 : 64
-    } else {
-      left = 50
-    }
-  } else if (pos === 'CM') {
-    const cmSlots = allSlots.filter(s => s.position === 'CM')
-    const idx = cmSlots.findIndex(s => s.id === slot.id)
-
-    if (cmSlots.length === 3) {
-      top = hasCAM ? 52 : 50
-      left = idx === 0 ? 24 : idx === 1 ? 50 : 76
-    } else if (cmSlots.length === 2) {
-      if (hasCDM && hasCAM) {
-        top = 47
-        left = idx === 0 ? 34 : 66
-      } else if (hasCDM && !hasCAM) {
-        top = 44
-        left = idx === 0 ? 33 : 67
-      } else if (!hasCDM && hasCAM) {
-        top = 50
-        left = idx === 0 ? 34 : 66
-      } else {
-        top = 48
-        left = idx === 0 ? 35 : 65
-      }
-    } else {
-      top = hasCDM ? 44 : 48
-      left = (hasCDM && hasCAM) ? 36 : 50
-    }
-  } else if (pos === 'CAM') {
-    const camSlots = allSlots.filter(s => s.position === 'CAM')
-    const idx = camSlots.findIndex(s => s.id === slot.id)
-    top = 33
-    if (camSlots.length > 1) {
-      left = idx === 0 ? 35 : 65
-    } else {
-      if (hasCDM && hasCM) {
-        left = 60
-      } else {
-        left = 50
-      }
-    }
-  } else if (pos === 'LM') {
-    top = hasCDM ? 48 : 46
-    left = 14
-  } else if (pos === 'RM') {
-    top = hasCDM ? 48 : 46
-    left = 86
-  } else if (pos === 'LW') {
-    top = 20
-    left = 18
-  } else if (pos === 'RW') {
-    top = 20
-    left = 82
-  } else if (pos === 'ST' || pos === 'CF') {
-    const stSlots = allSlots.filter(s => s.position === 'ST' || s.position === 'CF')
-    const idx = stSlots.findIndex(s => s.id === slot.id)
-    top = 15
-    left = stSlots.length > 1 ? (idx === 0 ? 35 : 65) : 50
-  }
+  const { top, left } = getPitchCoordinates(slot.position, sameIndex, sameCount, {
+    hasCDM: allSlots.some(s => s.position === 'CDM'),
+    hasCM: allSlots.some(s => s.position === 'CM'),
+    hasCAM: allSlots.some(s => s.position === 'CAM')
+  })
 
   return {
     top: `${top}%`,
