@@ -34,7 +34,7 @@ export interface PlayerStats {
 
 // ------- Player -------
 
-export type EnrichmentSource = 'wikidata' | 'fifa' | 'gemini' | 'fallback'
+export type EnrichmentSource = 'wikidata' | 'curated' | 'historical' | 'gemini' | 'fallback'
 
 export interface Player {
   id: string // e.g. "es-2024-pedri"
@@ -47,6 +47,7 @@ export interface Player {
   basePosition: PositionCategory // From Wikipedia: broad category
   positions: PositionCode[] // Granular — all playable positions
   primaryPosition: PositionCode // Best/most common position
+  draftedPosition?: PositionCode // Exact slot position picked during draft
   stats: PlayerStats
   enrichmentSource: EnrichmentSource
 }

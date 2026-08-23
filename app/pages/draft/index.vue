@@ -4,10 +4,13 @@ import FormationPitch from '~/components/draft/FormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 import RouletteWheelReel from '~/components/draft/RouletteWheelReel.vue'
 
+import AppLogo from '~/components/shared/AppLogo.vue'
+
 definePageMeta({ layout: 'default' })
 
 const draft = useDraftStore()
 const roulette = useRouletteStore()
+const appLoading = useAppLoading()
 
 // Mobile view tab state: 'squad' | 'pitch'
 const mobileTab = ref<'squad' | 'pitch'>('squad')
@@ -15,39 +18,81 @@ const mobileTab = ref<'squad' | 'pitch'>('squad')
 // Wheel spinning state for reel animation
 const isSpinningReel = ref(false)
 
-// Redirect if no formation selected
+// In-card loading transition state (logo animation confined to squad card only)
+const isCardTransitioning = ref(false)
+const currentSpinType = ref<'all' | 'nation' | 'year'>('all')
+
+// Handle browser/phone physical back button or swipe gesture
+function handlePopState(_event: PopStateEvent) {
+  // If we are currently showing the pitch on mobile due to player selection or tab
+  if (mobileTab.value === 'pitch') {
+    mobileTab.value = 'squad'
+    selectedPlayer.value = null
+    selectedSlotId.value = null
+    hoveredPlayer.value = null
+  }
+}
+
+// Redirect if no formation selected or if draft already complete
 onMounted(() => {
   if (!draft.formation) {
     navigateTo('/draft/formation')
     return
   }
-  if (!roulette.currentCountry) {
-    spinWithAnimation()
+  if (draft.isComplete) {
+    navigateTo('/tournament')
+    return
   }
+  if (!roulette.currentCountry) {
+    roulette.spin()
+  }
+  window.addEventListener('popstate', handlePopState)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('popstate', handlePopState)
 })
 
 function spinWithAnimation() {
+  if (isCardTransitioning.value) return
+  currentSpinType.value = 'all'
+  isCardTransitioning.value = true
   isSpinningReel.value = true
   roulette.spin()
+
+  const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isCardTransitioning.value = false
     isSpinningReel.value = false
-  }, 550)
+  }, duration)
 }
 
 function rerollYearWithAnimation() {
+  if (draft.rerollsRemaining <= 0 || isSpinningReel.value || isCardTransitioning.value) return
+  currentSpinType.value = 'year'
+  isCardTransitioning.value = true
   isSpinningReel.value = true
   roulette.rerollYear()
+
+  const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isCardTransitioning.value = false
     isSpinningReel.value = false
-  }, 500)
+  }, duration)
 }
 
 function rerollNationWithAnimation() {
+  if (draft.rerollsRemaining <= 0 || isSpinningReel.value || isCardTransitioning.value) return
+  currentSpinType.value = 'nation'
+  isCardTransitioning.value = true
   isSpinningReel.value = true
   roulette.rerollNation()
+
+  const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isCardTransitioning.value = false
     isSpinningReel.value = false
-  }, 500)
+  }, duration)
 }
 
 // Selected player from squad list
@@ -80,19 +125,17 @@ function onPlayerClick(player: Player) {
 
   // Toggle selection
   if (selectedPlayer.value?.id === player.id) {
-    selectedPlayer.value = null
+    goBackToSquad()
     return
   }
 
   selectedPlayer.value = player
   selectedSlotId.value = null
 
-  // If only 1 compatible slot exists, auto-switch to pitch on mobile so user sees it
-  if (mobileTab.value === 'squad') {
-    const compatible = draft.getCompatibleSlots(player)
-    if (compatible.length === 1) {
-      confirmDraft(player, compatible[0]!)
-    }
+  // On mobile: smoothly switch to pitch view and push a state to history so back gesture stays on squad list
+  mobileTab.value = 'pitch'
+  if (typeof window !== 'undefined') {
+    window.history.pushState({ eurodraft_mobile_view: 'pitch' }, '')
   }
 }
 
@@ -119,18 +162,37 @@ function confirmDraft(player: Player, slot: DraftSlot) {
   selectedSlotId.value = null
   hoveredPlayer.value = null
 
-  // If draft not complete, spin roulette for next nation/year with slot animation
-  if (!draft.isComplete) {
-    spinWithAnimation()
-  } else {
-    // Navigate straight to tournament
+  if (draft.isComplete) {
+    // 11/11 players drafted: trigger full tournament loading transition and navigate immediately
+    appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
     navigateTo('/tournament')
+    return
+  }
+
+  // Revert the history state if we pushed one for mobile pitch
+  if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
+    window.history.back()
+  }
+
+  // Switch back to squad view on mobile
+  mobileTab.value = 'squad'
+
+  // Trigger in-card spin animation with logo loader for next squad
+  spinWithAnimation()
+}
+
+function goBackToSquad() {
+  mobileTab.value = 'squad'
+  selectedPlayer.value = null
+  selectedSlotId.value = null
+  hoveredPlayer.value = null
+  if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
+    window.history.back()
   }
 }
 
 function cancelSelection() {
-  selectedPlayer.value = null
-  selectedSlotId.value = null
+  goBackToSquad()
 }
 
 function positionColor(pos: string): string {
@@ -150,25 +212,30 @@ function isPlayerEligibleForSelectedSlot(player: Player): boolean {
 }
 
 const currentCountryDisplayName = computed(() => {
-  return roulette.currentSquad[0]?.countryName ?? roulette.currentCountry?.toUpperCase() ?? ''
+  return roulette.currentSquad[0]?.countryName ?? getCountryName(roulette.currentCountry || '') ?? ''
+})
+
+const formationShortName = computed(() => {
+  return draft.formation?.label.replace(/\s*\([^)]*\)/, '') ?? draft.formation?.id ?? '4-3-3'
 })
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
+  <div class="max-w-5xl mx-auto px-3 sm:px-6 space-y-4 sm:space-y-6">
     <!-- Top HUD Bar: Team Identity & Progress (Clean surface-card) -->
-    <div class="surface-card p-4 sm:p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="surface-card p-3 sm:p-4">
+      <div class="flex items-center justify-between gap-3">
         <!-- Left: Team Identity & OVR -->
-        <div class="flex items-center gap-3.5">
+        <div class="flex items-center gap-3 min-w-0">
           <CountryFlag
             :country="draft.teamEmblem || 'eu'"
             size="md"
+            class="shrink-0"
           />
-          <div>
-            <h1 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <span>{{ draft.teamName || 'Dream XI' }}</span>
-              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-300 border border-emerald-400 dark:border-emerald-500/30">
+          <div class="min-w-0">
+            <h1 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span class="truncate">{{ draft.teamName || 'Dream XI' }}</span>
+              <span class="text-xs font-mono font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-300 border border-emerald-500/40 shadow-xs shrink-0">
                 {{ draft.teamOVR }} OVR
               </span>
             </h1>
@@ -178,38 +245,11 @@ const currentCountryDisplayName = computed(() => {
           </div>
         </div>
 
-        <!-- Formation badge & Mobile Tab Switcher -->
-        <div class="flex items-center justify-between sm:justify-end gap-3">
-          <div class="flex items-center gap-2">
-            <UBadge
-              color="neutral"
-              variant="outline"
-              size="md"
-              class="font-mono font-black text-xs"
-            >
-              {{ draft.formation?.label }}
-            </UBadge>
-          </div>
-
-          <!-- Mobile Tab Toggle (< lg) -->
-          <div class="lg:hidden flex items-center p-1 bg-zinc-200 dark:bg-zinc-800 rounded-xl">
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'squad' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300'"
-              @click="mobileTab = 'squad'"
-            >
-              🎲 Squad ({{ roulette.squadWithEligibility.filter(p => p.canDraft).length }})
-            </button>
-            <button
-              type="button"
-              class="px-3 py-1 text-xs font-semibold rounded-lg transition-all"
-              :class="mobileTab === 'pitch' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-700 dark:text-zinc-300'"
-              @click="mobileTab = 'pitch'"
-            >
-              🏟️ Pitch ({{ draft.filledSlots.length }}/11)
-            </button>
-          </div>
+        <!-- Right: Formation badge only (short title) -->
+        <div class="shrink-0">
+          <span class="px-3 py-1 rounded-full border border-zinc-300 dark:border-white/15 bg-zinc-100/90 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 font-mono font-black text-xs shadow-xs">
+            {{ formationShortName }}
+          </span>
         </div>
       </div>
     </div>
@@ -249,11 +289,35 @@ const currentCountryDisplayName = computed(() => {
         :class="{ 'hidden lg:flex': mobileTab === 'pitch' }"
       >
         <!-- Current team card (Clean single surface-card) -->
-        <div class="surface-card p-5 space-y-4 flex-1 flex flex-col">
+        <div class="surface-card p-4 sm:p-5 space-y-4 flex-1 flex flex-col relative overflow-hidden">
+          <!-- In-Card Loading Transition with Animated Logo Loader (confined to this card only) -->
+          <Transition name="card-splash">
+            <div
+              v-if="isCardTransitioning"
+              class="absolute inset-0 w-full h-full z-40 flex flex-col items-center justify-center bg-[#060b10] rounded-[inherit] p-6 text-center space-y-4 select-none"
+              role="status"
+              aria-live="polite"
+              aria-label="Loading next squad"
+            >
+              <AppLogo
+                variant="loader"
+                size="md"
+                :animated="true"
+              />
+              <div class="w-40 sm:w-48 h-1 bg-white/10 rounded-full overflow-hidden relative shadow-inner">
+                <div class="h-full bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-400 rounded-full animate-loading-bar" />
+              </div>
+              <p class="text-xs font-mono font-bold tracking-widest uppercase text-white animate-pulse">
+                {{ currentSpinType === 'year' ? 'Rerolling Tournament Year...' : currentSpinType === 'nation' ? 'Rerolling National Squad...' : 'Spinning Next Squad...' }}
+              </p>
+            </div>
+          </Transition>
+
           <!-- Team header with Animated Roulette Reel -->
-          <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-white/5">
             <RouletteWheelReel
               :is-spinning="isSpinningReel"
+              :spin-type="currentSpinType"
               :target-country="roulette.currentCountry"
               :target-year="roulette.currentYear"
               :target-country-name="currentCountryDisplayName"
@@ -261,7 +325,7 @@ const currentCountryDisplayName = computed(() => {
             />
 
             <!-- Reroll controls -->
-            <div class="flex flex-col gap-1.5 items-end shrink-0">
+            <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 pt-1 sm:pt-0">
               <div class="flex gap-1.5">
                 <UTooltip
                   :text="$t('draft.reroll_year_hint', { nation: currentCountryDisplayName })"
@@ -303,7 +367,7 @@ const currentCountryDisplayName = computed(() => {
           <!-- Squad list (Position-sorted: Goalkeepers -> Defenders -> Midfielders -> Forwards) -->
           <div
             ref="squadScrollRef"
-            class="space-y-1.5 max-h-[55vh] lg:max-h-[62vh] overflow-y-auto custom-scroll pr-1 flex-1"
+            class="space-y-2 max-h-[60vh] lg:max-h-[62vh] overflow-y-auto custom-scroll p-1.5 flex-1"
           >
             <template
               v-for="(entry, idx) in roulette.squadWithEligibility"
@@ -312,7 +376,7 @@ const currentCountryDisplayName = computed(() => {
               <!-- Position Category Section Header -->
               <div
                 v-if="idx === 0 || roulette.squadWithEligibility[idx - 1]?.player.basePosition !== entry.player.basePosition"
-                class="pt-3 pb-1 px-1 flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 select-none"
+                class="pt-2.5 pb-1 px-1 flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.15em] text-zinc-700 dark:text-zinc-300 select-none"
               >
                 <span>{{ entry.player.basePosition }}s</span>
                 <div class="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
@@ -323,7 +387,7 @@ const currentCountryDisplayName = computed(() => {
                 class="w-full flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-left transition-all duration-150 border cursor-pointer select-none"
                 :class="[
                   selectedPlayer?.id === entry.player.id
-                    ? 'bg-emerald-600/25 border-emerald-500 ring-2 ring-emerald-500 shadow-md scale-[1.01]'
+                    ? 'bg-emerald-500/20 dark:bg-emerald-950/70 border-emerald-500 ring-2 ring-inset ring-emerald-500 shadow-md'
                     : isPlayerEligibleForSelectedSlot(entry.player)
                       ? 'bg-zinc-50 hover:bg-emerald-50/80 dark:bg-zinc-800/70 dark:hover:bg-emerald-950/40 border-zinc-200/80 dark:border-white/5 hover:border-emerald-400/50 shadow-sm active:scale-[0.99]'
                       : 'bg-zinc-100/50 dark:bg-zinc-900/30 border-transparent opacity-35 cursor-not-allowed'
@@ -338,9 +402,9 @@ const currentCountryDisplayName = computed(() => {
                   {{ entry.player.shirtNumber ?? '–' }}
                 </span>
 
-                <!-- Position badge -->
+                <!-- Position badge with generous padding -->
                 <span
-                  class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 w-9 text-center"
+                  class="font-mono text-[11px] font-bold px-2.5 py-1 rounded-md border uppercase shrink-0 min-w-[42px] text-center tracking-wider leading-none shadow-xs"
                   :class="positionColor(entry.player.primaryPosition)"
                 >
                   {{ entry.player.primaryPosition }}
@@ -351,9 +415,9 @@ const currentCountryDisplayName = computed(() => {
                   {{ entry.player.name }}
                 </span>
 
-                <!-- OVR rating badge -->
+                <!-- OVR rating badge with generous padding -->
                 <span
-                  class="font-mono text-xs font-black px-2 py-0.5 rounded-md border shrink-0"
+                  class="font-mono text-xs font-black px-2.5 py-1 rounded-md border shrink-0 leading-none"
                   :class="entry.player.stats.overall >= 90
                     ? 'bg-amber-500/15 border-amber-500/40 text-amber-950 dark:text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
                     : entry.player.stats.overall >= 85
@@ -367,7 +431,7 @@ const currentCountryDisplayName = computed(() => {
                 <UIcon
                   v-if="selectedPlayer?.id === entry.player.id"
                   name="i-lucide-check-circle"
-                  class="size-4 text-emerald-400 shrink-0"
+                  class="size-4 text-emerald-500 shrink-0"
                 />
                 <UIcon
                   v-else-if="isPlayerEligibleForSelectedSlot(entry.player)"
@@ -390,12 +454,34 @@ const currentCountryDisplayName = computed(() => {
         class="flex flex-col lg:col-span-5"
         :class="{ 'hidden lg:flex': mobileTab === 'squad' }"
       >
-        <div class="surface-card p-5 space-y-4 flex-1 flex flex-col">
+        <div class="surface-card p-4 sm:p-5 space-y-4 flex-1 flex flex-col">
+          <!-- Mobile Pitch Navigation Bar (Visible only on mobile when viewing pitch) -->
+          <div class="lg:hidden flex items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-white/10">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs cursor-pointer transition-colors border border-zinc-300/60 dark:border-white/10 select-none"
+              @click="goBackToSquad"
+            >
+              <UIcon
+                name="i-lucide-arrow-left"
+                class="size-4 text-emerald-500"
+              />
+              <span>Back to Squad</span>
+            </button>
+            <div
+              v-if="selectedPlayer"
+              class="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300 truncate"
+            >
+              <span class="px-2 py-0.5 rounded border border-emerald-500/40 bg-emerald-500/10">{{ selectedPlayer.primaryPosition }}</span>
+              <span class="truncate max-w-[130px]">{{ selectedPlayer.name }}</span>
+            </div>
+          </div>
+
           <div class="flex items-center justify-between px-1 shrink-0">
             <div>
               <h3 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
                 <span>Tactical Pitch</span>
-                <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">({{ draft.formation?.label }})</span>
+                <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">({{ formationShortName }})</span>
               </h3>
             </div>
             <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
@@ -419,3 +505,34 @@ const currentCountryDisplayName = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.card-splash-enter-active,
+.card-splash-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.card-splash-enter-from,
+.card-splash-leave-to {
+  opacity: 0;
+}
+
+@keyframes cardLoadingBar {
+  0% {
+    width: 0%;
+    transform: translateX(-100%);
+  }
+  50% {
+    width: 75%;
+    transform: translateX(20%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+.animate-loading-bar {
+  animation: cardLoadingBar 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+</style>

@@ -103,10 +103,17 @@ export const useTournamentStore = defineStore('tournament', () => {
   /** Get player match for group matchday 0, 1, or 2 */
   function _getPlayerGroupMatch(matchdayIndex: number): MatchResult | null {
     if (!playerGroup.value || !playerTeam.value) return null
+    const pid = playerTeam.value.id
+
+    // Check playerGroup.matches first
+    const fromGroup = (playerGroup.value.matches || []).filter(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
+    if (fromGroup[matchdayIndex]) return fromGroup[matchdayIndex]
+
+    // Fallback to _allGroupMatches
     const fullList = _allGroupMatches.value.get(playerGroup.value.id) ?? []
     const startIdx = matchdayIndex * 2
     const mdMatches = fullList.slice(startIdx, startIdx + 2)
-    return mdMatches.find(m => m.teamA.team.id === playerTeam.value?.id || m.teamB.team.id === playerTeam.value?.id) ?? null
+    return mdMatches.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid) ?? null
   }
 
   /** Current active live match being broadcast on the tournament arena */
@@ -146,32 +153,32 @@ export const useTournamentStore = defineStore('tournament', () => {
     const pid = playerTeam.value.id
     const list: MatchResult[] = []
 
-    // Add completed group matches
-    if (simulationStep.value >= 1) {
-      const m1 = _getPlayerGroupMatch(0)
-      if (m1) list.push(m1)
-    }
-    if (simulationStep.value >= 2) {
-      const m2 = _getPlayerGroupMatch(1)
-      if (m2) list.push(m2)
-    }
-    if (simulationStep.value >= 3) {
-      const m3 = _getPlayerGroupMatch(2)
-      if (m3) list.push(m3)
+    // 1. Group Stage matches played by the user's team
+    for (let i = 0; i < Math.min(3, simulationStep.value); i++) {
+      const gm = _getPlayerGroupMatch(i)
+      if (gm && !list.some(existing => existing.id === gm.id)) {
+        list.push(gm)
+      }
     }
 
-    // Add completed knockouts
-    if (simulationStep.value >= 4) {
+    // 2. Knockouts
+    if (simulationStep.value >= 4 && knockoutBracket.value.quarterFinals?.length) {
       const qf = knockoutBracket.value.quarterFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
-      if (qf) list.push(qf)
+      if (qf && !list.some(existing => existing.id === qf.id)) {
+        list.push(qf)
+      }
     }
-    if (simulationStep.value >= 5) {
+    if (simulationStep.value >= 5 && knockoutBracket.value.semiFinals?.length) {
       const sf = knockoutBracket.value.semiFinals.find(m => m.teamA.team.id === pid || m.teamB.team.id === pid)
-      if (sf) list.push(sf)
+      if (sf && !list.some(existing => existing.id === sf.id)) {
+        list.push(sf)
+      }
     }
-    if (simulationStep.value >= 6) {
+    if (simulationStep.value >= 6 && knockoutBracket.value.final) {
       const fin = knockoutBracket.value.final
-      if (fin && (fin.teamA.team.id === pid || fin.teamB.team.id === pid)) list.push(fin)
+      if (fin && (fin.teamA.team.id === pid || fin.teamB.team.id === pid) && !list.some(existing => existing.id === fin.id)) {
+        list.push(fin)
+      }
     }
 
     return list
@@ -317,7 +324,10 @@ export const useTournamentStore = defineStore('tournament', () => {
 
     const draftedSquad = draft.filledSlots
       .filter(s => s.player !== null)
-      .map(s => s.player!)
+      .map(s => ({
+        ...s.player!,
+        draftedPosition: s.position
+      }))
 
     playerTeam.value = buildTournamentTeam(
       draft.teamEmblem || 'eu',

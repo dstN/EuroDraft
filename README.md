@@ -1,6 +1,6 @@
 # EuroDraft
 
-> **Draft your all-time UEFA Euro XI.** Pick legends from every UEFA European Championship squad since 1960, build your dream team in a tactical formation, and simulate a full tournament.
+> **Draft your all-time European Dream XI.** Pick legends from historical continental tournament squads since 1960, build your dream team in a tactical formation, and simulate a full tournament.
 
 [![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
@@ -9,7 +9,7 @@
 
 ## What is EuroDraft?
 
-EuroDraft is a web-based fantasy football game built around **historical UEFA European Championship squads**. Instead of picking modern players, you draft legends from every Euro tournament from 1960 to 2024.
+EuroDraft is a web-based fantasy football game built around **historical continental tournament squads**. Instead of picking modern players, you draft legends from tournaments spanning 1960 to 2024.
 
 ### Core Loop
 
@@ -17,7 +17,7 @@ EuroDraft is a web-based fantasy football game built around **historical UEFA Eu
 2. **Spin the Roulette** — A random country + year combination appears (e.g. *France 2000*, *Germany 1972*, *Netherlands 1988*)
 3. **Pick ONE Player** — Only players who fit your open formation slots are eligible
 4. **Repeat** until all 11 positions are filled
-5. **Simulate the Tournament** — Your all-time XI competes in a full simulated Euro with real group stages, knockout rounds, and finals
+5. **Simulate the Tournament** — Your all-time XI competes in a full simulated tournament with group stages, knockout rounds, and finals
 
 ---
 
@@ -136,7 +136,7 @@ EuroDraft is available in **10 languages**:
 
 ## Data Pipeline
 
-- **Player Rosters**: Wikipedia squad tables for all 17 UEFA Euro tournaments (1960–2024)
+- **Player Rosters**: Wikipedia squad tables for all 17 continental tournaments (1960–2024)
 - **Player Positions**: Verified specific tactical roles (CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF)
 - **Player Ratings**: Curated historical prime ratings calibrated by position and tournament performance
 

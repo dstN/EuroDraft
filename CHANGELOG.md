@@ -7,15 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.4.0] - 2026-08-23
 
 ### Added
-- External position enrichment pipeline for verified player roles (closes #8)
-- Full database re-scrape with enriched positions (closes #9)
+- Wordle-style text summary and high-resolution Canvas squad card share modal (`TournamentShareModal.vue`)
+- Real vector circular flag drawing on Canvas for user team, all 11 starters, top performers, and match opponents
+- Dedicated result sharing API (`/api/share`) and public view page (`/r/[id]`) on `ed.rntm.de`
+- Explicit database storage consent toggle for public link generation
+- Complete European country lookup utility (`app/utils/country.ts`) standardizing British nations (England, Scotland, Wales, Northern Ireland) and all 55+ European associations
+- Full SVG logo integration and multi-color brand typography on share cards
+- Position-aware lineup rendering matching exact drafted slot positions on the pitch
 
----
-
-## [0.3.0] - 2026-08-22
+### Fixed
+- Fixed mobile wrapping on formation names and player tournament performance headers
+- Removed redundant finish badges on tournament outcome cards
+- Group stage fixtures restored and fully rendered on match timeline
+- Balanced vertical geometry on share canvas to comfortably accommodate 6-match runs to the Final
+- Rate-limiting optimization on position enrichment pipeline with `--retry-failed` support
 
 ### Added
 - Formation picker shows mini tactical pitch with colored player dots (#3)

@@ -54,7 +54,10 @@ export const useDraftStore = defineStore('draft', () => {
       throw new Error(`${player.name} cannot play ${slot.position}`)
     }
 
-    slot.player = player
+    slot.player = {
+      ...player,
+      draftedPosition: slot.position
+    }
     draftedPlayerKeys.value.add(playerKey)
 
     if (isComplete.value) {

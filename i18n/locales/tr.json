@@ -1,21 +1,21 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Hayal Euro takımını kur",
-    "description": "UEFA Avrupa Şampiyonası tarihsel kadrolarından oyuncu seç ve tam bir simülasyonda yarış."
+    "tagline": "Hayalindeki takımı kur",
+    "description": "Tarihsel kıtasal turnuva kadrolarından oyuncu seç ve tam bir simülasyonda yarış."
   },
   "nav": { "draft": "Draft", "tournament": "Turnuva", "impressum": "Yasal Bilgi" },
   "landing": {
-    "headline": "Hayal Euro takımını kur",
-    "subline": "1960'tan bu yana her UEFA Euro'sunun efsanelerini seç ve zafer için savaş.",
+    "headline": "Hayalindeki takımı kur",
+    "subline": "1960'tan bu yana büyük kıtasal turnuvaların efsanelerini seç ve zafer için savaş.",
     "cta_start": "Drafta Başla",
     "cta_learn": "Nasıl Çalışır",
     "step1_title": "Dizilişi Seç",
     "step1_desc": "3 rastgele dizilişten birini seç. Pozisyon slotların draft için kilitlenir.",
     "step2_title": "Ruleti Çevir",
-    "step2_desc": "Rastgele tarihsel bir Euro kadrosu belirir. Dizilişine uyan BİR oyuncu seç.",
+    "step2_desc": "Tarihsel bir turnuva kadrosu belirir. Dizilişine uyan BİR oyuncu seç.",
     "step3_title": "Yarış",
-    "step3_desc": "Tüm zamanların 11'in simüle edilmiş bir Euro turnuvasına girer. Her şeyi kazanabilir misin?"
+    "step3_desc": "Tüm zamanların 11'in simüle edilmiş bir turnuvaya girer. Kupayı kazanabilir misin?"
   },
   "formation": {
     "select_title": "Dizilişini Seç",

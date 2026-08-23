@@ -34,14 +34,16 @@ definePageMeta({ layout: 'default' })
 
       <div>
         <p class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400 mb-2">
-          Legal Notice
+          Legal Notice / Rechtlicher Hinweis
         </p>
-        <p class="text-zinc-700 dark:text-zinc-300">
-          EuroDraft is a free, non-commercial open-source fan project.
-          It is not affiliated with UEFA, EA Sports, or any football federation.
-          Player names are used for informational, non-commercial purposes only.
-          All flags shown are in the public domain.
-        </p>
+        <div class="space-y-3 text-zinc-700 dark:text-zinc-300">
+          <p>
+            <strong>Rechtlicher Hinweis:</strong> EuroDraft ist ein unabhängiges Simulationsspiel und ein reines Fan-Projekt. Alle Verweise auf spezifische Jahreszahlen, Nationalteams und historische Turnierdaten dienen ausschließlich der beschreibenden, historischen Information. Dieses Spiel steht in keiner Verbindung zu, wird nicht unterstützt von und ist nicht lizenziert durch die UEFA, die offiziellen UEFA EURO-Turniere oder die jeweiligen Fußballverbände.
+          </p>
+          <p>
+            <strong>Legal Notice:</strong> EuroDraft is an independent simulation game and non-commercial fan project. All references to specific years, national teams, and historical tournament data are used solely for descriptive, historical purposes. This project is not affiliated with, endorsed by, or licensed by UEFA, official European Championship tournaments, or any national football associations.
+          </p>
+        </div>
       </div>
 
       <div>

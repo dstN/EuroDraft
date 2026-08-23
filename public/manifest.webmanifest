@@ -1,0 +1,24 @@
+{
+  "name": "EuroDraft — Draft Your Euro Dream Team",
+  "short_name": "EuroDraft",
+  "description": "Pick legendary players from Europe's top continental tournaments since 1960 and battle for glory in a full simulated tournament.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060b10",
+  "theme_color": "#060b10",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "800x600",
+      "purpose": "any"
+    }
+  ]
+}

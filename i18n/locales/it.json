@@ -1,21 +1,24 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Costruisci la tua squadra dei sogni dell'Euro",
-    "description": "Scegli giocatori dalle rose storiche della UEFA Euro e gareggia in una simulazione completa."
+    "tagline": "Costruisci la tua squadra dei sogni",
+    "description": "Scegli giocatori dalle rose storiche continentali e gareggia in una simulazione di torneo completa."
+  },
+  "common": {
+    "skip_to_content": "Salta al contenuto principale"
   },
   "nav": { "draft": "Draft", "tournament": "Torneo", "impressum": "Note legali" },
   "landing": {
-    "headline": "Costruisci la tua squadra dei sogni dell'Euro",
-    "subline": "Scegli le leggende di ogni UEFA Euro dal 1960 e combatti per la gloria.",
+    "headline": "Costruisci la tua squadra dei sogni",
+    "subline": "Scegli le leggende dei grandi tornei continentali dal 1960 e combatti per la gloria.",
     "cta_start": "Inizia il draft",
     "cta_learn": "Come funziona",
     "step1_title": "Scegli una formazione",
     "step1_desc": "Scegli tra 3 formazioni casuali. I tuoi slot di posizione sono bloccati per il draft.",
     "step2_title": "Gira la roulette",
-    "step2_desc": "Appare una rosa Euro storica casuale. Scegli UN giocatore adatto alla tua formazione.",
+    "step2_desc": "Appare una rosa storica del torneo. Scegli UN giocatore adatto alla tua formazione.",
     "step3_title": "Gareggia",
-    "step3_desc": "Il tuo XI di tutti i tempi partecipa a un torneo Euro simulato. Riesci a vincere tutto?"
+    "step3_desc": "Il tuo XI di tutti i tempi partecipa a un torneo continentale simulato. Riesci a vincere la coppa?"
   },
   "formation": {
     "select_title": "Scegli la tua formazione",

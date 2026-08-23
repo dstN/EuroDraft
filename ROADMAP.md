@@ -60,10 +60,13 @@ This document tracks all planned features by milestone.
 
 ---
 
-## Milestone 5 — Community & Sharing 📋 Planned
-
-- [ ] Share your drafted XI as an image card
-- [ ] Leaderboard: submit your squad OVR score
+## Milestone 5 — Community & Sharing 🚧 In Progress
+ 
+- [x] Share your drafted XI as a canvas image card
+- [x] Wordle-style text summary share with top scorers and line ratings
+- [x] Dedicated result sharing API and public view route (`/r/[id]`) on `ed.rntm.de`
+- [x] Opt-in explicit database storage consent
+- [ ] Global Leaderboard: submit your squad OVR score
 - [ ] "Challenge" mode: given a random formation, must pick exactly 1 player per roulette spin
 - [ ] Compare two squads head-to-head
 - [ ] Twitter/X card meta tags for shareable results
@@ -72,8 +75,8 @@ This document tracks all planned features by milestone.
 
 ## Milestone 6 — Extended Content 📋 Planned
 
-- [ ] World Cup edition (FIFA World Cup squads, 1958–2022)
-- [ ] Club edition (Champions League squads)
+- [ ] Global tournament edition (International squads, 1958–2022)
+- [ ] European Club edition (Top continental club squads)
 - [ ] "Legend Mode": only players with 90+ rating available
 - [ ] Custom formation builder
 - [ ] Save/load drafts (localStorage)

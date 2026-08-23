@@ -1,21 +1,24 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Stwórz swoją wymarzoną drużynę Euro",
-    "description": "Wybierz zawodników z historycznych składów UEFA Euro i rywalizuj w pełnej symulacji turnieju."
+    "tagline": "Stwórz swoją wymarzoną drużynę",
+    "description": "Wybierz zawodników z historycznych składów turniejowych i rywalizuj w pełnej symulacji."
+  },
+  "common": {
+    "skip_to_content": "Przejdź do treści głównej"
   },
   "nav": { "draft": "Draft", "tournament": "Turniej", "impressum": "Nota prawna" },
   "landing": {
-    "headline": "Stwórz swoją wymarzoną drużynę Euro",
-    "subline": "Wybierz legendy z każdego UEFA Euro od 1960 roku i walcz o chwałę.",
+    "headline": "Stwórz swoją wymarzoną drużynę",
+    "subline": "Wybierz legendy z wielkich europejskich turniejów od 1960 roku i walcz o chwałę.",
     "cta_start": "Rozpocznij draft",
     "cta_learn": "Jak to działa",
     "step1_title": "Wybierz ustawienie",
     "step1_desc": "Wybierz spośród 3 losowych ustawień. Twoje sloty pozycji są zablokowane.",
     "step2_title": "Zakręć ruletką",
-    "step2_desc": "Pojawi się losowy historyczny skład Euro. Wybierz JEDNEGO gracza pasującego do ustawienia.",
+    "step2_desc": "Pojawi się historyczny skład turniejowy. Wybierz JEDNEGO gracza pasującego do ustawienia.",
     "step3_title": "Rywalizuj",
-    "step3_desc": "Twoja jedenastka wszech czasów weźmie udział w symulowanym turnieju Euro. Czy wygrasz wszystko?"
+    "step3_desc": "Twoja jedenastka wszech czasów weźmie udział w symulowanym turnieju. Czy wygrasz puchar?"
   },
   "formation": {
     "select_title": "Wybierz ustawienie",

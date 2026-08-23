@@ -1,8 +1,11 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Compose ton équipe de rêve de l'Euro",
-    "description": "Sélectionne des joueurs dans les effectifs historiques des Championnats d'Europe de l'UEFA et dispute une simulation complète."
+    "tagline": "Compose ton équipe de rêve",
+    "description": "Sélectionne des joueurs dans les effectifs continentaux historiques et dispute une simulation de tournoi complète."
+  },
+  "common": {
+    "skip_to_content": "Passer au contenu principal"
   },
   "nav": {
     "draft": "Draft",
@@ -10,16 +13,16 @@
     "impressum": "Mentions légales"
   },
   "landing": {
-    "headline": "Compose ton équipe de rêve de l'Euro",
-    "subline": "Sélectionne des légendes de chaque Championnat d'Europe de l'UEFA depuis 1960 et bats-toi pour la gloire.",
+    "headline": "Compose ton équipe de rêve",
+    "subline": "Sélectionne des légendes des grands tournois continentaux depuis 1960 et bats-toi pour la gloire.",
     "cta_start": "Commencer le draft",
     "cta_learn": "Comment ça marche",
     "step1_title": "Choisir une formation",
     "step1_desc": "Choisis parmi 3 formations aléatoires. Tes slots de position sont verrouillés pour le draft.",
     "step2_title": "Tourner la roulette",
-    "step2_desc": "Un effectif Euro historique aléatoire apparaît. Choisis UN joueur adapté à ta formation.",
+    "step2_desc": "Un effectif historique du tournoi apparaît. Choisis UN joueur adapté à ta formation.",
     "step3_title": "Compétition",
-    "step3_desc": "Ton XI all-time dispute un tournoi Euro simulé. Peux-tu tout gagner ?"
+    "step3_desc": "Ton XI all-time dispute un tournoi continental simulé. Peux-tu remporter la coupe ?"
   },
   "formation": {
     "select_title": "Choisir ta formation",

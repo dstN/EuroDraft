@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="ogGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="ogGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="ogShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="4" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Deep Stadium Matchday Background -->
+  <rect width="1200" height="630" fill="#060b10" />
+
+  <!-- Atmospheric Stadium Light Cones -->
+  <circle cx="600" cy="200" r="450" fill="#10b981" opacity="0.12" filter="blur(90px)" />
+  <circle cx="600" cy="240" r="320" fill="#fbbf24" opacity="0.1" filter="blur(80px)" />
+
+  <!-- Pitch Grid Lines (Subtle) -->
+  <rect x="100" y="80" width="1000" height="470" rx="24" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.08" />
+  <line x1="600" y1="80" x2="600" y2="550" stroke="#ffffff" stroke-width="1.5" opacity="0.08" />
+  <circle cx="600" cy="315" r="90" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.08" />
+
+  <!-- Dual Cards (Center Hero) -->
+  <g transform="translate(600, 230)">
+    <!-- Gold Card (Back Left) -->
+    <g transform="rotate(-12) translate(-42, -24)" filter="url(#ogShadow)">
+      <rect x="-85" y="-120" width="170" height="240" rx="16" fill="url(#ogGold)" />
+      <line x1="-60" y1="-75" x2="60" y2="-75" stroke="#060b10" stroke-width="5" stroke-linecap="round" opacity="0.35" />
+      <line x1="-60" y1="-45" x2="20" y2="-45" stroke="#060b10" stroke-width="5" stroke-linecap="round" opacity="0.35" />
+    </g>
+
+    <!-- Green Card with Star (Front Right) -->
+    <g transform="rotate(8) translate(36, 16)" filter="url(#ogShadow)">
+      <rect x="-85" y="-120" width="170" height="240" rx="16" fill="url(#ogGreen)" />
+      <polygon
+        points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
+        fill="#060b10"
+        transform="translate(0, 8) scale(2.2)"
+      />
+    </g>
+  </g>
+
+  <!-- Typography -->
+  <g transform="translate(600, 455)" text-anchor="middle">
+    <text font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="900" letter-spacing="-1">
+      <tspan fill="#ffffff">Euro</tspan>
+      <tspan fill="#fbbf24">Draft</tspan>
+    </text>
+    <text y="42" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="800" fill="#34d399" letter-spacing="6">
+      BUILD YOUR LEGACY • CONTINENTAL SQUADS 1960 — 2024
+    </text>
+    <text y="74" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#9ca3af">
+      Draft Historical Squads &amp; Battle in Simulated Championships
+    </text>
+  </g>
+</svg>

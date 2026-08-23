@@ -2,8 +2,8 @@
  * EuroDraft — Comprehensive Player Ratings Database & Engine
  *
  * Provides:
- *  1. Year-specific authentic EA Sports / FIFA ratings for Euro 2004–2024
- *  2. Curated historical ratings for Euro 1960–2000 legends and tournament stars
+ *  1. Year-specific authentic ratings for 2004–2024
+ *  2. Curated historical ratings for 1960–2000 legends and tournament stars
  *  3. Dynamic rating algorithm for unlisted squad players calibrated by team tier, caps & role
  */
 
@@ -36,7 +36,7 @@ export function normalizeRatingKey(name: string): string {
 }
 
 // =========================================================================
-// 1. YEAR-SPECIFIC RATINGS (Exact FIFA edition ratings & Tournament Primers)
+// 1. YEAR-SPECIFIC RATINGS (Curated tournament & era ratings)
 // Format: `${normalizedName}@${year}` -> OVR
 // =========================================================================
 export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
@@ -497,7 +497,7 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'jens jeremies@2000': 86,
   'christian ziege@2000': 86,
 
-  // ------------------------- EURO 2004 (FIFA 04/05) -------------------------
+  // ------------------------- 2004 Tournament Roster -------------------------
   'zinedine zidane@2004': 95,
   'thierry henry@2004': 95,
   'patrick vieira@2004': 92,
@@ -590,7 +590,7 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'olof mellberg@2004': 86,
   'andreas isaksson@2004': 84,
 
-  // ------------------------- EURO 2008 (UEFA Euro 2008 / FIFA 08) -------------------------
+  // ------------------------- 2008 Tournament Roster -------------------------
   'cristiano ronaldo@2008': 91,
   'iker casillas@2008': 91,
   'fernando torres@2008': 89,
@@ -670,7 +670,7 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'henrik larsson@2008': 85,
   'freddie ljungberg@2008': 86,
 
-  // ------------------------- EURO 2012 (FIFA 12 / Euro 2012) -------------------------
+  // ------------------------- 2012 Tournament Roster -------------------------
   'andres iniesta@2012': 92,
   'xavi@2012': 92,
   'iker casillas@2012': 91,
@@ -763,7 +763,7 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'vaclav pilar@2012': 81,
   'petr jiracek@2012': 81,
 
-  // ------------------------- EURO 2016 (FIFA 16) -------------------------
+  // ------------------------- 2016 Tournament Roster -------------------------
   'cristiano ronaldo@2016': 94,
   'pepe@2016': 89,
   'nani@2016': 84,
@@ -874,7 +874,7 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'martin skrtel@2016': 83,
   'vladimir weiss@2016': 80,
 
-  // ------------------------- EURO 2020 (FIFA 21) -------------------------
+  // ------------------------- 2020 Tournament Roster -------------------------
   'gianluigi donnarumma@2020': 87,
   'giorgio chiellini@2020': 88,
   'leonardo bonucci@2020': 86,
@@ -1015,9 +1015,9 @@ export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   'robin olsen@2020': 80,
   'dejan kulusevski@2020': 80,
 
-  // ------------------------- EURO 2024 (EA FC 24) -------------------------
+  // ------------------------- 2024 Tournament Roster -------------------------
   'rodri@2024': 91,
-  'lamine yamal@2024': 83,
+  'lamine yamal@2024': 91,
   'nico williams@2024': 84,
   'dani olmo@2024': 85,
   'fabian ruiz@2024': 84,

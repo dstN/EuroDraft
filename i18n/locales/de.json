@@ -2,7 +2,10 @@
   "app": {
     "name": "EuroDraft",
     "tagline": "Stelle dein Euro-Traumteam auf",
-    "description": "Wähle Spieler aus historischen UEFA-Europameisterschaftskadern und bestreite eine vollständige Euro-Simulation."
+    "description": "Wähle Spieler aus historischen europäischen Kontinentalturnier-Kadern und bestreite eine simulierte Endrunde des europäischen Spitzenfußballs."
+  },
+  "common": {
+    "skip_to_content": "Zum Hauptinhalt springen"
   },
   "nav": {
     "draft": "Draft",
@@ -11,15 +14,15 @@
   },
   "landing": {
     "headline": "Stelle dein Euro-Traumteam auf",
-    "subline": "Wähle Legenden aus jeder UEFA-Europameisterschaft seit 1960 und kämpfe um den Ruhm.",
+    "subline": "Wähle Legenden aus jedem großen europäischen Kontinentalturnier von 1960 bis 2024 und kämpfe um den Ruhm.",
     "cta_start": "Draft starten",
     "cta_learn": "Wie es funktioniert",
     "step1_title": "Formation wählen",
     "step1_desc": "Wähle aus 3 zufälligen Formationen. Deine Positionen sind für den Draft gesperrt.",
     "step2_title": "Roulette drehen",
-    "step2_desc": "Ein zufälliger historischer Euro-Kader erscheint. Wähle EINEN Spieler, der zu deiner Formation passt.",
+    "step2_desc": "Ein historischer Endrunden-Kader des Turniers erscheint. Wähle EINEN Spieler, der zu deiner Formation passt.",
     "step3_title": "Antreten",
-    "step3_desc": "Dein All-Time-XI tritt in einem simulierten Euro-Turnier an. Kannst du alles gewinnen?"
+    "step3_desc": "Dein All-Time-XI tritt in einer simulierten Endrunde an. Kannst du den EuroDraft-Pokal holen?"
   },
   "formation": {
     "select_title": "Wähle deine Formation",
@@ -118,10 +121,10 @@
     "defense_label": "Abwehr"
   },
   "results": {
-    "champion_title": "Europameister!",
+    "champion_title": "Turniersieger!",
     "champion_subtitle": "Dein Traumteam hat Europa erobert!",
     "eliminated_title": "Ausgeschieden",
-    "eliminated_subtitle": "Deine Euro-Reise endete im {phase}.",
+    "eliminated_subtitle": "Deine Reise endete im {phase}.",
     "play_again": "Nochmal spielen",
     "share": "Ergebnis teilen"
   },

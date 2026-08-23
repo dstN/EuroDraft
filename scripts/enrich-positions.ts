@@ -162,7 +162,13 @@ const HEADERS = {
  */
 function generateSearchVariants(name: string): string[] {
   const variants = new Set<string>()
-  const raw = name.trim()
+  // Clean Wikipedia suffixes like "(footballer)", "(born 1968)", "Jr.", etc.
+  const raw = name
+    .replace(/\s*\([^)]*\)/g, '')
+    .replace(/\s+(?:Jr\.?|Sr\.?|II|III|IV)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
   if (!raw) return []
 
   // 1. Transliteration variant (æ -> ae, ø -> o, å -> a, etc.)
@@ -203,10 +209,25 @@ function generateSearchVariants(name: string): string[] {
   if (ascii) variants.add(ascii)
   variants.add(raw)
 
-  // Simplified first + last name if player has > 2 name parts
+  // 3. Cyrillic / Slavic / Greek common phonetic alternatives
+  const yToJ = transliterated.replace(/\by/gi, 'j').replace(/iy\b/gi, 'ij').replace(/y\b/gi, 'i')
+  if (yToJ !== transliterated) variants.add(yToJ)
+
+  const jToY = transliterated.replace(/\bj/gi, 'y').replace(/ij\b/gi, 'iy')
+  if (jToY !== transliterated) variants.add(jToY)
+
+  const wToV = transliterated.replace(/w/gi, 'v')
+  if (wToV !== transliterated) variants.add(wToV)
+
+  // 4. Simplified first + last name if player has > 2 name parts
   const parts = transliterated.split(' ')
   if (parts.length > 2) {
     variants.add(`${parts[0]} ${parts[parts.length - 1]}`)
+  }
+
+  // 5. Surname alone for distinctive names (length >= 5)
+  if (parts.length >= 2 && parts[parts.length - 1]!.length >= 5) {
+    variants.add(parts[parts.length - 1]!)
   }
 
   return [...variants]
@@ -511,13 +532,47 @@ async function main() {
   const nameIdx = args.indexOf('--name')
   const fileIdx = args.indexOf('--file')
   const dbMode = args.includes('--db')
+  const retryFailed = args.includes('--retry-failed') || args.includes('--missing') || args.includes('--missing-only')
+  const exportMode = args.includes('--export')
+
+  // Handle Export-Only Mode
+  if (exportMode) {
+    await mkdir(CACHE_DIR, { recursive: true })
+    const { readdirSync } = await import('node:fs')
+    const files = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json'))
+    console.error(`📦 Exporting ${files.length} cached player positions...`)
+
+    const registryEntries: Record<string, { primary: string, positions: string[], base: string }> = {}
+    for (const f of files) {
+      try {
+        const data = JSON.parse(await readFile(join(CACHE_DIR, f), 'utf8')) as EnrichedPosition
+        const key = normalizeRegistryKey(data.name)
+        registryEntries[key] = {
+          primary: data.primary,
+          positions: data.positions,
+          base: data.base
+        }
+      } catch {
+        // Ignore corrupt cache file
+      }
+    }
+
+    console.log(`// Total Enriched Players: ${Object.keys(registryEntries).length}`)
+    console.log('export const HISTORICAL_PLAYER_REGISTRY: Record<string, PlayerPositionProfile> = {')
+    for (const [k, v] of Object.entries(registryEntries).sort(([a], [b]) => a.localeCompare(b))) {
+      console.log(`  '${k}': { primary: '${v.primary}', positions: ['${v.positions.join("', '")}'], base: '${v.base}' },`)
+    }
+    console.log('}')
+    console.error(`✅ Successfully exported ${Object.keys(registryEntries).length} entries.`)
+    return
+  }
 
   if (nameIdx !== -1 && args[nameIdx + 1]) {
     playerNames = [args[nameIdx + 1]!]
   } else if (fileIdx !== -1 && args[fileIdx + 1]) {
     const content = await readFile(args[fileIdx + 1]!, 'utf8')
     playerNames = content.split('\n').map(l => l.trim()).filter(Boolean)
-  } else if (dbMode) {
+  } else if (dbMode || retryFailed) {
     // Load ALL unique player names from the database
     const dbPath = join(__dirname, '..', 'public', 'eurodraft_db.json')
     if (!existsSync(dbPath)) {
@@ -541,13 +596,27 @@ async function main() {
       if (player.name) nameSet.add(player.name as string)
     }
 
-    playerNames = [...nameSet].sort()
-    console.error(`📋 Loaded ${playerNames.length} unique players from database`)
+    const allNames = [...nameSet].sort()
+
+    if (retryFailed) {
+      await mkdir(CACHE_DIR, { recursive: true })
+      playerNames = allNames.filter(name => {
+        const cacheKey = normalizeRegistryKey(name).replace(/\s+/g, '-')
+        const cacheFile = join(CACHE_DIR, `${cacheKey}.json`)
+        return !existsSync(cacheFile)
+      })
+      console.error(`📋 Found ${playerNames.length} missing (un-enriched) players out of ${allNames.length} total players.`)
+    } else {
+      playerNames = allNames
+      console.error(`📋 Loaded ${playerNames.length} unique players from database`)
+    }
   } else {
     console.error('Usage:')
     console.error('  npx tsx scripts/enrich-positions.ts --name "Player Name"')
     console.error('  npx tsx scripts/enrich-positions.ts --file players.txt')
-    console.error('  npx tsx scripts/enrich-positions.ts --db  # enrich all DB players')
+    console.error('  npx tsx scripts/enrich-positions.ts --db             # enrich all DB players')
+    console.error('  npx tsx scripts/enrich-positions.ts --retry-failed   # retry only failed / missing players')
+    console.error('  npx tsx scripts/enrich-positions.ts --export         # export all cached players to registry')
     console.error('')
     console.error('Required env: POSITION_SOURCE_BASE_URL')
     process.exit(0)
@@ -560,6 +629,10 @@ async function main() {
 
   for (let i = 0; i < playerNames.length; i++) {
     const name = playerNames[i]!
+    const cacheKey = normalizeRegistryKey(name).replace(/\s+/g, '-')
+    const cacheFile = join(CACHE_DIR, `${cacheKey}.json`)
+    const wasCached = existsSync(cacheFile)
+
     process.stderr.write(`\r[${i + 1}/${playerNames.length}] `)
     console.error(`──── ${name} ────`)
 
@@ -572,20 +645,10 @@ async function main() {
       failed++
     }
 
-    // Rate limiting — 1.5s between requests
-    if (i < playerNames.length - 1) {
+    // Rate limiting — 1.5s between requests ONLY if network call was made
+    if (!wasCached && i < playerNames.length - 1) {
       await new Promise(r => setTimeout(r, 1500))
     }
-  }
-
-  // Output registry entries
-  console.log('\n// ==============================')
-  console.log('// Enriched player position data')
-  console.log('// ==============================')
-  for (const r of results) {
-    const key = normalizeRegistryKey(r.name)
-    const posArray = `['${r.positions.join('\', \'')}']`
-    console.log(`  '${key}': { primary: '${r.primary}', positions: ${posArray}, base: '${r.base}' },`)
   }
 
   console.error(`\n✅ Done: ${results.length}/${playerNames.length} enriched, ${failed} failed`)

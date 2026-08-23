@@ -23,7 +23,9 @@ const sizeClasses = {
 const flagIcon = computed(() => {
   const code = (props.country || 'de').toLowerCase()
   if (code === 'cs') return 'i-circle-flags-cz'
-  if (code === 'cis') return 'i-circle-flags-ru'
+  if (code === 'cis' || code === 'su') return 'i-circle-flags-ru'
+  if (code === 'yu') return 'i-circle-flags-rs'
+  if (code === 'european-union') return 'i-circle-flags-eu'
   return `i-circle-flags-${code}`
 })
 </script>

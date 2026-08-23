@@ -19,7 +19,7 @@ const showcaseLegends: Player[] = [
     basePosition: 'Midfielder',
     positions: ['CAM', 'CM'],
     primaryPosition: 'CAM',
-    enrichmentSource: 'fifa',
+    enrichmentSource: 'curated',
     stats: { overall: 96, pace: 84, shooting: 88, passing: 97, dribbling: 96, defending: 75, physical: 86 }
   },
   {
@@ -33,7 +33,7 @@ const showcaseLegends: Player[] = [
     basePosition: 'Forward',
     positions: ['ST', 'CF'],
     primaryPosition: 'ST',
-    enrichmentSource: 'fifa',
+    enrichmentSource: 'curated',
     stats: { overall: 95, pace: 89, shooting: 96, passing: 84, dribbling: 90, defending: 42, physical: 85 }
   },
   {
@@ -47,8 +47,8 @@ const showcaseLegends: Player[] = [
     basePosition: 'Forward',
     positions: ['LW', 'LM', 'ST', 'RW'],
     primaryPosition: 'LW',
-    enrichmentSource: 'fifa',
-    stats: { overall: 91, pace: 94, shooting: 91, passing: 84, dribbling: 93, defending: 45, physical: 82 }
+    enrichmentSource: 'curated',
+    stats: { overall: 94, pace: 95, shooting: 94, passing: 86, dribbling: 94, defending: 45, physical: 86 }
   },
   {
     id: 'es-2024-yamal',
@@ -61,8 +61,8 @@ const showcaseLegends: Player[] = [
     basePosition: 'Forward',
     positions: ['RW', 'RM'],
     primaryPosition: 'RW',
-    enrichmentSource: 'fifa',
-    stats: { overall: 83, pace: 88, shooting: 79, passing: 83, dribbling: 89, defending: 38, physical: 68 }
+    enrichmentSource: 'curated',
+    stats: { overall: 91, pace: 93, shooting: 86, passing: 91, dribbling: 94, defending: 45, physical: 74 }
   }
 ]
 
@@ -140,39 +140,39 @@ const tournamentEras = [
 </script>
 
 <template>
-  <div class="relative space-y-24">
+  <div class="relative space-y-16 sm:space-y-24 max-w-full overflow-x-clip">
     <!-- ==================== HERO SECTION ==================== -->
-    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-6">
+    <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <!-- Left: Headline, Value Prop & CTAs -->
-        <div class="lg:col-span-7 space-y-6 text-left">
+        <div class="lg:col-span-7 space-y-6 text-left min-w-0">
           <!-- Championship Eyebrow Badge (WCAG AAA Compliant High Contrast) -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 shadow-sm backdrop-blur-md">
             <AppLogo
               variant="icon"
               size="sm"
             />
             <span class="text-xs font-mono font-bold uppercase tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
-              UEFA EURO 1960 — 2024
+              EUROPEAN SQUADS 1960 — 2024
             </span>
           </div>
 
           <!-- Main Championship Headline -->
-          <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
+          <h1 class="text-3xl sm:text-6xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.1] break-words">
             Draft Europe's <br>
             <span class="gold-text">Greatest Squads.</span>
           </h1>
 
           <!-- Value Prop Paragraph -->
           <p class="text-base sm:text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-xl">
-            Choose your tactical formation, spin historical nations across 64 years of European Championship history, and build the ultimate XI to conquer the tournament.
+            Choose your tactical formation, spin historical nations across 64 years of European tournament history, and build the ultimate XI to conquer the tournament.
           </p>
 
           <!-- CTAs with Button-in-Button Architecture -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
             <NuxtLink
               to="/draft/formation"
-              class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-lg shadow-emerald-800/25 justify-between sm:justify-start cursor-pointer font-bold"
+              class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-lg shadow-emerald-800/25 justify-between sm:justify-start cursor-pointer font-bold w-full sm:w-auto"
             >
               <span>{{ $t('landing.cta_start') }}</span>
               <span class="btn-nested-icon bg-emerald-900 text-white">
@@ -189,15 +189,15 @@ const tournamentEras = [
               size="lg"
               variant="outline"
               color="neutral"
-              class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
+              class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100 w-full sm:w-auto justify-center"
               label="Explore Eras & Roster"
             />
           </div>
 
           <!-- Live Database Stats Ticker -->
-          <div class="pt-6 border-t border-zinc-200 dark:border-white/10 grid grid-cols-3 gap-4 max-w-md">
+          <div class="pt-6 border-t border-zinc-200 dark:border-white/10 grid grid-cols-3 gap-2 sm:gap-4 max-w-full">
             <div>
-              <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
+              <p class="text-xl sm:text-2xl font-black font-mono text-zinc-900 dark:text-white">
                 17
               </p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">
@@ -232,14 +232,9 @@ const tournamentEras = [
                 <span class="text-xs uppercase font-mono font-bold tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
                   Featured Legend
                 </span>
-                <UBadge
-                  color="neutral"
-                  variant="outline"
-                  size="xs"
-                  class="font-mono font-bold text-xs"
-                >
-                  Authentic FIFA OVR
-                </UBadge>
+                <span class="px-2.5 py-1 rounded-md border border-zinc-300 dark:border-white/10 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800">
+                  Historical Prime OVR
+                </span>
               </div>
 
               <!-- Foil Card Display -->
@@ -292,7 +287,7 @@ const tournamentEras = [
           />
           <div class="text-left">
             <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-widest block">
-              Euro {{ previewSpinYear }}
+              Continental Squad · {{ previewSpinYear }}
             </span>
             <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
               {{ previewSpinCountryName }}
@@ -328,7 +323,7 @@ const tournamentEras = [
           Four Eras of Legends.
         </h2>
         <p class="text-zinc-700 dark:text-zinc-300 text-sm">
-          Every Euro tournament generation brings unique legends, iconic tactical styles, and authentic player ratings.
+          Every tournament generation brings unique legends, iconic tactical styles, and authentic player ratings.
         </p>
       </div>
 
@@ -344,14 +339,9 @@ const tournamentEras = [
               <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-widest">
                 {{ era.era }}
               </span>
-              <UBadge
-                color="neutral"
-                variant="subtle"
-                size="xs"
-                class="font-mono text-xs font-bold"
-              >
+              <span class="px-2.5 py-1 rounded-md border border-zinc-300 dark:border-white/10 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800">
                 {{ era.tag }}
-              </UBadge>
+              </span>
             </div>
             <h3 class="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">
               {{ era.title }}
@@ -392,7 +382,7 @@ const tournamentEras = [
           Ready to Build Your <span class="gold-text">Champion XI</span>?
         </h2>
         <p class="text-zinc-700 dark:text-zinc-300 text-sm sm:text-base max-w-md mx-auto">
-          Choose your formation, conquer the draft roulette, and test your dream team in a simulated European Championship.
+          Choose your formation, conquer the draft roulette, and test your dream team in a simulated continental tournament.
         </p>
         <div class="pt-2">
           <NuxtLink

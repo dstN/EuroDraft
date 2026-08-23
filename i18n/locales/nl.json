@@ -1,21 +1,24 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Stel je Euro-droomteam samen",
-    "description": "Kies spelers uit historische UEFA Euro-selecties en neem deel aan een volledige simulatie."
+    "tagline": "Stel je droomteam samen",
+    "description": "Kies spelers uit historische continentale selecties en neem deel aan een volledige toernooisimulatie."
+  },
+  "common": {
+    "skip_to_content": "Naar hoofdinhoud springen"
   },
   "nav": { "draft": "Draft", "tournament": "Toernooi", "impressum": "Colofon" },
   "landing": {
-    "headline": "Stel je Euro-droomteam samen",
-    "subline": "Kies legendes uit elk UEFA Euro sinds 1960 en strijdt voor de glorie.",
+    "headline": "Stel je droomteam samen",
+    "subline": "Kies legendes uit de grote continentale toernooien sinds 1960 en strijd om de glorie.",
     "cta_start": "Start de draft",
     "cta_learn": "Hoe het werkt",
     "step1_title": "Kies een formatie",
     "step1_desc": "Kies uit 3 willekeurige formaties. Je positieslots zijn vergrendeld voor de draft.",
     "step2_title": "Draai het wiel",
-    "step2_desc": "Een willekeurige historische Euro-selectie verschijnt. Kies ÉÉN speler die past.",
+    "step2_desc": "Een historische toernooiselectie verschijnt. Kies ÉÉN speler die in je formatie past.",
     "step3_title": "Deelnemen",
-    "step3_desc": "Jouw all-time XI doet mee aan een gesimuleerd Euro-toernooi. Kun je alles winnen?"
+    "step3_desc": "Jouw all-time XI doet mee aan een gesimuleerd continentaal toernooi. Kun je de beker winnen?"
   },
   "formation": {
     "select_title": "Kies je formatie",

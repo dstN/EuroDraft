@@ -14,15 +14,81 @@ const formations = useState<Formation[]>('draft-formations', () => pickRandomFor
 const teamNameInput = ref(draft.teamName || 'Dream XI')
 const selectedEmblem = ref(draft.teamEmblem || 'eu')
 
-const EMBLEM_CHOICES = [
-  { code: 'eu', label: 'Europe All-Stars' },
-  { code: 'nl', label: 'Oranje' },
-  { code: 'fr', label: 'Les Bleus' },
-  { code: 'de', label: 'Die Mannschaft' },
-  { code: 'es', label: 'La Roja' },
-  { code: 'it', label: 'Azzurri' },
-  { code: 'pt', label: 'Seleção' },
-  { code: 'gb-eng', label: 'Three Lions' }
+// Top Picked Popular Nationalities
+const TOP_EMBLEM_CHOICES = [
+  { code: 'eu', label: 'Europe (All-Stars)' },
+  { code: 'de', label: 'Germany' },
+  { code: 'fr', label: 'France' },
+  { code: 'es', label: 'Spain' },
+  { code: 'it', label: 'Italy' },
+  { code: 'gb-eng', label: 'England' },
+  { code: 'nl', label: 'Netherlands' },
+  { code: 'pt', label: 'Portugal' },
+  { code: 'hr', label: 'Croatia' },
+  { code: 'tr', label: 'Türkiye' },
+  { code: 'be', label: 'Belgium' },
+  { code: 'at', label: 'Austria' }
+]
+
+// All 55+ European Nations & Territories
+const ALL_EUROPEAN_FLAGS = [
+  { code: 'eu', label: 'Europe (All-Stars)' },
+  { code: 'al', label: 'Albania' },
+  { code: 'ad', label: 'Andorra' },
+  { code: 'am', label: 'Armenia' },
+  { code: 'at', label: 'Austria' },
+  { code: 'az', label: 'Azerbaijan' },
+  { code: 'by', label: 'Belarus' },
+  { code: 'be', label: 'Belgium' },
+  { code: 'ba', label: 'Bosnia & Herzegovina' },
+  { code: 'bg', label: 'Bulgaria' },
+  { code: 'hr', label: 'Croatia' },
+  { code: 'cy', label: 'Cyprus' },
+  { code: 'cz', label: 'Czechia' },
+  { code: 'cs', label: 'Czechoslovakia (Hist.)' },
+  { code: 'dk', label: 'Denmark' },
+  { code: 'gb-eng', label: 'England' },
+  { code: 'ee', label: 'Estonia' },
+  { code: 'fo', label: 'Faroe Islands' },
+  { code: 'fi', label: 'Finland' },
+  { code: 'fr', label: 'France' },
+  { code: 'ge', label: 'Georgia' },
+  { code: 'de', label: 'Germany' },
+  { code: 'gi', label: 'Gibraltar' },
+  { code: 'gr', label: 'Greece' },
+  { code: 'hu', label: 'Hungary' },
+  { code: 'is', label: 'Iceland' },
+  { code: 'ie', label: 'Ireland (Republic)' },
+  { code: 'il', label: 'Israel' },
+  { code: 'it', label: 'Italy' },
+  { code: 'kz', label: 'Kazakhstan' },
+  { code: 'xk', label: 'Kosovo' },
+  { code: 'lv', label: 'Latvia' },
+  { code: 'li', label: 'Liechtenstein' },
+  { code: 'lt', label: 'Lithuania' },
+  { code: 'lu', label: 'Luxembourg' },
+  { code: 'mt', label: 'Malta' },
+  { code: 'md', label: 'Moldova' },
+  { code: 'me', label: 'Montenegro' },
+  { code: 'nl', label: 'Netherlands' },
+  { code: 'mk', label: 'North Macedonia' },
+  { code: 'gb-nir', label: 'Northern Ireland' },
+  { code: 'no', label: 'Norway' },
+  { code: 'pl', label: 'Poland' },
+  { code: 'pt', label: 'Portugal' },
+  { code: 'ro', label: 'Romania' },
+  { code: 'sm', label: 'San Marino' },
+  { code: 'gb-sct', label: 'Scotland' },
+  { code: 'rs', label: 'Serbia' },
+  { code: 'sk', label: 'Slovakia' },
+  { code: 'si', label: 'Slovenia' },
+  { code: 'es', label: 'Spain' },
+  { code: 'se', label: 'Sweden' },
+  { code: 'ch', label: 'Switzerland' },
+  { code: 'tr', label: 'Türkiye' },
+  { code: 'ua', label: 'Ukraine' },
+  { code: 'gb-wls', label: 'Wales' },
+  { code: 'yu', label: 'Yugoslavia (Hist.)' }
 ]
 
 const NAME_PRESETS = [
@@ -32,6 +98,11 @@ const NAME_PRESETS = [
   'Euro Titans',
   'Vintage Kings'
 ]
+
+function getCountryLabel(code: string): string {
+  const found = ALL_EUROPEAN_FLAGS.find(f => f.code.toLowerCase() === code.toLowerCase())
+  return found ? found.label : code.toUpperCase()
+}
 
 function selectFormation(f: Formation) {
   draft.teamName = teamNameInput.value.trim() || 'Dream XI'
@@ -44,19 +115,19 @@ function selectFormation(f: Formation) {
   <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
     <!-- Header -->
     <div class="text-center space-y-3">
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
         Step 1 · Squad Setup
       </div>
       <h1 class="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
         Create Your Squad
       </h1>
       <p class="text-zinc-700 dark:text-zinc-300 text-sm sm:text-base max-w-md mx-auto">
-        Name your dream team, choose an emblem, and pick your tactical formation for the European Championship.
+        Name your dream team, choose an emblem, and pick your tactical formation for the continental tournament.
       </p>
     </div>
 
-    <!-- Team Customization Box (Clean single surface-card) -->
-    <div class="surface-card p-6 space-y-5">
+    <!-- Team Customization Box -->
+    <div class="surface-card p-6 space-y-6">
       <div class="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
         <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Team Identity</span>
         <span class="text-xs font-mono text-emerald-800 dark:text-emerald-300 font-bold">Custom Tournament Club</span>
@@ -97,28 +168,74 @@ function selectFormation(f: Formation) {
           </div>
         </div>
 
-        <!-- Emblem Picker -->
+        <!-- Emblem & Flag Picker -->
         <div class="space-y-3">
-          <label class="block text-xs font-bold text-zinc-800 dark:text-zinc-200">
-            Team Emblem / Badge
-          </label>
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              v-for="emb in EMBLEM_CHOICES"
-              :key="emb.code"
-              type="button"
-              class="p-2 rounded-xl border transition-all flex items-center gap-2 cursor-pointer"
-              :class="selectedEmblem === emb.code
-                ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-400 ring-2 ring-emerald-500/50'
-                : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 hover:border-zinc-400'"
-              @click="selectedEmblem = emb.code"
+          <div class="flex items-center justify-between">
+            <label
+              for="all-nations-select"
+              class="block text-xs font-bold text-zinc-900 dark:text-zinc-100"
             >
+              Team Emblem / Flag
+            </label>
+            <span class="text-[11px] font-mono text-zinc-700 dark:text-zinc-300 font-bold">55+ European Nations</span>
+          </div>
+
+          <!-- All Nations Dropdown Selector -->
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <select
+                id="all-nations-select"
+                v-model="selectedEmblem"
+                class="w-full pl-3 pr-8 py-2 rounded-xl border border-zinc-400/80 dark:border-white/10 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer appearance-none"
+              >
+                <option
+                  v-for="nation in ALL_EUROPEAN_FLAGS"
+                  :key="nation.code"
+                  :value="nation.code"
+                >
+                  {{ nation.label }}
+                </option>
+              </select>
+              <UIcon
+                name="i-lucide-chevron-down"
+                class="size-4 text-zinc-500 dark:text-zinc-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              />
+            </div>
+
+            <!-- Active Selected Flag Badge -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-600/40 shrink-0">
               <CountryFlag
-                :country="emb.code"
+                :country="selectedEmblem"
                 size="sm"
               />
-              <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">{{ emb.label }}</span>
-            </button>
+              <span class="text-xs font-black text-emerald-950 dark:text-emerald-200 truncate max-w-[5.5rem] sm:max-w-[7rem]">
+                {{ getCountryLabel(selectedEmblem) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Top Picked Fast Selection Grid -->
+          <div class="space-y-1.5 pt-1">
+            <span class="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">Popular Emblems</span>
+            <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+              <button
+                v-for="emb in TOP_EMBLEM_CHOICES"
+                :key="emb.code"
+                type="button"
+                class="p-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer text-left min-w-0"
+                :class="selectedEmblem === emb.code
+                  ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-400 ring-2 ring-emerald-500/50'
+                  : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-white/10 hover:border-zinc-400'"
+                @click="selectedEmblem = emb.code"
+              >
+                <CountryFlag
+                  :country="emb.code"
+                  size="xs"
+                  class="shrink-0"
+                />
+                <span class="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ emb.label.split(' ')[0] }}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -131,8 +248,8 @@ function selectFormation(f: Formation) {
       </h2>
     </div>
 
-    <!-- Formation Cards (Clean single surface-card, no nesting) -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <!-- Formation Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
       <NuxtLink
         v-for="formation in formations"
         :key="formation.id"

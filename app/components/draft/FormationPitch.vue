@@ -62,27 +62,26 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
     const cmSlots = allSlots.filter(s => s.position === 'CM')
     const idx = cmSlots.findIndex(s => s.id === slot.id)
 
-    // Stagger when CDM and/or CAM exist so they never overlap
-    if (hasCDM && hasCAM) {
-      top = 47
-      left = cmSlots.length === 1 ? 36 : (idx === 0 ? 34 : 66)
-    } else if (hasCDM && !hasCAM) {
-      top = 43
-      left = cmSlots.length === 1 ? 50 : (idx === 0 ? 33 : 67)
-    } else if (!hasCDM && hasCAM) {
-      top = 50
-      left = cmSlots.length === 1 ? 36 : (idx === 0 ? 35 : 65)
-    } else {
-      if (cmSlots.length === 1) {
-        top = 48
-        left = 50
-      } else if (cmSlots.length === 2) {
+    if (cmSlots.length === 3) {
+      top = hasCAM ? 52 : 50
+      left = idx === 0 ? 24 : idx === 1 ? 50 : 76
+    } else if (cmSlots.length === 2) {
+      if (hasCDM && hasCAM) {
+        top = 47
+        left = idx === 0 ? 34 : 66
+      } else if (hasCDM && !hasCAM) {
+        top = 44
+        left = idx === 0 ? 33 : 67
+      } else if (!hasCDM && hasCAM) {
+        top = 50
+        left = idx === 0 ? 34 : 66
+      } else {
         top = 48
         left = idx === 0 ? 35 : 65
-      } else if (cmSlots.length === 3) {
-        top = 52
-        left = idx === 0 ? 24 : idx === 1 ? 50 : 76
       }
+    } else {
+      top = hasCDM ? 44 : 48
+      left = (hasCDM && hasCAM) ? 36 : 50
     }
   } else if (pos === 'CAM') {
     const camSlots = allSlots.filter(s => s.position === 'CAM')

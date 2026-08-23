@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Player } from '~/types'
-import { useDatabase } from '~/composables/useDatabase'
+import { useDatabase, parseTeamKey } from '~/composables/useDatabase'
 import { useDraftStore } from '~/stores/draft'
 
 // ============================================================
@@ -93,11 +93,10 @@ export const useRouletteStore = defineStore('roulette', () => {
     const shuffled = [...available].sort(() => Math.random() - 0.5)
 
     for (const key of shuffled) {
-      const parts = key.split('-')
-      const country = parts[0]!
-      const year = parseInt(parts[1]!)
-      const squad = db.getSquad(country, year)
+      const { country, year } = parseTeamKey(key)
+      if (!country || !year) continue
 
+      const squad = db.getSquad(country, year)
       const hasDraftable = squad.some(p => draft.canDraftToAnySlot(p))
       if (hasDraftable) {
         return { country, year }
@@ -133,11 +132,11 @@ export const useRouletteStore = defineStore('roulette', () => {
 
   function rerollYear() {
     if (draft.rerollsRemaining <= 0) return
-    if (!currentCountry.value) return
+    if (!currentCountry.value || !currentYear.value) return
 
     const country = currentCountry.value
     const availableYears = db.getYearsForCountry(country)
-      .filter(y => !usedTeamKeys.value.has(`${country}-${y}`))
+      .filter(y => y !== currentYear.value && !usedTeamKeys.value.has(`${country}-${y}`))
 
     if (availableYears.length === 0) return // No alternative years available
 
@@ -152,11 +151,11 @@ export const useRouletteStore = defineStore('roulette', () => {
 
   function rerollNation() {
     if (draft.rerollsRemaining <= 0) return
-    if (!currentYear.value) return
+    if (!currentCountry.value || !currentYear.value) return
 
     const year = currentYear.value
     const availableCountries = db.getCountriesForYear(year)
-      .filter(c => !usedTeamKeys.value.has(`${c}-${year}`))
+      .filter(c => c !== currentCountry.value && !usedTeamKeys.value.has(`${c}-${year}`))
 
     if (availableCountries.length === 0) return // No alternative nations available
 

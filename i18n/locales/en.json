@@ -2,7 +2,10 @@
   "app": {
     "name": "EuroDraft",
     "tagline": "Draft your Euro dream team",
-    "description": "Pick players from historical UEFA European Championship squads and compete in a full Euro simulation."
+    "description": "Pick players from historical continental tournament squads and compete in a full simulated tournament."
+  },
+  "common": {
+    "skip_to_content": "Skip to main content"
   },
   "nav": {
     "draft": "Draft",
@@ -11,15 +14,15 @@
   },
   "landing": {
     "headline": "Draft Your Euro Dream Team",
-    "subline": "Pick legendary players from every UEFA European Championship since 1960 and battle for glory.",
+    "subline": "Pick legendary players from Europe's top continental tournaments since 1960 and battle for glory.",
     "cta_start": "Start Drafting",
     "cta_learn": "How It Works",
     "step1_title": "Choose a Formation",
     "step1_desc": "Pick from 3 random formations. Your position slots are locked for the draft.",
     "step2_title": "Spin the Roulette",
-    "step2_desc": "A random historical Euro squad appears. Pick ONE player that fits your formation.",
+    "step2_desc": "A random historical squad appears. Pick ONE player that fits your formation.",
     "step3_title": "Compete",
-    "step3_desc": "Your all-time XI enters a full simulated Euro tournament. Can you win it all?"
+    "step3_desc": "Your all-time XI enters a full simulated continental tournament. Can you win it all?"
   },
   "formation": {
     "select_title": "Choose Your Formation",

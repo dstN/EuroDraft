@@ -51,6 +51,15 @@ describe('useFormations', () => {
       expect(slots.filter(p => p === 'RM')).toHaveLength(1)
       expect(slots.filter(p => p === 'ST')).toHaveLength(2)
     })
+
+    it('4-3-2-1 expands to 11 slots with exactly 3 CMs, 2 CAMs, and 1 ST', () => {
+      const f4321 = ALL_FORMATIONS.find(f => f.id === '4-3-2-1')!
+      const slots = expandFormationToSlots(f4321)
+      expect(slots).toHaveLength(11)
+      expect(slots.filter(p => p === 'CM')).toHaveLength(3)
+      expect(slots.filter(p => p === 'CAM')).toHaveLength(2)
+      expect(slots.filter(p => p === 'ST')).toHaveLength(1)
+    })
   })
 
   describe('pickRandomFormations', () => {

@@ -3,6 +3,7 @@ import AppLogo from '~/components/shared/AppLogo.vue'
 
 defineProps<{
   show: boolean
+  message?: string | null
 }>()
 </script>
 
@@ -20,22 +21,30 @@ defineProps<{
         class="absolute inset-0 pointer-events-none overflow-hidden"
         aria-hidden="true"
       >
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-emerald-500/10 rounded-full blur-[110px] animate-pulse" />
-        <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[220px] bg-amber-500/10 rounded-full blur-[90px]" />
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[380px] bg-emerald-500/15 rounded-full blur-[120px] animate-pulse" />
+        <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] bg-amber-500/15 rounded-full blur-[100px]" />
       </div>
 
       <!-- Centered Animated Logo Loader (without "BUILD YOUR LEGACY" text) -->
-      <div class="relative z-10 flex flex-col items-center gap-6">
+      <div class="relative z-10 flex flex-col items-center gap-7 px-6 text-center">
         <AppLogo
           variant="loader"
           size="lg"
           :animated="true"
         />
 
-        <!-- High-End Micro Stadium Progress Bar -->
-        <div class="w-44 h-1 bg-white/10 rounded-full overflow-hidden relative shadow-inner">
-          <div class="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-400 rounded-full animate-loading-bar" />
+        <!-- Micro Stadium Progress Bar -->
+        <div class="w-52 sm:w-64 h-1.5 bg-white/10 rounded-full overflow-hidden relative shadow-inner">
+          <div class="h-full bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-400 rounded-full animate-loading-bar" />
         </div>
+
+        <!-- Optional Contextual Simulation / Transition Message -->
+        <p
+          v-if="message"
+          class="text-xs sm:text-sm font-mono font-bold tracking-widest uppercase text-emerald-400 animate-pulse mt-1"
+        >
+          {{ message }}
+        </p>
       </div>
     </div>
   </Transition>

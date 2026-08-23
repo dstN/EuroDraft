@@ -8,6 +8,17 @@ let _db: EuroDraftDB | null = null
 let _playersByCountryYear: Map<string, Player[]> | null = null
 let _countryYearKeys: string[] | null = null
 
+export function parseTeamKey(key: string): { country: string, year: number } {
+  const lastDash = key.lastIndexOf('-')
+  if (lastDash === -1) {
+    return { country: key, year: 0 }
+  }
+  return {
+    country: key.slice(0, lastDash),
+    year: parseInt(key.slice(lastDash + 1), 10) || 0
+  }
+}
+
 export function useDatabase() {
   /**
    * Load the database (called once in a layout or app.vue)
@@ -54,15 +65,17 @@ export function useDatabase() {
     ensureLoaded()
     return (_countryYearKeys ?? [])
       .filter(k => k.startsWith(`${country}-`))
-      .map(k => parseInt(k.split('-')[1]!))
-      .sort()
+      .map(k => parseTeamKey(k).year)
+      .filter(y => y > 0)
+      .sort((a, b) => a - b)
   }
 
   function getCountriesForYear(year: number): string[] {
     ensureLoaded()
     return (_countryYearKeys ?? [])
       .filter(k => k.endsWith(`-${year}`))
-      .map(k => k.split('-')[0]!)
+      .map(k => parseTeamKey(k).country)
+      .filter(Boolean)
   }
 
   function getAllTeamKeys(): string[] {
@@ -86,10 +99,7 @@ export function useDatabase() {
     const available = (_countryYearKeys ?? []).filter(k => !excludeSet.has(k))
     const shuffled = [...available].sort(() => Math.random() - 0.5)
 
-    return shuffled.slice(0, count).map((key) => {
-      const [country, yearStr] = key.split('-')
-      return { country: country!, year: parseInt(yearStr!) }
-    })
+    return shuffled.slice(0, count).map(key => parseTeamKey(key))
   }
 
   return {

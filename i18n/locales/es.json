@@ -1,21 +1,24 @@
 {
   "app": {
     "name": "EuroDraft",
-    "tagline": "Forma tu equipo de ensueño de la Euro",
-    "description": "Elige jugadores de los equipos históricos de la UEFA Euro y compite en una simulación completa."
+    "tagline": "Forma tu equipo de ensueño",
+    "description": "Elige jugadores de plantillas continentales históricas y compite en una simulación de torneo completa."
+  },
+  "common": {
+    "skip_to_content": "Saltar al contenido principal"
   },
   "nav": { "draft": "Draft", "tournament": "Torneo", "impressum": "Aviso legal" },
   "landing": {
-    "headline": "Forma tu equipo de ensueño de la Euro",
-    "subline": "Elige leyendas de cada UEFA Euro desde 1960 y lucha por la gloria.",
+    "headline": "Forma tu equipo de ensueño",
+    "subline": "Elige leyendas de los grandes torneos continentales desde 1960 y lucha por la gloria.",
     "cta_start": "Empezar el draft",
     "cta_learn": "Cómo funciona",
     "step1_title": "Elige una formación",
     "step1_desc": "Escoge entre 3 formaciones aleatorias. Tus posiciones quedan bloqueadas.",
     "step2_title": "Gira la ruleta",
-    "step2_desc": "Aparece un equipo Euro histórico. Elige UN jugador que encaje en tu formación.",
+    "step2_desc": "Aparece una plantilla histórica del torneo. Elige UN jugador que encaje en tu formación.",
     "step3_title": "Compite",
-    "step3_desc": "Tu XI de todos los tiempos disputa un torneo Euro simulado. ¿Puedes ganarlo todo?"
+    "step3_desc": "Tu XI de todos los tiempos disputa un torneo continental simulado. ¿Puedes ganarlo todo?"
   },
   "formation": {
     "select_title": "Elige tu formación",

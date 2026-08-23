@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="favShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" rx="48" fill="#060b10" />
+
+  <g transform="translate(120, 120)">
+    <!-- Gold Card (Back Left) -->
+    <g transform="rotate(-12) translate(-22, -12)" filter="url(#favShadow)">
+      <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#favGold)" />
+      <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3.5" stroke-linecap="round" opacity="0.35" />
+      <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3.5" stroke-linecap="round" opacity="0.35" />
+    </g>
+
+    <!-- Green Card with Star (Front Right) -->
+    <g transform="rotate(8) translate(16, 8)" filter="url(#favShadow)">
+      <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#favGreen)" />
+      <polygon
+        points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10"
+        fill="#060b10"
+        transform="translate(0, 4) scale(1.15)"
+      />
+    </g>
+  </g>
+</svg>

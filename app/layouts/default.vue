@@ -77,11 +77,11 @@ const currentLocaleName = computed(() => {
 
     <!-- Top Sticky Navigation Bar (Seamless glass, zero hard borders) -->
     <header class="sticky top-0 z-50 w-full bg-white/40 dark:bg-[#060b10]/40 backdrop-blur-md border-b border-black/[0.04] dark:border-white/[0.04] transition-colors">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="max-w-5xl mx-auto px-2.5 sm:px-6 h-16 flex items-center justify-between gap-1 sm:gap-4 w-full">
         <!-- Official App Logo -->
         <NuxtLink
           to="/"
-          class="flex items-center gap-2.5 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-1"
+          class="flex items-center gap-1.5 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-0.5"
           aria-label="EuroDraft Homepage"
         >
           <AppLogo variant="horizontal" />
@@ -89,7 +89,7 @@ const currentLocaleName = computed(() => {
 
         <!-- Nav links + Active Draft Pill -->
         <nav
-          class="flex items-center gap-2"
+          class="flex items-center gap-1 sm:gap-2"
           aria-label="Main navigation"
         >
           <UButton
@@ -100,13 +100,13 @@ const currentLocaleName = computed(() => {
             color="neutral"
             size="sm"
             :label="link.label"
-            class="font-semibold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-3"
+            class="font-semibold text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-1.5 sm:px-3 py-1"
           />
 
           <NuxtLink
             v-if="draft.filledSlots.length > 0 && !draft.isComplete"
             to="/draft"
-            class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold"
+            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold"
           >
             <span
               class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
@@ -117,7 +117,7 @@ const currentLocaleName = computed(() => {
         </nav>
 
         <!-- Right side: Language + Theme Toggle -->
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
           <!-- Language selector dropdown with flag -->
           <UDropdownMenu :items="languageItems">
             <UButton
@@ -125,10 +125,12 @@ const currentLocaleName = computed(() => {
               variant="outline"
               color="neutral"
               :leading-icon="`i-circle-flags-${currentLocaleFlag}`"
-              :label="currentLocaleName"
               aria-label="Change language"
-              class="font-mono font-bold text-xs rounded-lg px-2.5 py-1 text-zinc-900 dark:text-zinc-100"
-            />
+              class="font-mono font-bold text-xs rounded-lg px-1.5 sm:px-2.5 py-1 text-zinc-900 dark:text-zinc-100"
+            >
+              <span class="hidden sm:inline">{{ currentLocaleName }}</span>
+              <span class="sm:hidden uppercase">{{ locale }}</span>
+            </UButton>
           </UDropdownMenu>
 
           <!-- Theme toggle -->
@@ -138,7 +140,7 @@ const currentLocaleName = computed(() => {
             color="neutral"
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-            class="rounded-lg text-zinc-900 dark:text-zinc-100"
+            class="rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
             @click="isDark = !isDark"
           />
         </div>
@@ -157,7 +159,7 @@ const currentLocaleName = computed(() => {
     <!-- Minimal footer with aligned max-w-5xl container -->
     <footer class="relative z-10 border-t border-black/[0.04] dark:border-white/[0.04] py-6 mt-12 bg-transparent">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-        <span>EuroDraft — The Historical European Championship Simulator</span>
+        <span>EuroDraft — Historical Continental Tournament Simulator</span>
         <div class="flex items-center gap-6">
           <NuxtLink
             to="/legal/impressum"

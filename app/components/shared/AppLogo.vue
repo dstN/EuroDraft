@@ -96,14 +96,14 @@ const sizeClasses = computed(() => {
     </svg>
 
     <!-- ============================================================ -->
-    <!-- Variant: HORIZONTAL (Animated Icon Mark + Typography for Nav)-->
+    <!-- Variant: HORIZONTAL (Animated Icon Mark + Typography for Nav) -->
     <!-- ============================================================ -->
     <div
       v-else-if="variant === 'horizontal'"
-      class="flex items-center gap-2.5 group"
+      class="flex items-center gap-2 group shrink-0"
     >
       <!-- Dual Card Icon with Isolated Animation Wrappers -->
-      <div class="size-8 shrink-0 relative flex items-center justify-center">
+      <div class="size-7 sm:size-8 shrink-0 relative flex items-center justify-center">
         <svg
           viewBox="0 0 240 240"
           class="w-full h-full drop-shadow-md overflow-visible group-hover:scale-105 transition-transform duration-300"
@@ -151,7 +151,7 @@ const sizeClasses = computed(() => {
 
       <!-- Animated Typography -->
       <div class="flex flex-col leading-none">
-        <span class="font-black text-lg tracking-tight flex items-center">
+        <span class="font-black text-base sm:text-lg tracking-tight flex items-center">
           <span
             class="text-zinc-900 dark:text-white"
             :class="animated ? 'anim-text-euro' : ''"
@@ -166,7 +166,7 @@ const sizeClasses = computed(() => {
           </span>
         </span>
         <span
-          class="text-[8px] font-mono uppercase tracking-[0.25em] font-bold text-emerald-800 dark:text-emerald-400 mt-0.5"
+          class="hidden sm:inline-block text-[8px] font-mono uppercase tracking-[0.25em] font-bold text-emerald-800 dark:text-emerald-400 mt-0.5"
           :class="animated ? 'anim-slogan' : ''"
         >
           Build Your Legacy
@@ -179,9 +179,9 @@ const sizeClasses = computed(() => {
     <!-- ============================================================ -->
     <div
       v-else-if="variant === 'loader'"
-      class="flex flex-col items-center justify-center gap-4 text-center"
+      class="flex flex-col items-center justify-center gap-6 text-center"
     >
-      <div class="size-24 sm:size-28 relative flex items-center justify-center">
+      <div class="size-36 sm:size-44 relative flex items-center justify-center">
         <svg
           viewBox="0 0 240 240"
           class="w-full h-full drop-shadow-2xl overflow-visible loader-glow"
@@ -226,9 +226,9 @@ const sizeClasses = computed(() => {
         </svg>
       </div>
 
-      <div class="flex items-center text-2xl sm:text-3xl font-black tracking-tight leading-none">
-        <span class="text-white anim-text-euro">Euro</span>
-        <span class="text-amber-400 anim-text-draft">Draft</span>
+      <div class="flex items-center text-3xl sm:text-5xl font-black tracking-tight leading-none">
+        <span class="text-white anim-text-euro" style="color: #ffffff !important;">Euro</span>
+        <span class="text-amber-400 anim-text-draft" style="color: #fbbf24 !important;">Draft</span>
       </div>
     </div>
 

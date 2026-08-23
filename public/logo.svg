@@ -63,7 +63,7 @@
       }
     </style>
 
-    <!-- Gradients und DropShadow abgestimmt auf das EuroDraft UEFA Farbschema -->
+    <!-- Gradients und DropShadow abgestimmt auf das EuroDraft Farbschema -->
     <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10b981" />
       <stop offset="50%" stop-color="#059669" />
