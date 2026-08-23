@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2026-08-23
+
+### Removed
+- `app/pages/match/[id].vue`, a full match-detail route with zero references anywhere in the app -- superseded by the inline match accordion already in `tournament/index.vue`; its now-orphaned `match.*` i18n namespace was removed from all 10 locales
+- Dead type exports (`PositionDefinition`, `GamePhase` in `app/types/index.ts`; `RatingProfile` in `scripts/player-ratings.ts`), never referenced anywhere
+- Unused dependencies (`@nuxt/test-utils`, `@vue/test-utils` -- no test mounts a Vue component; `axe-core` -- redundant with `@axe-core/playwright`'s own dependency on it) and a broken `vitest.config.ts` alias pointing at a composables index file that has never existed in this repo
+
+### Fixed
+- Two real TypeScript errors caught during the audit: `app/error.vue` indexed a lookup table with a possibly-`undefined` status code, and `server/middleware/compression.ts` had a type mismatch between `compression()`'s Express typing and h3's `NodeMiddleware`
+- `h3` is now an explicit dependency (was only available by hoisting from `nitropack`) since `server/middleware/compression.ts` imports it directly
+
+---
+
 ## [0.6.0] - 2026-08-23
 
 ### Changed
