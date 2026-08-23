@@ -68,7 +68,7 @@ This document tracks all planned features by milestone.
 - [x] Opt-in explicit database storage consent
 - [ ] Global Leaderboard: submit your squad OVR score (#15)
 - [ ] "Challenge" mode: given a random formation, must pick exactly 1 player per roulette spin (#16)
-- [ ] Compare two squads head-to-head (#17)
+- [x] Compare two squads head-to-head (#17)
 - [x] Twitter/X card meta tags for shareable results (#18)
 
 ---
