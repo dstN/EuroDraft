@@ -28,6 +28,11 @@ const shareId = ref<string | null>(null)
 const isGeneratingLink = ref(false)
 const copiedStatus = ref<'text' | 'image' | 'link' | null>(null)
 
+const agreeToLeaderboard = ref(false)
+const isSubmittingLeaderboard = ref(false)
+const leaderboardSubmitted = ref(false)
+const leaderboardError = ref('')
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const draftStore = useDraftStore()
@@ -152,6 +157,32 @@ async function onConsentToggle() {
     } finally {
       isGeneratingLink.value = false
     }
+  }
+}
+
+async function onLeaderboardToggle() {
+  if (!agreeToLeaderboard.value || leaderboardSubmitted.value) return
+  isSubmittingLeaderboard.value = true
+  leaderboardError.value = ''
+  try {
+    await $fetch('/api/leaderboard', {
+      method: 'POST',
+      body: {
+        teamName: props.teamName,
+        teamEmblem: props.teamEmblem,
+        formation: props.formation,
+        ovr: props.lineRatings.overall,
+        outcome: props.outcome,
+        lineRatings: props.lineRatings,
+        shareId: shareId.value
+      }
+    })
+    leaderboardSubmitted.value = true
+  } catch {
+    leaderboardError.value = 'Leaderboard is not available right now — please try again later.'
+    agreeToLeaderboard.value = false
+  } finally {
+    isSubmittingLeaderboard.value = false
   }
 }
 
@@ -800,6 +831,47 @@ function downloadCanvasImage() {
               class="text-xs font-mono text-zinc-400 animate-pulse"
             >
               Generating shareable URL...
+            </div>
+          </div>
+
+          <!-- Explicit Opt-in Leaderboard Submission Consent -->
+          <div class="p-3.5 rounded-xl bg-zinc-800/80 border border-white/5 space-y-2">
+            <label class="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                v-model="agreeToLeaderboard"
+                type="checkbox"
+                class="mt-1 size-4 accent-amber-500 rounded cursor-pointer"
+                :disabled="leaderboardSubmitted"
+                @change="onLeaderboardToggle"
+              >
+              <div class="text-xs text-zinc-300 space-y-0.5">
+                <span class="font-bold text-white">🏆 Submit to Public Leaderboard</span>
+                <p class="text-[11px] text-zinc-400 leading-relaxed font-mono">
+                  Separately from the link above, this publicly lists your team name and score ({{ lineRatings.overall }} OVR) on the EuroDraft leaderboard — permanently, until you request removal.
+                </p>
+              </div>
+            </label>
+
+            <div
+              v-if="isSubmittingLeaderboard"
+              class="text-xs font-mono text-zinc-400 animate-pulse"
+            >
+              Submitting to leaderboard...
+            </div>
+            <div
+              v-else-if="leaderboardSubmitted"
+              class="text-xs font-mono text-emerald-400 font-bold"
+            >
+              ✓ Submitted! <NuxtLink
+                to="/leaderboard"
+                class="underline"
+              >View Leaderboard</NuxtLink>
+            </div>
+            <div
+              v-else-if="leaderboardError"
+              class="text-xs font-mono text-rose-400"
+            >
+              {{ leaderboardError }}
             </div>
           </div>
 

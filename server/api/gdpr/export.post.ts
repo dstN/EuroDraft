@@ -1,14 +1,23 @@
+import { getDbPool, isDbConfigured } from '../../utils/db'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
   const shareIds: string[] = Array.isArray(body?.shareIds) ? body.shareIds : (body?.shareId ? [String(body.shareId)] : [])
 
   const serverRecords: unknown[] = []
+  const leaderboardRecords: unknown[] = []
+
+  const db = isDbConfigured() ? getDbPool() : null
 
   for (const id of shareIds) {
     const cleanId = String(id).trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, '')
     const record = getSharedRun(cleanId)
     if (record) {
       serverRecords.push(record)
+    }
+    if (db) {
+      const [rows] = await db.query('SELECT * FROM leaderboard WHERE share_id = ?', [cleanId])
+      leaderboardRecords.push(...(rows as unknown[]))
     }
   }
 
@@ -28,8 +37,9 @@ export default defineEventHandler(async (event) => {
       thirdPartyCDNs: 'None. Fonts, icons, and flags are served directly by our server.'
     },
     serverStoredRecords: serverRecords,
-    message: serverRecords.length > 0
-      ? `Found ${serverRecords.length} shared squad record(s) on the server.`
+    leaderboardRecords,
+    message: serverRecords.length > 0 || leaderboardRecords.length > 0
+      ? `Found ${serverRecords.length} shared squad record(s) and ${leaderboardRecords.length} leaderboard entry(ies) on the server.`
       : 'No matching records found on server. Server operates zero user profiling.'
   }
 })

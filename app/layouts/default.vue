@@ -10,6 +10,7 @@ const navLinks = computed(() => [
   { label: t('nav.draft'), to: '/draft/formation' },
   { label: t('nav.tournament'), to: '/tournament' },
   { label: t('nav.compare'), to: '/compare' },
+  { label: t('nav.leaderboard'), to: '/leaderboard' },
   { label: t('nav.legal'), to: '/legal' }
 ])
 

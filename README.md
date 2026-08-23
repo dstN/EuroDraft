@@ -30,6 +30,7 @@ EuroDraft is a web-based fantasy football game built around **historical contine
 | Internationalization | [@nuxtjs/i18n](https://i18n.nuxtjs.org) (10 languages) |
 | Styling | Tailwind CSS v4 |
 | Data Pipeline | Wikipedia scraper + position enrichment pipeline |
+| Database (optional) | MySQL/MariaDB via [mysql2](https://github.com/sidorares/node-mysql2) — backs the global leaderboard only |
 | Unit Tests | [Vitest](https://vitest.dev) |
 | E2E / A11y Tests | [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) |
 
@@ -144,6 +145,12 @@ EuroDraft is available in **10 languages**:
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for planned features and milestones.
+
+---
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the Netcup + Phusion Passenger production runbook.
 
 ---
 
