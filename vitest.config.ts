@@ -15,8 +15,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '~': resolve(rootDir, './app'),
-      '#imports': resolve(rootDir, './app/composables/index.ts')
+      '~': resolve(rootDir, './app')
     }
   }
 })
