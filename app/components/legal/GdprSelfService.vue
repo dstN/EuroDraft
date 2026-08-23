@@ -7,6 +7,18 @@ interface MyShareItem {
 
 const { t } = useI18n()
 
+// Local dev origins are shared across every project running on localhost, so a
+// different project's dev server can leave its own keys sitting in the SAME
+// origin's storage (e.g. "vsgraph-theme"). This page's whole point is telling
+// the user what EuroDraft itself stores, so it must only ever read/export/wipe
+// keys EuroDraft actually owns -- never the full, unscoped localStorage/sessionStorage.
+const EURODRAFT_STORAGE_PREFIX = 'eurodraft_'
+const EURODRAFT_EXTRA_KEYS = new Set(['nuxt-color-mode']) // Nuxt's own un-prefixed key for this app's theme toggle
+
+function isEuroDraftStorageKey(key: string): boolean {
+  return key.startsWith(EURODRAFT_STORAGE_PREFIX) || EURODRAFT_EXTRA_KEYS.has(key)
+}
+
 // Reactive storage state
 const localKeys = ref<Array<{ key: string, size: number, value: string }>>([])
 const totalStorageBytes = ref(0)
@@ -24,7 +36,7 @@ function scanBrowserStorage() {
 
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (key) {
+    if (key && isEuroDraftStorageKey(key)) {
       const val = localStorage.getItem(key) || ''
       const size = new Blob([key + val]).size
       totalBytes += size
@@ -60,7 +72,7 @@ async function handleExportData() {
     const clientData: Record<string, unknown> = {}
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
-      if (k) {
+      if (k && isEuroDraftStorageKey(k)) {
         try {
           clientData[k] = JSON.parse(localStorage.getItem(k) || '')
         } catch {
@@ -160,8 +172,16 @@ function handleWipeLocalStorage() {
     return
   }
 
-  localStorage.clear()
-  sessionStorage.clear()
+  // Remove only EuroDraft's own keys -- never a blanket clear(), which would also
+  // wipe unrelated data any other site/app happens to share this origin with.
+  for (const store of [localStorage, sessionStorage]) {
+    const keysToRemove: string[] = []
+    for (let i = 0; i < store.length; i++) {
+      const k = store.key(i)
+      if (k && isEuroDraftStorageKey(k)) keysToRemove.push(k)
+    }
+    keysToRemove.forEach(k => store.removeItem(k))
+  }
   scanBrowserStorage()
 
   actionMessage.value = {
