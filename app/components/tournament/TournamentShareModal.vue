@@ -132,6 +132,17 @@ async function onConsentToggle() {
         shareId.value = res.id
         if (typeof window !== 'undefined') {
           localStorage.setItem(`eurodraft_shared_${res.id}`, JSON.stringify(payload))
+          try {
+            const list = JSON.parse(localStorage.getItem('eurodraft_my_shares') || '[]')
+            list.unshift({
+              id: res.id,
+              teamName: props.teamName || 'EuroDraft Squad',
+              createdAt: new Date().toISOString()
+            })
+            localStorage.setItem('eurodraft_my_shares', JSON.stringify(list.slice(0, 30)))
+          } catch {
+            // Ignore storage parse error
+          }
         }
       }
     } catch {

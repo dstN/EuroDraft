@@ -262,6 +262,9 @@ async function handleSubmitContact() {
       v-else-if="activeTab === 'privacy'"
       class="space-y-6"
     >
+      <!-- Automated GDPR Self-Service Portal (Art. 15 / 17 DSGVO) -->
+      <LegalGdprSelfService />
+
       <div class="surface-card p-6 sm:p-8 space-y-6 text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed">
         <div>
           <h2 class="text-lg font-black text-zinc-900 dark:text-white mb-2 flex items-center gap-2">

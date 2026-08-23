@@ -29,3 +29,7 @@ export function saveSharedRun(data: Omit<SharedRunRecord, 'id' | 'createdAt'>): 
 export function getSharedRun(id: string): SharedRunRecord | undefined {
   return sharedRunsStore.get(id)
 }
+
+export function deleteSharedRun(id: string): boolean {
+  return sharedRunsStore.delete(id)
+}
