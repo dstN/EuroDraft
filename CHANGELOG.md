@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-08-23
+
+### Added
+- Flying player-disc animation from squad list to pitch slot on draft, with an arrival pulse ripple (#12)
+- Synth-generated sound effects (tick, spin, draft chime, reroll swoosh) via a Web Audio API store with a persisted mute toggle (#13)
+- Mobile swipe gestures between the squad list and pitch panels (#14)
+- Extra time and penalty shootouts in knockout matches, with narrated timeline events and "(AET)" / penalty-score labeling throughout the tournament UI
+- Dynamic per-share Open Graph card (`/og/:id`) and SSR-rendered meta tags on `/r/:id`, so shared links show the real team/outcome/stats instead of generic site defaults (#18)
+- Head-to-head squad comparison (`/compare`): load two shared squads, compare DEF/MID/ATT/OVERALL, and simulate a showdown through the real match engine (#17)
+- "Challenge Mode": randomly assigned formation, no rerolls, combinable with Legend Mode (#16)
+- Global leaderboard backed by a real MySQL/MariaDB table (`mysql2`, no native bindings) rather than the ephemeral in-memory share store, with opt-in submission, `/api/health`, and a `DEPLOYMENT.md` runbook for the Netcup/Passenger host (#15)
+- "Legend Mode": drafting restricted to 90+ rated players, with a graceful "no eligible squads left" state for scarce-position dead ends (#21)
+- Custom formation and tactic builder: pick exact position counts with a live pitch preview (#22)
+- Local draft history (`/history`): every completed run auto-saves to localStorage (capped at 20), with an expand-to-view-squad accordion, delete-one, and clear-all (#23)
+- `app/utils/pitchLayout.ts`: shared, count-generic pitch-coordinate logic for `FormationPitch.vue`/`MiniFormationPitch.vue`, replacing ~140 lines of duplicated, hard-coded-per-count logic — required for the custom formation builder to render arbitrary position combinations without overlap
+
+### Changed
+- The player database (~2.8MB) no longer loads eagerly on every page via `app.vue` — scoped to a route middleware (`ensure-database`) on only `/draft/**` and `/tournament/**`, the two routes that actually touch it. Cut homepage FCP/LCP roughly in half under Lighthouse's throttled network simulation (~17s → ~8s)
+
+### Fixed
+- `currentCountryDisplayName` fell back to a raw country code (e.g. "ua") instead of the full name; now uses the existing `getCountryName()` util
+- Starting a new draft without a hard reload kept the previous session's reroll count, drafted-player blocklist, and roulette used-team-keys
+- 4-3-2-1 (Christmas Tree) formation's central-midfield trio collapsed two dots onto the same coordinate
+- Roulette flag stayed on its Netherlands fallback for the very first squad shown on a fresh `/draft` visit (the silent initial spin never triggered the reel's sync watcher); nation name also revealed instantly on reroll instead of waiting for the spin animation to settle
+- Pitch discs visually overlapping despite numerically distinct coordinates (e.g. 4-1-2-1-2's CB landing almost on top of LB/RB) — the coordinate-spread formula stretched too wide for low counts relative to fixed-position neighbors
+- Top nav silently overflowed off-screen on mobile once enough links (Compare, Leaderboard) were added; now horizontally scrollable
+- Page visibly shifted left when opening a dropdown/modal, since the scroll-lock library hides the scrollbar without `scrollbar-gutter` reserving its space (missed `body`, the element actually locked, on the first attempt)
+- GDPR self-service portal read/exported/wiped *all* of localStorage, not just EuroDraft's own keys — the "wipe my data" button in particular called `localStorage.clear()` unconditionally, which could delete an unrelated site's data sharing the same origin
+- Language-switcher flag requested `circle-flags:gb` (unbundled, logged a load failure) instead of `circle-flags:gb-eng`, which the rest of the app already uses consistently for English
+
+---
+
 ## [0.4.0] - 2026-08-23
 
 ### Added
