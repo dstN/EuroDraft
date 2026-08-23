@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { pickRandomFormations } from '~/composables/useFormations'
-import type { Formation } from '~/types'
+import type { Formation, PositionCode } from '~/types'
 import MiniFormationPitch from '~/components/draft/MiniFormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
@@ -16,19 +16,68 @@ const formations = useState<Formation[]>('draft-formations', () => pickRandomFor
 const teamNameInput = ref(draft.teamName || 'Dream XI')
 const selectedEmblem = ref(draft.teamEmblem || 'eu')
 
+// Formation source: pick from 3 (classic), randomly assigned (challenge), or hand-built (custom).
+// Mutually exclusive -- Challenge Mode's whole point is "you don't choose", which conflicts
+// with Custom's "you hand-picked it". Legend Mode below is a separate, combinable toggle.
+const formationMode = ref<'classic' | 'challenge' | 'custom'>('classic')
+
 // Challenge Mode: formation is assigned at random, no formation choice and no rerolls
-const challengeModeToggle = ref(false)
 const challengeFormation = ref<Formation>(pickRandomFormations(1)[0]!)
 
-watch(challengeModeToggle, (enabled) => {
-  if (enabled) challengeFormation.value = pickRandomFormations(1)[0]!
+watch(formationMode, (mode) => {
+  if (mode === 'challenge') challengeFormation.value = pickRandomFormations(1)[0]!
 })
 
 function reassignChallengeFormation() {
   challengeFormation.value = pickRandomFormations(1)[0]!
 }
 
-// Legend Mode: only 90+ rated players are draftable. Independent of Challenge Mode -- either can be on alone or together.
+// Custom Formation Builder: pick exact position counts. GK is always 1 (fixed).
+const CUSTOM_POSITIONS: { code: Exclude<PositionCode, 'GK'>, label: string }[] = [
+  { code: 'CB', label: 'Center Back' },
+  { code: 'LB', label: 'Left Back' },
+  { code: 'RB', label: 'Right Back' },
+  { code: 'CDM', label: 'Def. Mid' },
+  { code: 'CM', label: 'Center Mid' },
+  { code: 'CAM', label: 'Att. Mid' },
+  { code: 'LM', label: 'Left Mid' },
+  { code: 'RM', label: 'Right Mid' },
+  { code: 'LW', label: 'Left Wing' },
+  { code: 'RW', label: 'Right Wing' },
+  { code: 'ST', label: 'Striker' },
+  { code: 'CF', label: 'Center Fwd' }
+]
+const CUSTOM_MAX_PER_POSITION = 6
+
+type CustomPositionCounts = Record<Exclude<PositionCode, 'GK'>, number>
+
+// Defaults to a 4-4-2 (2 CB, 1 LB, 1 RB, 1 LM, 2 CM, 1 RM, 2 ST = 10 outfield)
+const customCounts = ref<CustomPositionCounts>({
+  CB: 2, LB: 1, RB: 1, CDM: 0, CM: 2, CAM: 0, LM: 1, RM: 1, LW: 0, RW: 0, ST: 2, CF: 0
+})
+
+function adjustCustomCount(code: Exclude<PositionCode, 'GK'>, delta: number) {
+  const next = customCounts.value[code] + delta
+  customCounts.value[code] = Math.min(CUSTOM_MAX_PER_POSITION, Math.max(0, next))
+}
+
+const customOutfieldTotal = computed(() =>
+  Object.values(customCounts.value).reduce((sum, n) => sum + n, 0)
+)
+const customTotal = computed(() => customOutfieldTotal.value + 1) // +1 for the fixed GK
+
+const customDefenseCount = computed(() => customCounts.value.CB + customCounts.value.LB + customCounts.value.RB)
+const customMidfieldCount = computed(() => customCounts.value.CDM + customCounts.value.CM + customCounts.value.CAM + customCounts.value.LM + customCounts.value.RM)
+const customAttackCount = computed(() => customCounts.value.LW + customCounts.value.RW + customCounts.value.ST + customCounts.value.CF)
+const customFormationLabel = computed(() => `${customDefenseCount.value}-${customMidfieldCount.value}-${customAttackCount.value}`)
+
+const customFormation = computed<Formation>(() => ({
+  id: 'custom',
+  label: `Custom (${customFormationLabel.value})`,
+  slots: { GK: 1, ...customCounts.value }
+}))
+
+// Legend Mode: only 90+ rated players are draftable. Independent of formation source -- combinable with any of the three above.
 const legendModeToggle = ref(false)
 
 // Top Picked Popular Nationalities
@@ -138,6 +187,16 @@ function startChallenge() {
   draft.selectFormation(challengeFormation.value)
   draft.isChallengeMode = true
   draft.rerollsRemaining = 0
+  draft.isLegendMode = legendModeToggle.value
+}
+
+function startCustom() {
+  if (customTotal.value !== 11) return
+  audio.playTick()
+  draft.teamName = teamNameInput.value.trim() || 'Dream XI'
+  draft.teamEmblem = selectedEmblem.value
+  roulette.reset()
+  draft.selectFormation(customFormation.value)
   draft.isLegendMode = legendModeToggle.value
 }
 </script>
@@ -278,27 +337,34 @@ function startChallenge() {
         Select Starting Formation
       </h2>
 
-      <!-- Mode Toggles -->
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
-          <USwitch v-model="challengeModeToggle" />
-          <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
-            🎲 Challenge Mode
-          </span>
-          <UTooltip text="Formation is randomly assigned and there are no rerolls — you must draft from whatever squad the roulette lands on.">
-            <UIcon
-              name="i-lucide-info"
-              class="size-3.5 text-zinc-500"
-            />
-          </UTooltip>
-        </label>
+      <!-- Formation Source Selector -->
+      <div class="inline-flex items-center rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 p-1">
+        <button
+          v-for="opt in [
+            { value: 'classic', label: 'Classic' },
+            { value: 'challenge', label: '🎲 Challenge' },
+            { value: 'custom', label: '🛠️ Custom' }
+          ]"
+          :key="opt.value"
+          type="button"
+          class="px-3.5 py-1.5 rounded-full text-xs font-mono font-bold cursor-pointer transition-all"
+          :class="formationMode === opt.value
+            ? 'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-sm'
+            : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
+          @click="formationMode = opt.value"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
 
+      <!-- Legend Mode Toggle -->
+      <div>
         <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
           <USwitch v-model="legendModeToggle" />
           <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
             ⭐ Legend Mode
           </span>
-          <UTooltip text="Only players rated 90+ overall are draftable. Combinable with Challenge Mode for an even harder run.">
+          <UTooltip text="Only players rated 90+ overall are draftable. Combinable with any formation source above.">
             <UIcon
               name="i-lucide-info"
               class="size-3.5 text-zinc-500"
@@ -309,7 +375,7 @@ function startChallenge() {
     </div>
 
     <!-- Challenge Mode: single assigned formation -->
-    <template v-if="challengeModeToggle">
+    <template v-if="formationMode === 'challenge'">
       <div class="max-w-sm mx-auto space-y-4">
         <div class="surface-card p-5 space-y-4">
           <div
@@ -350,6 +416,99 @@ function startChallenge() {
             class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
             @click="reassignChallengeFormation"
           />
+        </div>
+      </div>
+    </template>
+
+    <!-- Custom Formation Builder: pick exact position counts -->
+    <template v-else-if="formationMode === 'custom'">
+      <div class="max-w-3xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Position counters -->
+        <div class="surface-card p-5 space-y-3">
+          <div class="flex items-center justify-between pb-1">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
+              Position Counts
+            </span>
+            <span
+              class="text-xs font-mono font-black px-2.5 py-1 rounded-full"
+              :class="customTotal === 11
+                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
+                : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'"
+            >
+              {{ customTotal }} / 11 Players
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between py-1.5 px-2 rounded-lg bg-zinc-100/60 dark:bg-zinc-800/40">
+            <span class="text-xs font-bold text-zinc-500">GK (fixed)</span>
+            <span class="text-xs font-mono font-black text-zinc-500">1</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div
+              v-for="pos in CUSTOM_POSITIONS"
+              :key="pos.code"
+              class="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40"
+            >
+              <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ pos.label }}</span>
+              <div class="flex items-center gap-2">
+                <UButton
+                  size="xs"
+                  variant="outline"
+                  color="neutral"
+                  icon="i-lucide-minus"
+                  square
+                  :disabled="customCounts[pos.code] <= 0"
+                  @click="adjustCustomCount(pos.code, -1)"
+                />
+                <span class="w-4 text-center font-mono font-black text-sm text-zinc-900 dark:text-white">{{ customCounts[pos.code] }}</span>
+                <UButton
+                  size="xs"
+                  variant="outline"
+                  color="neutral"
+                  icon="i-lucide-plus"
+                  square
+                  :disabled="customCounts[pos.code] >= CUSTOM_MAX_PER_POSITION"
+                  @click="adjustCustomCount(pos.code, 1)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="surface-card p-5 space-y-4 flex flex-col">
+          <div
+            class="relative rounded-xl overflow-hidden shadow-inner border border-white/10 flex-1"
+            style="min-height: 220px"
+          >
+            <MiniFormationPitch :formation="customFormation" />
+          </div>
+          <div>
+            <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
+              {{ customFormationLabel }}
+            </p>
+            <p class="text-xs text-center text-emerald-700 dark:text-emerald-400 font-bold font-mono uppercase tracking-wider mt-1">
+              Your Custom Formation
+            </p>
+          </div>
+          <UTooltip :text="customTotal !== 11 ? `Adjust positions until you have exactly 11 players (currently ${customTotal})` : ''">
+            <NuxtLink
+              :to="customTotal === 11 ? '/draft' : undefined"
+              class="w-full py-2.5 px-4 rounded-xl text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm no-underline"
+              :class="customTotal === 11
+                ? 'bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 cursor-pointer'
+                : 'bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed opacity-60'"
+              @click="customTotal === 11 && startCustom()"
+            >
+              <span>Confirm & Draft</span>
+              <UIcon
+                name="i-lucide-arrow-right"
+                class="size-4"
+                aria-hidden="true"
+              />
+            </NuxtLink>
+          </UTooltip>
         </div>
       </div>
     </template>
