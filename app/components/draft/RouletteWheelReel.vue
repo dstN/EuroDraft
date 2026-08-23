@@ -15,9 +15,13 @@ const emit = defineEmits<{
   (e: 'spin-complete'): void
 }>()
 
-// Cycling display during spin
+// Cycling display during spin -- deliberately decoupled from the target props so
+// the reveal only happens via this component's own animation timing, never as a
+// side effect of the store updating (which happens instantly, before any spin
+// animation starts -- see settleToTarget()/the props watcher below).
 const displayCountry = ref(props.targetCountry || 'nl')
 const displayYear = ref(props.targetYear || 1988)
+const displayCountryName = ref(props.targetCountryName || getCountryName(displayCountry.value))
 
 const SAMPLE_NATIONS = [
   'nl', 'fr', 'es', 'de', 'it', 'pt', 'dk', 'gr', 'gb-eng', 'cz', 'hr', 'be', 'pl', 'tr', 'at', 'se'
@@ -29,6 +33,12 @@ const SAMPLE_YEARS = [
 
 let spinInterval: ReturnType<typeof setInterval> | null = null
 
+function settleToTarget() {
+  displayCountry.value = props.targetCountry || 'nl'
+  displayCountryName.value = props.targetCountryName || getCountryName(displayCountry.value)
+  displayYear.value = props.targetYear || 1988
+}
+
 watch(() => props.isSpinning, (spinning) => {
   if (spinning) {
     let tick = 0
@@ -37,8 +47,10 @@ watch(() => props.isSpinning, (spinning) => {
       if (props.spinType === 'nation' || props.spinType === 'all') {
         const randCountry = SAMPLE_NATIONS[Math.floor(Math.random() * SAMPLE_NATIONS.length)]!
         displayCountry.value = randCountry
+        displayCountryName.value = getCountryName(randCountry)
       } else {
         displayCountry.value = props.targetCountry || 'nl'
+        displayCountryName.value = props.targetCountryName || getCountryName(displayCountry.value)
       }
 
       if (props.spinType === 'year' || props.spinType === 'all') {
@@ -51,16 +63,23 @@ watch(() => props.isSpinning, (spinning) => {
       tick++
       if (tick >= maxTicks) {
         if (spinInterval) clearInterval(spinInterval)
-        displayCountry.value = props.targetCountry || 'nl'
-        displayYear.value = props.targetYear || 1988
+        settleToTarget()
         emit('spin-complete')
       }
     }, 65)
   } else {
-    displayCountry.value = props.targetCountry || 'nl'
-    displayYear.value = props.targetYear || 1988
+    settleToTarget()
   }
 }, { immediate: true })
+
+// Covers changes to the target that happen *without* a spin animation (e.g. the
+// very first squad on page load, set directly by the store with no isSpinning
+// transition at all) -- without this, the flag/name silently keep showing their
+// initial fallback ('nl') forever, since the watcher above only reacts to
+// isSpinning changing. Guarded so it never fights the cycling animation above.
+watch([() => props.targetCountry, () => props.targetYear, () => props.targetCountryName], () => {
+  if (!props.isSpinning) settleToTarget()
+})
 
 onUnmounted(() => {
   if (spinInterval) clearInterval(spinInterval)
@@ -89,7 +108,7 @@ onUnmounted(() => {
           European Squad · {{ displayYear }}
         </p>
         <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight truncate">
-          {{ targetCountryName || getCountryName(displayCountry) }}
+          {{ displayCountryName }}
         </h2>
       </div>
     </div>
