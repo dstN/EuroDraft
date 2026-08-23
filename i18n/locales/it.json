@@ -115,15 +115,6 @@
     "player_team": "La tua squadra",
     "view_match": "Resoconto"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Resoconto partita",
-    "stats_title": "Statistiche",
-    "ovr_label": "TOT squadra",
-    "attack_label": "Attacco",
-    "midfield_label": "Centrocampo",
-    "defense_label": "Difesa"
-  },
   "results": {
     "champion_title": "Campioni d'Europa!",
     "champion_subtitle": "La tua squadra dei sogni ha conquistato l'Europa!",

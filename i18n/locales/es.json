@@ -115,15 +115,6 @@
     "player_team": "Tu equipo",
     "view_match": "Informe del partido"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Informe del partido",
-    "stats_title": "Estadísticas",
-    "ovr_label": "GEN del equipo",
-    "attack_label": "Ataque",
-    "midfield_label": "Medio",
-    "defense_label": "Defensa"
-  },
   "results": {
     "champion_title": "¡Campeones de Europa!",
     "champion_subtitle": "¡Tu equipo de ensueño conquistó Europa!",

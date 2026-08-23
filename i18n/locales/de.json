@@ -115,15 +115,6 @@
     "player_team": "Dein Team",
     "view_match": "Spielbericht"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Spielbericht",
-    "stats_title": "Spielstatistiken",
-    "ovr_label": "Team-GES",
-    "attack_label": "Angriff",
-    "midfield_label": "Mittelfeld",
-    "defense_label": "Abwehr"
-  },
   "results": {
     "champion_title": "Turniersieger!",
     "champion_subtitle": "Dein Traumteam hat Europa erobert!",

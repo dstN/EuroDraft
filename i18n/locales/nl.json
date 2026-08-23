@@ -115,15 +115,6 @@
     "player_team": "Jouw team",
     "view_match": "Wedstrijdverslag"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Wedstrijdverslag",
-    "stats_title": "Statistieken",
-    "ovr_label": "Team TOT",
-    "attack_label": "Aanval",
-    "midfield_label": "Middenveld",
-    "defense_label": "Verdediging"
-  },
   "results": {
     "champion_title": "Europees kampioen!",
     "champion_subtitle": "Jouw droomteam veroverde Europa!",

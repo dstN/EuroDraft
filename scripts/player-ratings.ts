@@ -7,18 +7,8 @@
  *  3. Dynamic rating algorithm for unlisted squad players calibrated by team tier, caps & role
  */
 
-export interface RatingProfile {
-  ovr: number
-  pace?: number
-  shooting?: number
-  passing?: number
-  dribbling?: number
-  defending?: number
-  physical?: number
-}
-
 // Helper to normalize names for rating matching
-export function normalizeRatingKey(name: string): string {
+function normalizeRatingKey(name: string): string {
   return name
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -39,7 +29,7 @@ export function normalizeRatingKey(name: string): string {
 // 1. YEAR-SPECIFIC RATINGS (Curated tournament & era ratings)
 // Format: `${normalizedName}@${year}` -> OVR
 // =========================================================================
-export const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
+const YEAR_SPECIFIC_RATINGS: Record<string, number> = {
   // ------------------------- EURO 1960 -------------------------
   'lev yashin@1960': 93,
   'valentin ivanov@1960': 89,

@@ -112,15 +112,6 @@
     "player_team": "Твоя команда",
     "view_match": "Матчрепорт"
   },
-  "match": {
-    "title": "{teamA} – {teamB}",
-    "live_ticker": "Матчрепорт",
-    "stats_title": "Статистика матча",
-    "ovr_label": "ОБЩ команды",
-    "attack_label": "Атака",
-    "midfield_label": "Полузащита",
-    "defense_label": "Защита"
-  },
   "results": {
     "champion_title": "Чемпионы Европы!",
     "champion_subtitle": "Твоя команда мечты покорила Европу!",

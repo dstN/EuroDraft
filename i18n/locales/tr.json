@@ -112,15 +112,6 @@
     "player_team": "Senin Takımın",
     "view_match": "Maç Raporu"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Maç Raporu",
-    "stats_title": "Maç İstatistikleri",
-    "ovr_label": "Takım GEN",
-    "attack_label": "Hücum",
-    "midfield_label": "Orta Saha",
-    "defense_label": "Savunma"
-  },
   "results": {
     "champion_title": "Avrupa Şampiyonları!",
     "champion_subtitle": "Hayal takımın Avrupa'yı fethetti!",

@@ -115,15 +115,6 @@
     "player_team": "Your Team",
     "view_match": "Match Report"
   },
-  "match": {
-    "title": "{teamA} vs {teamB}",
-    "live_ticker": "Match Report",
-    "stats_title": "Match Stats",
-    "ovr_label": "Team OVR",
-    "attack_label": "Attack",
-    "midfield_label": "Midfield",
-    "defense_label": "Defense"
-  },
   "results": {
     "champion_title": "Euro Champions!",
     "champion_subtitle": "Your dream team conquered Europe!",

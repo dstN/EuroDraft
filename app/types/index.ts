@@ -12,14 +12,6 @@ export type PositionCode
 
 export type PositionCategory = 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward'
 
-export interface PositionDefinition {
-  code: PositionCode
-  category: PositionCategory
-  label: string
-  /** Coordinates on the visual pitch as percentage [x, y] from top-left */
-  pitchCoords: [number, number]
-}
-
 // ------- Player Stats -------
 
 export interface PlayerStats {
@@ -189,13 +181,5 @@ export interface KnockoutBracket {
   semiFinals: MatchResult[]
   final: MatchResult | null
 }
-
-export type GamePhase
-  = | 'landing'
-    | 'formation-select'
-    | 'drafting'
-    | 'draft-complete'
-    | 'tournament'
-    | 'champion'
 
 export type TournamentPhase = 'group' | 'quarter-final' | 'semi-final' | 'final' | 'complete'
