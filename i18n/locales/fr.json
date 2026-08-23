@@ -40,6 +40,7 @@
     "reroll_year_hint": "Garder {nation}, changer d'année",
     "reroll_nation_hint": "Garder {year}, changer de nation",
     "no_rerolls": "Plus de rerolls disponibles",
+    "challenge_mode": "Mode Défi",
     "spin": "Tourner",
     "pick_player": "Choisir un joueur",
     "player_greyed": "Ne correspond à aucun slot ouvert",

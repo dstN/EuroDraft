@@ -16,6 +16,18 @@ const formations = useState<Formation[]>('draft-formations', () => pickRandomFor
 const teamNameInput = ref(draft.teamName || 'Dream XI')
 const selectedEmblem = ref(draft.teamEmblem || 'eu')
 
+// Challenge Mode: formation is assigned at random, no formation choice and no rerolls
+const challengeModeToggle = ref(false)
+const challengeFormation = ref<Formation>(pickRandomFormations(1)[0]!)
+
+watch(challengeModeToggle, (enabled) => {
+  if (enabled) challengeFormation.value = pickRandomFormations(1)[0]!
+})
+
+function reassignChallengeFormation() {
+  challengeFormation.value = pickRandomFormations(1)[0]!
+}
+
 // Top Picked Popular Nationalities
 const TOP_EMBLEM_CHOICES = [
   { code: 'eu', label: 'Europe (All-Stars)' },
@@ -112,6 +124,16 @@ function selectFormation(f: Formation) {
   draft.teamEmblem = selectedEmblem.value
   roulette.reset()
   draft.selectFormation(f)
+}
+
+function startChallenge() {
+  audio.playTick()
+  draft.teamName = teamNameInput.value.trim() || 'Dream XI'
+  draft.teamEmblem = selectedEmblem.value
+  roulette.reset()
+  draft.selectFormation(challengeFormation.value)
+  draft.isChallengeMode = true
+  draft.rerollsRemaining = 0
 }
 </script>
 
@@ -246,61 +268,124 @@ function selectFormation(f: Formation) {
     </div>
 
     <!-- Formation Choice Section Title -->
-    <div class="text-center pt-2">
+    <div class="text-center pt-2 space-y-3">
       <h2 class="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
         Select Starting Formation
       </h2>
+
+      <!-- Challenge Mode Toggle -->
+      <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
+        <USwitch v-model="challengeModeToggle" />
+        <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
+          🎲 Challenge Mode
+        </span>
+        <UTooltip text="Formation is randomly assigned and there are no rerolls — you must draft from whatever squad the roulette lands on.">
+          <UIcon
+            name="i-lucide-info"
+            class="size-3.5 text-zinc-500"
+          />
+        </UTooltip>
+      </label>
     </div>
 
-    <!-- Formation Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-      <NuxtLink
-        v-for="formation in formations"
-        :key="formation.id"
-        to="/draft"
-        class="surface-card p-5 space-y-4 group text-left cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] active:scale-[0.98] block no-underline"
-        @click="selectFormation(formation)"
-      >
-        <!-- Mini formation pitch -->
-        <div
-          class="relative rounded-xl overflow-hidden shadow-inner border border-white/10"
-          style="height: 180px"
-        >
-          <MiniFormationPitch :formation="formation" />
-        </div>
-
-        <!-- Formation label below pitch -->
-        <div>
-          <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
-            {{ formation.label }}
-          </p>
-        </div>
-
-        <!-- CTA Button with strong WCAG AAA contrast -->
-        <div class="pt-1">
-          <div class="w-full py-2.5 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm">
-            <span>Confirm & Draft</span>
+    <!-- Challenge Mode: single assigned formation -->
+    <template v-if="challengeModeToggle">
+      <div class="max-w-sm mx-auto space-y-4">
+        <div class="surface-card p-5 space-y-4">
+          <div
+            class="relative rounded-xl overflow-hidden shadow-inner border border-white/10"
+            style="height: 180px"
+          >
+            <MiniFormationPitch :formation="challengeFormation" />
+          </div>
+          <div>
+            <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
+              {{ challengeFormation.label }}
+            </p>
+            <p class="text-xs text-center text-amber-700 dark:text-amber-400 font-bold font-mono uppercase tracking-wider mt-1">
+              Your Challenge Formation
+            </p>
+          </div>
+          <NuxtLink
+            to="/draft"
+            class="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm no-underline"
+            @click="startChallenge"
+          >
+            <span>Start Challenge</span>
             <UIcon
-              name="i-lucide-arrow-right"
-              class="size-4 transition-transform group-hover:translate-x-1"
+              name="i-lucide-swords"
+              class="size-4"
               aria-hidden="true"
             />
-          </div>
+          </NuxtLink>
         </div>
-      </NuxtLink>
-    </div>
 
-    <!-- Re-draw option -->
-    <div class="text-center pt-2 pb-8">
-      <UButton
-        variant="outline"
-        color="neutral"
-        size="md"
-        leading-icon="i-lucide-refresh-cw"
-        label="Draw 3 New Formations"
-        class="rounded-full px-6 font-bold text-zinc-900 dark:text-zinc-100"
-        @click="formations = pickRandomFormations(3)"
-      />
-    </div>
+        <div class="text-center">
+          <UButton
+            variant="outline"
+            color="neutral"
+            size="sm"
+            leading-icon="i-lucide-refresh-cw"
+            label="Reassign Formation"
+            class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
+            @click="reassignChallengeFormation"
+          />
+        </div>
+      </div>
+    </template>
+
+    <!-- Classic Mode: pick from 3 formations -->
+    <template v-else>
+      <!-- Formation Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <NuxtLink
+          v-for="formation in formations"
+          :key="formation.id"
+          to="/draft"
+          class="surface-card p-5 space-y-4 group text-left cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] active:scale-[0.98] block no-underline"
+          @click="selectFormation(formation)"
+        >
+          <!-- Mini formation pitch -->
+          <div
+            class="relative rounded-xl overflow-hidden shadow-inner border border-white/10"
+            style="height: 180px"
+          >
+            <MiniFormationPitch :formation="formation" />
+          </div>
+
+          <!-- Formation label below pitch -->
+          <div>
+            <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
+              {{ formation.label }}
+            </p>
+          </div>
+
+          <!-- CTA Button with strong WCAG AAA contrast -->
+          <div class="pt-1">
+            <div class="w-full py-2.5 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm">
+              <span>Confirm & Draft</span>
+              <UIcon
+                name="i-lucide-arrow-right"
+                class="size-4 transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+        </NuxtLink>
+      </div>
+
+      <!-- Re-draw option -->
+      <div class="text-center pt-2 pb-8">
+        <UButton
+          variant="outline"
+          color="neutral"
+          size="md"
+          leading-icon="i-lucide-refresh-cw"
+          label="Draw 3 New Formations"
+          class="rounded-full px-6 font-bold text-zinc-900 dark:text-zinc-100"
+          @click="formations = pickRandomFormations(3)"
+        />
+      </div>
+    </template>
   </div>
 </template>

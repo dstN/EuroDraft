@@ -37,6 +37,7 @@
     "reroll_year_hint": "Manter {nation}, mudar ano",
     "reroll_nation_hint": "Manter {year}, mudar nação",
     "no_rerolls": "Sem relançamentos disponíveis",
+    "challenge_mode": "Modo Desafio",
     "spin": "Girar",
     "pick_player": "Escolhe um jogador",
     "player_greyed": "Não encaixa em nenhum slot livre",

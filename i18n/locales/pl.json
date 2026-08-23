@@ -40,6 +40,7 @@
     "reroll_year_hint": "Zachowaj {nation}, zmień rok",
     "reroll_nation_hint": "Zachowaj {year}, zmień naród",
     "no_rerolls": "Brak rerollów",
+    "challenge_mode": "Tryb wyzwania",
     "spin": "Kręć",
     "pick_player": "Wybierz zawodnika",
     "player_greyed": "Nie pasuje do żadnego wolnego slotu",

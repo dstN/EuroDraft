@@ -37,6 +37,7 @@
     "reroll_year_hint": "Сохранить {nation}, новый год",
     "reroll_nation_hint": "Сохранить {year}, новую нацию",
     "no_rerolls": "Переброшек не осталось",
+    "challenge_mode": "Режим испытания",
     "spin": "Крутить",
     "pick_player": "Выбери игрока",
     "player_greyed": "Не подходит ни к одному слоту",

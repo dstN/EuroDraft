@@ -16,6 +16,8 @@ export const useDraftStore = defineStore('draft', () => {
   const draftedPlayerKeys = ref<Set<string>>(new Set())
   const rerollsRemaining = ref(3)
   const draftPhase = ref<'formation-select' | 'drafting' | 'complete'>('formation-select')
+  /** Challenge Mode: formation is randomly assigned (not chosen) and no rerolls are available */
+  const isChallengeMode = ref(false)
 
   // ---- Getters ----
   const filledSlots = computed(() => slots.value.filter(s => s.player !== null))
@@ -40,6 +42,7 @@ export const useDraftStore = defineStore('draft', () => {
     }))
     draftedPlayerKeys.value = new Set()
     rerollsRemaining.value = 3
+    isChallengeMode.value = false
     draftPhase.value = 'drafting'
   }
 
@@ -91,6 +94,7 @@ export const useDraftStore = defineStore('draft', () => {
     slots.value = []
     draftedPlayerKeys.value = new Set()
     rerollsRemaining.value = 3
+    isChallengeMode.value = false
     draftPhase.value = 'formation-select'
   }
 
@@ -103,6 +107,7 @@ export const useDraftStore = defineStore('draft', () => {
     draftedPlayerKeys,
     rerollsRemaining,
     draftPhase,
+    isChallengeMode,
     // Getters
     filledSlots,
     emptySlots,

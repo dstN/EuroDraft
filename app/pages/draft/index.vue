@@ -458,8 +458,11 @@ const formationShortName = computed(() => {
               @spin-complete="isSpinningReel = false"
             />
 
-            <!-- Reroll controls -->
-            <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 pt-1 sm:pt-0">
+            <!-- Reroll controls (hidden in Challenge Mode) -->
+            <div
+              v-if="!draft.isChallengeMode"
+              class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 pt-1 sm:pt-0"
+            >
               <div class="flex gap-1.5">
                 <UTooltip
                   :text="$t('draft.reroll_year_hint', { nation: currentCountryDisplayName })"
@@ -494,6 +497,19 @@ const formationShortName = computed(() => {
               </div>
               <p class="text-xs text-zinc-700 dark:text-zinc-300 font-mono font-bold">
                 {{ $t('draft.rerolls_remaining', { count: draft.rerollsRemaining }) }}
+              </p>
+            </div>
+
+            <!-- Challenge Mode badge -->
+            <div
+              v-else
+              class="flex sm:flex-col items-center sm:items-end justify-center gap-1 shrink-0 pt-1 sm:pt-0"
+            >
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 dark:bg-amber-950/70 border border-amber-500/40 text-amber-800 dark:text-amber-300 text-xs font-mono font-black uppercase tracking-wider">
+                🎲 {{ $t('draft.challenge_mode') }}
+              </span>
+              <p class="text-xs text-zinc-700 dark:text-zinc-300 font-mono font-bold">
+                {{ $t('draft.no_rerolls') }}
               </p>
             </div>
           </div>

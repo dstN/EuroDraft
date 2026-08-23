@@ -37,6 +37,7 @@
     "reroll_year_hint": "{nation}'u tut, yılı değiştir",
     "reroll_nation_hint": "{year}'ı tut, ülkeyi değiştir",
     "no_rerolls": "Yeniden çevirme hakkı kalmadı",
+    "challenge_mode": "Meydan Okuma Modu",
     "spin": "Çevir",
     "pick_player": "Oyuncu seç",
     "player_greyed": "Açık slota uymuyor",

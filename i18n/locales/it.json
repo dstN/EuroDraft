@@ -40,6 +40,7 @@
     "reroll_year_hint": "Tieni {nation}, cambia anno",
     "reroll_nation_hint": "Tieni {year}, cambia nazione",
     "no_rerolls": "Nessun rilancio rimasto",
+    "challenge_mode": "Modalità Sfida",
     "spin": "Gira",
     "pick_player": "Scegli un giocatore",
     "player_greyed": "Non si adatta a nessuno slot libero",
