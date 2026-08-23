@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lighthouse Performance score raised from 53 to 85 (Accessibility/Best Practices/SEO already at 100): scoped the ~2.8MB player database load out of `app.vue` into a route middleware (`ensure-database`) applied only to `/draft/**` and `/tournament/**`, cutting homepage FCP/LCP from ~17s to ~3s under throttled network simulation
 - Static assets (CSS/JS) are now actually served gzip/brotli-compressed. `node-server` was transferring a ~270KB CSS chunk uncompressed despite the client requesting it, costing ~6s under Lighthouse's throttled simulation -- worked around a Nitro bug where the node-server preset's static-asset manifest is frozen before its own build-time compression runs, by building twice (`scripts/build.mjs`) so the second build's manifest sees the first build's compressed output
 - Added runtime response compression (`server/middleware/compression.ts`) for SSR pages and API/JSON responses, which aren't covered by the static-asset manifest at all
+- Pre-warm the player database cache at server startup (`server/plugins/warm-player-db.ts`) instead of paying the ~250ms read+parse cost inline on whichever request happens to be first after a (re)start
 
 ---
 
