@@ -35,16 +35,16 @@ This document tracks all planned features by milestone.
 
 ---
 
-## Milestone 3 — UX Polish 🚧 In Progress
+## Milestone 3 — UX Polish ✅ Complete
 
 - [x] Formation picker shows mini-pitch with player dots (#3)
 - [x] Squad list auto-scrolls to top after pick (#2)
 - [x] Pitch height matches squad panel height (#1)
 - [x] Complete i18n translations for all 10 locales (#4)
 - [x] Player stat cards with PAC/SHO/PAS/DRI/DEF/PHY breakdown (#11)
-- [ ] Animation: player disc flies from list to pitch slot on draft (#12)
-- [ ] Sound effects (optional, with toggle) (#13)
-- [ ] Mobile: swipe between squad list and pitch panels (#14)
+- [x] Animation: player disc flies from list to pitch slot on draft (#12)
+- [x] Sound effects (optional, with toggle) (#13)
+- [x] Mobile: swipe between squad list and pitch panels (#14)
 
 ---
 
