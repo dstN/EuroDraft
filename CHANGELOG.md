@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added runtime response compression (`server/middleware/compression.ts`) for SSR pages and API/JSON responses, which aren't covered by the static-asset manifest at all
 - Pre-warm the player database cache at server startup (`server/plugins/warm-player-db.ts`) instead of paying the ~250ms read+parse cost inline on whichever request happens to be first after a (re)start
 
+### Added
+- Branded error page (`app/error.vue`) for 404/400/429/500/503, matching the app's design system with football-themed copy per status code, replacing Nuxt's generic default
+
+### Fixed
+- Every error page (any 404, any thrown error) was served as a completely blank page to any real visitor whose browser requests compression -- effectively everyone. The response compression middleware claimed `Content-Encoding: br` while shipping zero actual bytes, because Nitro's internal error-render request (a re-fetch of `/__nuxt_error?...`) passed through compression under a *different* status code than the outer response ultimately used
+
 ---
 
 ## [0.5.0] - 2026-08-23
