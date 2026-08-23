@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - 2026-08-23
+
+### Changed
+- Split the four largest files in the codebase, none of which had a documented reason to be one file each -- verified each with real browser automation (a full draft-to-tournament run, the share modal's canvas render and API submission, all four legal tabs) rather than just typecheck/lint:
+  - `tournament/index.vue`: 1229 → ~230 lines. Extracted `useTournamentResults.ts` (outcome/rating/sort logic) and five components (`TournamentGroupTable`, `TournamentMatchList`, `TournamentOutcomeBanner`, `TournamentSquadOverview`, `TournamentPlayerStatsTable`); `TournamentMatchList` also removes the near-duplicate markup the group and knockout match sections used to carry separately
+  - `TournamentShareModal.vue`: 958 → 278 lines. Extracted `useShareCardData.ts`, `useShareCardCanvas.ts` (the ~450-line Canvas drawing engine), `useShareCardText.ts`, and `useShareSubmission.ts`
+  - `legal/index.vue`: 619 → 120 lines. Extracted one component per tab (`LegalImprintTab`, `LegalPrivacyTab`, `LegalTermsTab`, `LegalContactTab`), each only ever rendered one at a time
+  - `draft/index.vue`: 777 → 676 lines. Extracted `DraftSquadList.vue`; the rest of the page's interaction logic (roulette animation, mobile-tab/swipe state, the flying-disc draft confirmation) stayed put since it's genuinely interdependent, not just co-located
+
+### Fixed
+- Dropped a dead `ref="squadScrollRef"` in `draft/index.vue` that was never wired to an actual `ref()` declaration anywhere in the script
+
+---
+
 ## [0.7.0] - 2026-08-23
 
 ### Removed
