@@ -3,7 +3,6 @@
 > **Draft your all-time European Dream XI.** Pick legends from historical continental tournament squads since 1960, build your dream team in a tactical formation, and simulate a full tournament.
 
 [![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 ---
 
@@ -151,9 +150,3 @@ See [ROADMAP.md](./ROADMAP.md) for planned features and milestones.
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, commit conventions, and PR workflow.
-
----
-
-## License
-
-MIT © 2025 EuroDraft Contributors
