@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>EuroDraft — Build Your Legacy</title>
+<meta name="description" content="Draft your all-time European Dream XI from historical continental tournament squads since 1960. Coming soon.">
+<meta name="theme-color" content="#060b10">
+<style>
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: #060b10;
+    color: #f1f5f9;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Atmospheric stadium light glows, matching the app's loading screen */
+  .glow {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 999px;
+    filter: blur(110px);
+  }
+
+  .glow-green {
+    top: 22%;
+    left: 50%;
+    width: 640px;
+    height: 400px;
+    transform: translate(-50%, -50%);
+    background: rgba(16, 185, 129, 0.18);
+    animation: pulse 5s ease-in-out infinite;
+  }
+
+  .glow-gold {
+    top: 32%;
+    left: 50%;
+    width: 420px;
+    height: 260px;
+    transform: translate(-50%, -50%);
+    background: rgba(245, 158, 11, 0.14);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  /* Dual-card logo mark, breathing glow, matching AppLogo's "loader" variant */
+  .logo {
+    width: 140px;
+    height: 140px;
+    animation: breathe 2.4s ease-in-out infinite alternate;
+  }
+
+  @keyframes breathe {
+    0% {
+      filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.25)) drop-shadow(0 0 24px rgba(251, 191, 36, 0.15));
+      transform: scale(0.98);
+    }
+    100% {
+      filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.5)) drop-shadow(0 0 40px rgba(251, 191, 36, 0.35));
+      transform: scale(1.02);
+    }
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: center;
+    font-size: clamp(2.25rem, 6vw, 3.25rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .wordmark .euro { color: #ffffff; }
+  .wordmark .draft { color: #fbbf24; }
+
+  .slogan {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #34d399;
+    margin-top: 0.5rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.08);
+    color: #6ee7b7;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #34d399;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  p.message {
+    max-width: 26rem;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Stadium progress bar sweep, matching AppLoadingScreen */
+  .bar-track {
+    width: 15rem;
+    height: 0.375rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  .bar-fill {
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #34d399, #fcd34d, #34d399);
+    animation: sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(60%); }
+    100% { transform: translateX(250%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo, .glow-green, .badge-dot, .bar-fill { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="glow glow-green" aria-hidden="true"></div>
+  <div class="glow glow-gold" aria-hidden="true"></div>
+
+  <main>
+    <svg class="logo" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EuroDraft logo">
+      <defs>
+        <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10b981" />
+          <stop offset="50%" stop-color="#059669" />
+          <stop offset="100%" stop-color="#047857" />
+        </linearGradient>
+        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fbbf24" />
+          <stop offset="50%" stop-color="#f59e0b" />
+          <stop offset="100%" stop-color="#d97706" />
+        </linearGradient>
+        <filter id="cardShadow" x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow dx="3" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+        </filter>
+      </defs>
+      <g transform="translate(120, 120)">
+        <g transform="rotate(-12) translate(-22, -12)" filter="url(#cardShadow)">
+          <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#gold)" />
+          <line x1="-30" y1="-38" x2="30" y2="-38" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+          <line x1="-30" y1="-22" x2="8" y2="-22" stroke="#060b10" stroke-width="3" stroke-linecap="round" opacity="0.35" />
+        </g>
+        <g transform="rotate(8) translate(16, 8)" filter="url(#cardShadow)">
+          <rect x="-44" y="-62" width="88" height="124" rx="10" fill="url(#green)" />
+          <polygon points="0,-25 7,-10 24,-7 12,4 15,20 0,12 -15,20 -12,4 -24,-7 -7,-10" fill="#060b10" transform="translate(0, 4) scale(1.15)" />
+        </g>
+      </g>
+    </svg>
+
+    <div>
+      <div class="wordmark"><span class="euro">Euro</span><span class="draft">Draft</span></div>
+      <div class="slogan">Build Your Legacy</div>
+    </div>
+
+    <span class="badge"><span class="badge-dot" aria-hidden="true"></span>Coming Soon</span>
+
+    <p class="message">
+      Draft your all-time European Dream XI from historical continental tournament
+      squads spanning 1960&ndash;2024. We're putting the finishing touches on it &mdash;
+      check back soon.
+    </p>
+
+    <div class="bar-track" role="status" aria-label="Loading">
+      <div class="bar-fill"></div>
+    </div>
+  </main>
+</body>
+</html>
