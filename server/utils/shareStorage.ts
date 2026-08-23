@@ -1,5 +1,5 @@
 // Shared in-memory and persistence storage for tournament share links
-interface SharedRunRecord {
+export interface SharedRunRecord {
   id: string
   createdAt: string
   teamName: string

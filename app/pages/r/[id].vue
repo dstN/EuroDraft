@@ -20,41 +20,70 @@ interface SharedRun {
   matches: MatchResult[]
 }
 
-const sharedRun = ref<SharedRun | null>(null)
-const isLoading = ref(true)
+// SSR-fetched so social-media crawlers (which never run client JS or see
+// localStorage) get the correct per-share meta tags in the initial HTML
+const { data: shareRes } = await useFetch<{ success: boolean, record: SharedRun }>(`/api/share/${shareId}`)
+
+const sharedRun = ref<SharedRun | null>(shareRes.value?.record ?? null)
+const isLoading = ref(!sharedRun.value)
 const loadError = ref(false)
 
-onMounted(async () => {
-  try {
-    const res = await $fetch<{ success: boolean, record: SharedRun }>(`/api/share/${shareId}`)
-    if (res?.record) {
-      sharedRun.value = res.record
-    }
-  } catch {
-    // Check localStorage fallback
-    if (typeof window !== 'undefined') {
-      const local = localStorage.getItem(`eurodraft_shared_${shareId}`)
-      if (local) {
+onMounted(() => {
+  if (sharedRun.value) {
+    isLoading.value = false
+    return
+  }
+  // Server's in-memory share store may have been reset since this link was created —
+  // fall back to the sharer's own local copy (only helps the original browser, not crawlers)
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem(`eurodraft_shared_${shareId}`)
+    if (local) {
+      try {
         sharedRun.value = JSON.parse(local)
-      } else {
+      } catch {
         loadError.value = true
       }
+    } else {
+      loadError.value = true
     }
-  } finally {
-    isLoading.value = false
   }
+  isLoading.value = false
 })
 
 // Outcome Title
+const OUTCOME_TITLES: Record<string, string> = {
+  winner: '🏆 Continental Champions',
+  runner_up: '🥈 Tournament Runner-Up (Finalist)',
+  semi_final: '🥉 Semi-Finalist (Top 4)',
+  quarter_final: 'Quarter-Finalist (Top 8)'
+}
 const outcomeTitle = computed(() => {
   if (!sharedRun.value) return ''
-  switch (sharedRun.value.outcome) {
-    case 'winner': return '🏆 Continental Champions'
-    case 'runner_up': return '🥈 Tournament Runner-Up (Finalist)'
-    case 'semi_final': return '🥉 Semi-Finalist (Top 4)'
-    case 'quarter_final': return 'Quarter-Finalist (Top 8)'
-    default: return 'Group Stage Exit'
-  }
+  return OUTCOME_TITLES[sharedRun.value.outcome] ?? 'Group Stage Exit'
+})
+
+// Dynamic per-share Open Graph / Twitter card meta
+const requestUrl = useRequestURL()
+useSeoMeta({
+  title: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')} | EuroDraft` : 'Shared Tournament Run | EuroDraft',
+  description: () => sharedRun.value
+    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
+    : 'View a shared EuroDraft tournament run.',
+  ogTitle: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}` : 'Shared Tournament Run | EuroDraft',
+  ogDescription: () => sharedRun.value
+    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
+    : 'View a shared EuroDraft tournament run.',
+  ogImage: `${requestUrl.origin}/og/${shareId}`,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  ogType: 'website',
+  ogUrl: requestUrl.href,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}` : 'Shared Tournament Run | EuroDraft',
+  twitterDescription: () => sharedRun.value
+    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
+    : 'View a shared EuroDraft tournament run.',
+  twitterImage: `${requestUrl.origin}/og/${shareId}`
 })
 </script>
 
