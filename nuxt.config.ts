@@ -32,7 +32,18 @@ export default defineNuxtConfig({
     // artifact needs no node_modules on the server. See DEPLOYMENT.md.
     externals: {
       inline: ['mysql2']
-    }
+    },
+    // On the node-server preset, the static-asset manifest embedded in the
+    // server bundle is frozen while `.output/public` is still empty --
+    // compression that runs later in the same build (including this option)
+    // produces real .br/.gz files, but the manifest never learns about them,
+    // so they're never actually served (verified: no Content-Encoding header
+    // even with this enabled). The `build` npm script works around it by
+    // building twice: the second build's manifest scan sees the .br/.gz
+    // files the first build's `compressPublicAssets` pass already left on
+    // disk, since they're already present in `.output/public` before that
+    // second build's rollup step ever starts.
+    compressPublicAssets: { gzip: true, brotli: true }
   },
 
   eslint: {
