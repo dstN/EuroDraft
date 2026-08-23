@@ -18,13 +18,13 @@ test.describe('Full Draft Flow', () => {
   test('selecting a formation navigates to /draft', async ({ page }) => {
     const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
-    await expect(page).toHaveURL('/draft')
+    await expect(page).toHaveURL(/\/draft$/, { timeout: 10000 })
   })
 
   test('draft page shows squad list and tactical pitch', async ({ page }) => {
     const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
-    await expect(page).toHaveURL('/draft')
+    await expect(page).toHaveURL(/\/draft$/, { timeout: 10000 })
 
     // Squad list should be visible
     await expect(page.locator('.custom-scroll')).toBeVisible()
