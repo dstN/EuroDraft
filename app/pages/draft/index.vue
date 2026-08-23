@@ -4,7 +4,6 @@ import FormationPitch from '~/components/draft/FormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 import RouletteWheelReel from '~/components/draft/RouletteWheelReel.vue'
 import PlayerStatCardModal from '~/components/draft/PlayerStatCardModal.vue'
-
 import AppLogo from '~/components/shared/AppLogo.vue'
 
 definePageMeta({ layout: 'default' })
@@ -12,6 +11,8 @@ definePageMeta({ layout: 'default' })
 const draft = useDraftStore()
 const roulette = useRouletteStore()
 const appLoading = useAppLoading()
+const audio = useAudioStore()
+const { t, te } = useI18n()
 
 // Player stat inspection modal state
 const inspectedPlayer = ref<Player | null>(null)
@@ -20,6 +21,7 @@ const isStatModalOpen = ref(false)
 function inspectPlayer(player: Player) {
   inspectedPlayer.value = player
   isStatModalOpen.value = true
+  audio.playTick()
 }
 
 function onPlayerDraftFromModal(player: Player) {
@@ -29,12 +31,58 @@ function onPlayerDraftFromModal(player: Player) {
 // Mobile view tab state: 'squad' | 'pitch'
 const mobileTab = ref<'squad' | 'pitch'>('squad')
 
+// Mobile touch swipe gestures
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+
+function onTouchStart(e: TouchEvent) {
+  if (e.touches.length === 1 && e.touches[0]) {
+    touchStartX.value = e.touches[0].clientX
+    touchStartY.value = e.touches[0].clientY
+  }
+}
+
+function onTouchEnd(e: TouchEvent) {
+  if (e.changedTouches.length === 1 && e.changedTouches[0]) {
+    const endX = e.changedTouches[0].clientX
+    const endY = e.changedTouches[0].clientY
+    const dx = endX - touchStartX.value
+    const dy = endY - touchStartY.value
+
+    // Check if horizontal swipe is significant and predominantly horizontal
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0 && mobileTab.value === 'squad') {
+        // Swipe left: squad -> pitch
+        mobileTab.value = 'pitch'
+        audio.playTick()
+      } else if (dx > 0 && mobileTab.value === 'pitch') {
+        // Swipe right: pitch -> squad
+        mobileTab.value = 'squad'
+        audio.playTick()
+      }
+    }
+  }
+}
+
 // Wheel spinning state for reel animation
 const isSpinningReel = ref(false)
 
 // In-card loading transition state (logo animation confined to squad card only)
 const isCardTransitioning = ref(false)
 const currentSpinType = ref<'all' | 'nation' | 'year'>('all')
+
+// Flying player disc animation state
+interface FlyingToken {
+  player: Player
+  x: number
+  y: number
+  scale: number
+  rotation: number
+  opacity: number
+}
+
+const flyingToken = ref<FlyingToken | null>(null)
+const pulsingSlotId = ref<string | null>(null)
 
 // Handle browser/phone physical back button or swipe gesture
 function handlePopState(_event: PopStateEvent) {
@@ -72,6 +120,7 @@ function spinWithAnimation() {
   currentSpinType.value = 'all'
   isCardTransitioning.value = true
   isSpinningReel.value = true
+  audio.playSpinTick()
   roulette.spin()
 
   const duration = getRandomAnimationDuration(1050)
@@ -86,6 +135,7 @@ function rerollYearWithAnimation() {
   currentSpinType.value = 'year'
   isCardTransitioning.value = true
   isSpinningReel.value = true
+  audio.playReroll()
   roulette.rerollYear()
 
   const duration = getRandomAnimationDuration(1050)
@@ -100,6 +150,7 @@ function rerollNationWithAnimation() {
   currentSpinType.value = 'nation'
   isCardTransitioning.value = true
   isSpinningReel.value = true
+  audio.playReroll()
   roulette.rerollNation()
 
   const duration = getRandomAnimationDuration(1050)
@@ -127,6 +178,7 @@ const highlightedSlotIds = computed(() => {
 // When user clicks a player in the squad list
 function onPlayerClick(player: Player) {
   if (!draft.canDraftToAnySlot(player)) return
+  audio.playTick()
 
   // If user had clicked a slot on pitch first, and this player is compatible, assign immediately!
   if (selectedSlotId.value) {
@@ -156,6 +208,7 @@ function onPlayerClick(player: Player) {
 // When user clicks a slot on the Tactical Pitch
 function onPitchSlotClick(slot: DraftSlot) {
   if (slot.player) return
+  audio.playTick()
 
   // If a player was already clicked, and this slot matches, confirm!
   if (selectedPlayer.value) {
@@ -171,31 +224,94 @@ function onPitchSlotClick(slot: DraftSlot) {
 }
 
 function confirmDraft(player: Player, slot: DraftSlot) {
-  draft.draftPlayer(slot.id, player)
-  selectedPlayer.value = null
-  selectedSlotId.value = null
-  hoveredPlayer.value = null
+  audio.playDraftChime()
 
-  if (draft.isComplete) {
-    // 11/11 players drafted: trigger full tournament loading transition and navigate immediately
-    appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
-    navigateTo('/tournament')
-    return
+  let sourceEl: HTMLElement | null = null
+  let targetEl: HTMLElement | null = null
+
+  if (typeof document !== 'undefined') {
+    sourceEl = document.getElementById(`player-item-${player.id}`)
+    targetEl = document.getElementById(`pitch-slot-${slot.id}`)
   }
 
-  // Revert the history state if we pushed one for mobile pitch
-  if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
-    window.history.back()
+  // If both elements are rendered and visible, animate flying disc token!
+  if (sourceEl && targetEl) {
+    const sRect = sourceEl.getBoundingClientRect()
+    const tRect = targetEl.getBoundingClientRect()
+
+    flyingToken.value = {
+      player,
+      x: sRect.left + sRect.width / 2,
+      y: sRect.top + sRect.height / 2,
+      scale: 1.2,
+      rotation: -8,
+      opacity: 1
+    }
+
+    // Trigger transition to target slot coordinates
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (flyingToken.value) {
+          flyingToken.value.x = tRect.left + tRect.width / 2
+          flyingToken.value.y = tRect.top + tRect.height / 2
+          flyingToken.value.scale = 1.0
+          flyingToken.value.rotation = 0
+        }
+      })
+    })
+
+    setTimeout(() => {
+      flyingToken.value = null
+      pulsingSlotId.value = slot.id
+      draft.draftPlayer(slot.id, player)
+      selectedPlayer.value = null
+      selectedSlotId.value = null
+      hoveredPlayer.value = null
+
+      setTimeout(() => {
+        if (pulsingSlotId.value === slot.id) pulsingSlotId.value = null
+      }, 700)
+
+      if (draft.isComplete) {
+        appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
+        navigateTo('/tournament')
+        return
+      }
+
+      if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
+        window.history.back()
+      }
+      mobileTab.value = 'squad'
+      spinWithAnimation()
+    }, 420)
+  } else {
+    // Immediate assignment with touchdown pulse
+    pulsingSlotId.value = slot.id
+    draft.draftPlayer(slot.id, player)
+    selectedPlayer.value = null
+    selectedSlotId.value = null
+    hoveredPlayer.value = null
+
+    setTimeout(() => {
+      if (pulsingSlotId.value === slot.id) pulsingSlotId.value = null
+    }, 700)
+
+    if (draft.isComplete) {
+      appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
+      navigateTo('/tournament')
+      return
+    }
+
+    if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
+      window.history.back()
+    }
+    mobileTab.value = 'squad'
+    spinWithAnimation()
   }
-
-  // Switch back to squad view on mobile
-  mobileTab.value = 'squad'
-
-  // Trigger in-card spin animation with logo loader for next squad
-  spinWithAnimation()
 }
 
 function goBackToSquad() {
+  audio.playTick()
   mobileTab.value = 'squad'
   selectedPlayer.value = null
   selectedSlotId.value = null
@@ -219,14 +335,14 @@ function positionColor(pos: string): string {
 function isPlayerEligibleForSelectedSlot(player: Player): boolean {
   if (selectedSlotId.value) {
     const slot = draft.slots.find(s => s.id === selectedSlotId.value)
-    if (!slot) return false
-    return player.positions.includes(slot.position)
+    if (slot) return player.positions.includes(slot.position)
   }
   return draft.canDraftToAnySlot(player)
 }
 
 const currentCountryDisplayName = computed(() => {
-  return roulette.currentSquad[0]?.countryName ?? getCountryName(roulette.currentCountry || '') ?? ''
+  const code = roulette.currentCountry?.toLowerCase() ?? 'de'
+  return te(`countries.${code}`) ? t(`countries.${code}`) : getCountryName(code)
 })
 
 const formationShortName = computed(() => {
@@ -235,7 +351,11 @@ const formationShortName = computed(() => {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-3 sm:px-6 space-y-4 sm:space-y-6">
+  <div
+    class="max-w-5xl mx-auto px-3 sm:px-6 space-y-4 sm:space-y-6"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+  >
     <!-- Top HUD Bar: Team Identity & Progress (Clean surface-card) -->
     <div class="surface-card p-3 sm:p-4">
       <div class="flex items-center justify-between gap-3">
@@ -397,6 +517,7 @@ const formationShortName = computed(() => {
               </div>
 
               <div
+                :id="`player-item-${entry.player.id}`"
                 class="w-full flex items-center gap-1.5 rounded-xl p-1 transition-all duration-150 border select-none"
                 :class="[
                   selectedPlayer?.id === entry.player.id
@@ -530,6 +651,7 @@ const formationShortName = computed(() => {
               :slots="draft.slots"
               :active-slot-id="selectedSlotId"
               :highlighted-slot-ids="highlightedSlotIds"
+              :pulse-slot-id="pulsingSlotId"
               :interactive="true"
               class="h-full"
               @select-slot="onPitchSlotClick"
@@ -547,6 +669,28 @@ const formationShortName = computed(() => {
       :can-draft="inspectedPlayer ? isPlayerEligibleForSelectedSlot(inspectedPlayer) : false"
       @draft="onPlayerDraftFromModal"
     />
+
+    <!-- Flying Player Disc Token Animation (Physics trajectory from list to pitch slot) -->
+    <Teleport to="body">
+      <div
+        v-if="flyingToken"
+        class="fixed pointer-events-none z-50 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 select-none"
+        :style="{
+          left: `${flyingToken.x}px`,
+          top: `${flyingToken.y}px`,
+          transform: `translate(-50%, -50%) scale(${flyingToken.scale}) rotate(${flyingToken.rotation}deg)`,
+          opacity: flyingToken.opacity
+        }"
+      >
+        <div class="size-11 sm:size-12 rounded-full bg-zinc-950/95 border-2 border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.9)] flex flex-col items-center justify-center">
+          <span class="font-mono font-black text-xs sm:text-sm text-emerald-300">{{ flyingToken.player.stats.overall }}</span>
+          <span class="font-mono text-[8px] sm:text-[9px] text-zinc-300 leading-none">{{ flyingToken.player.primaryPosition }}</span>
+        </div>
+        <div class="mt-1 px-2 py-0.5 rounded bg-zinc-900/95 border border-white/20 text-[9px] font-bold text-white font-mono shadow-xl truncate max-w-[85px] text-center">
+          {{ flyingToken.player.name }}
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 

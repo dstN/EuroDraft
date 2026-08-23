@@ -51,7 +51,9 @@ function getCoords(pos: string, idx: number, allSlots: string[]): { x: number, y
     } else if (hasCDM && !hasCAM) {
       return { x: n === 1 ? 50 : (posIdx === 0 ? 33 : 67), y: 43 }
     } else if (!hasCDM && hasCAM) {
-      return { x: n === 1 ? 36 : (posIdx === 0 ? 35 : 65), y: 50 }
+      if (n === 1) return { x: 36, y: 50 }
+      if (n === 3) return { x: posIdx === 0 ? 22 : posIdx === 1 ? 50 : 78, y: 50 }
+      return { x: posIdx === 0 ? 35 : 65, y: 50 }
     } else {
       if (n === 1) return { x: 50, y: 48 }
       if (n === 2) return { x: posIdx === 0 ? 35 : 65, y: 48 }

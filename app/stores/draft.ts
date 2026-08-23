@@ -38,6 +38,8 @@ export const useDraftStore = defineStore('draft', () => {
       position: pos,
       player: null
     }))
+    draftedPlayerKeys.value = new Set()
+    rerollsRemaining.value = 3
     draftPhase.value = 'drafting'
   }
 

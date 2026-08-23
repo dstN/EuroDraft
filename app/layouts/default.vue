@@ -4,6 +4,7 @@ import AppLogo from '~/components/shared/AppLogo.vue'
 const { t, locale, locales, setLocale } = useI18n()
 const colorMode = useColorMode()
 const draft = useDraftStore()
+const audio = useAudioStore()
 
 const navLinks = computed(() => [
   { label: t('nav.draft'), to: '/draft/formation' },
@@ -133,6 +134,17 @@ const currentLocaleName = computed(() => {
               <span class="sm:hidden uppercase">{{ locale }}</span>
             </UButton>
           </UDropdownMenu>
+
+          <!-- Audio Sound Effects Toggle -->
+          <UButton
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            :icon="audio.isMuted ? 'i-lucide-volume-x' : 'i-lucide-volume-2'"
+            :aria-label="audio.isMuted ? 'Unmute sound effects' : 'Mute sound effects'"
+            class="rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
+            @click="audio.toggleMute()"
+          />
 
           <!-- Theme toggle -->
           <UButton

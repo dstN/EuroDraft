@@ -6,6 +6,7 @@ const props = defineProps<{
   activeSlotId?: string | null
   highlightedSlotIds?: string[]
   highlightedPositions?: string[]
+  pulseSlotId?: string | null
   interactive?: boolean
 }>()
 
@@ -155,10 +156,17 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
     <!-- Slot items on pitch -->
     <div
       v-for="(slot, i) in slots"
+      :id="`pitch-slot-${slot.id}`"
       :key="slot.id"
       class="absolute transition-all duration-300 z-10"
       :style="getSlotStyle(slot, i, slots.length)"
     >
+      <!-- Touchdown Arrival Pulse Ripple -->
+      <div
+        v-if="pulseSlotId === slot.id"
+        class="absolute -inset-3 rounded-full bg-emerald-400/40 dark:bg-emerald-400/50 animate-ping pointer-events-none z-20"
+      />
+
       <button
         type="button"
         class="flex flex-col items-center group cursor-pointer focus:outline-none"

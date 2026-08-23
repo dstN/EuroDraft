@@ -6,6 +6,8 @@ import CountryFlag from '~/components/shared/CountryFlag.vue'
 
 definePageMeta({ layout: 'default' })
 const draft = useDraftStore()
+const roulette = useRouletteStore()
+const audio = useAudioStore()
 
 // Pick 3 formations with SSR-safe hydration
 const formations = useState<Formation[]>('draft-formations', () => pickRandomFormations(3))
@@ -105,8 +107,10 @@ function getCountryLabel(code: string): string {
 }
 
 function selectFormation(f: Formation) {
+  audio.playTick()
   draft.teamName = teamNameInput.value.trim() || 'Dream XI'
   draft.teamEmblem = selectedEmblem.value
+  roulette.reset()
   draft.selectFormation(f)
 }
 </script>
