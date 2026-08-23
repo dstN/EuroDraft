@@ -153,12 +153,24 @@ useSeoMeta({
           </p>
         </div>
 
-        <NuxtLink
-          to="/draft/formation"
-          class="rounded-full px-6 py-3 text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all shrink-0 active:scale-[0.99]"
-        >
-          <span>Draft Your Own Dream XI →</span>
-        </NuxtLink>
+        <div class="flex items-center gap-2 shrink-0">
+          <NuxtLink
+            :to="`/compare?a=${shareId}`"
+            class="rounded-full px-5 py-3 text-sm font-black bg-zinc-800 hover:bg-zinc-700 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99] border border-white/10"
+          >
+            <UIcon
+              name="i-lucide-swords"
+              class="size-4"
+            />
+            <span>Compare</span>
+          </NuxtLink>
+          <NuxtLink
+            to="/draft/formation"
+            class="rounded-full px-6 py-3 text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+          >
+            <span>Draft Your Own Dream XI →</span>
+          </NuxtLink>
+        </div>
       </div>
 
       <!-- Outcome Banner -->

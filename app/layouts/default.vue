@@ -9,6 +9,7 @@ const audio = useAudioStore()
 const navLinks = computed(() => [
   { label: t('nav.draft'), to: '/draft/formation' },
   { label: t('nav.tournament'), to: '/tournament' },
+  { label: t('nav.compare'), to: '/compare' },
   { label: t('nav.legal'), to: '/legal' }
 ])
 
@@ -22,7 +23,7 @@ const isDark = computed({
 })
 
 const LOCALE_FLAG_MAP: Record<string, string> = {
-  en: 'gb',
+  en: 'gb-eng',
   de: 'de',
   fr: 'fr',
   es: 'es',
@@ -54,7 +55,7 @@ const languageItems = computed(() => [
   }))
 ])
 
-const currentLocaleFlag = computed(() => LOCALE_FLAG_MAP[locale.value] ?? 'gb')
+const currentLocaleFlag = computed(() => LOCALE_FLAG_MAP[locale.value] ?? 'gb-eng')
 const currentLocaleName = computed(() => {
   const found = (locales.value as Array<{ code: string, name: string }>).find(l => l.code === locale.value)
   return found?.code.toUpperCase() ?? 'EN'
