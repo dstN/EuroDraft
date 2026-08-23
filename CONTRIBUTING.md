@@ -115,20 +115,41 @@ This scrapes Wikipedia squad tables for all 17 Euros (1960–2024). Results are 
 
 ---
 
-## Adding Player Positions to the Registry
+## Player Position Correction Workflow
 
-Edit `scripts/player-positions.ts`:
+EuroDraft maintains an authentic registry of historical positions for players across all 17 European tournaments (1960–2024). Contributors can propose corrections either via GitHub Issues or via a direct Pull Request.
 
-```ts
-'playerName': {
-  primary: 'CB',
-  positions: ['CB', 'RB'],
-  base: 'Defender',
-  baseRating: 91
-}
-```
+### Option A: Submitting via GitHub Issue Form
+1. Open [GitHub Issues](https://github.com/dstN/EuroDraft/issues/new/choose) and select **⚽ Player Position / Rating Correction**.
+2. Provide the player's name, tournament edition, current vs. proposed primary/secondary positions, and a reputable source link (e.g. Transfermarkt, match lineup, or historical archive).
 
-Then run `npm run build:db` to rebuild the database.
+### Option B: Submitting a Pull Request
+1. Branch from `development`:
+   ```bash
+   git checkout development
+   git pull
+   git checkout -b data/correct-position-[player-name]
+   ```
+2. Edit `scripts/player-positions.ts`:
+   ```ts
+   'yuri zhirkov': {
+     primary: 'LM',
+     positions: ['LM', 'LB', 'CM'],
+     base: 'Midfielder'
+   },
+   ```
+3. Rebuild the database:
+   ```bash
+   npm run build:db
+   ```
+4. Run tests to ensure validation passes:
+   ```bash
+   npm run test
+   ```
+5. Commit and open a Pull Request:
+   ```bash
+   git commit -m "feat(data): correct position for Yuri Zhirkov (closes #10)"
+   ```
 
 ---
 
@@ -136,7 +157,8 @@ Then run `npm run build:db` to rebuild the database.
 
 - [ ] Branch created from `development`
 - [ ] Commit message follows Conventional Commits with `closes #N`
-- [ ] Unit tests added/updated if applicable
+- [ ] Database rebuilt (`npm run build:db`) if `scripts/player-positions.ts` changed
+- [ ] Unit tests pass (`npm run test`)
 - [ ] `npm run lint` passes
 - [ ] `npm run typecheck` passes
 - [ ] Description in PR references the GitHub issue
@@ -145,10 +167,7 @@ Then run `npm run build:db` to rebuild the database.
 
 ## Issue Reporting
 
-Use the issue templates in `.github/ISSUE_TEMPLATE/`.
-
-For player position corrections, include:
-- Player name
-- Country + Year
-- Current incorrect position
-- Correct position (with reputable source / match report link)
+Use the templates in `.github/ISSUE_TEMPLATE/`:
+- **Bug Report**: Report unexpected UI errors, simulation bugs, or styling issues.
+- **Feature Request**: Suggest new mechanics, game modes, or UX enhancements.
+- **Player Position / Rating Correction**: Report incorrect tactical slots, missing secondary positions, or rating anomalies.

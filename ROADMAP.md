@@ -24,14 +24,14 @@ This document tracks all planned features by milestone.
 
 ---
 
-## Milestone 2 — Data Quality 🚧 In Progress
+## Milestone 2 — Data Quality ✅ Complete
 
 - [x] Historical player position registry (350+ legends)
 - [x] Calibrated star ratings (Zidane 94, Blanc 90, etc.)
 - [x] LM/RM positions playable by wide midfielders + wingers
 - [x] **Position enrichment pipeline for authentic player roles** (#8)
 - [x] **Full DB re-scrape with enriched positions** (#9)
-- [ ] Player position correction workflow (issue template + PR flow) (#10)
+- [x] Player position correction workflow (issue template + PR flow) (#10)
 
 ---
 
@@ -41,7 +41,7 @@ This document tracks all planned features by milestone.
 - [x] Squad list auto-scrolls to top after pick (#2)
 - [x] Pitch height matches squad panel height (#1)
 - [x] Complete i18n translations for all 10 locales (#4)
-- [ ] Player stat cards with PAC/SHO/PAS/DRI/DEF/PHY breakdown (#11)
+- [x] Player stat cards with PAC/SHO/PAS/DRI/DEF/PHY breakdown (#11)
 - [ ] Animation: player disc flies from list to pitch slot on draft (#12)
 - [ ] Sound effects (optional, with toggle) (#13)
 - [ ] Mobile: swipe between squad list and pitch panels (#14)

@@ -4,12 +4,22 @@ import CountryFlag from '~/components/shared/CountryFlag.vue'
 import FormationPitch from '~/components/draft/FormationPitch.vue'
 import LiveMatchBroadcast from '~/components/tournament/LiveMatchBroadcast.vue'
 import TournamentShareModal from '~/components/tournament/TournamentShareModal.vue'
+import PlayerStatCardModal from '~/components/draft/PlayerStatCardModal.vue'
 
 definePageMeta({ layout: 'default' })
 
 const tournament = useTournamentStore()
 const draft = useDraftStore()
 const appLoading = useAppLoading()
+
+// Player stat inspection modal state
+const inspectedPlayer = ref<Player | null>(null)
+const isStatModalOpen = ref(false)
+
+function inspectPlayer(player: Player) {
+  inspectedPlayer.value = player
+  isStatModalOpen.value = true
+}
 
 // Group table collapse state: closed initially so user decides when to open
 const isGroupTableOpen = ref(false)
@@ -823,6 +833,7 @@ function restartDraft() {
               :slots="draft.slots"
               :interactive="false"
               class="h-full"
+              @inspect-player="inspectPlayer"
             />
           </div>
         </div>
@@ -891,9 +902,13 @@ function restartDraft() {
         </div>
 
         <!-- 4 Top Performer Spotlight Cards -->
+        <!-- 4 Top Performer Spotlight Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- MVP / Most G+A -->
-          <div class="surface-card p-4 space-y-2">
+          <div
+            class="surface-card p-4 space-y-2 cursor-pointer hover:border-amber-500/40 transition-all"
+            @click="tournament.runStats.mvp ? inspectPlayer(tournament.runStats.mvp.player) : null"
+          >
             <div class="flex items-center justify-between">
               <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Tournament MVP</span>
               <UIcon
@@ -923,7 +938,10 @@ function restartDraft() {
           </div>
 
           <!-- Top Scorer -->
-          <div class="surface-card p-4 space-y-2">
+          <div
+            class="surface-card p-4 space-y-2 cursor-pointer hover:border-amber-500/40 transition-all"
+            @click="tournament.runStats.topScorer ? inspectPlayer(tournament.runStats.topScorer.player) : null"
+          >
             <div class="flex items-center justify-between">
               <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Golden Boot</span>
               <UIcon
@@ -953,7 +971,10 @@ function restartDraft() {
           </div>
 
           <!-- Top Playmaker -->
-          <div class="surface-card p-4 space-y-2">
+          <div
+            class="surface-card p-4 space-y-2 cursor-pointer hover:border-emerald-500/40 transition-all"
+            @click="tournament.runStats.topAssister ? inspectPlayer(tournament.runStats.topAssister.player) : null"
+          >
             <div class="flex items-center justify-between">
               <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Top Playmaker</span>
               <UIcon
@@ -983,7 +1004,10 @@ function restartDraft() {
           </div>
 
           <!-- Efficiency -->
-          <div class="surface-card p-4 space-y-2">
+          <div
+            class="surface-card p-4 space-y-2 cursor-pointer hover:border-sky-500/40 transition-all"
+            @click="tournament.runStats.bestGAPer90 ? inspectPlayer(tournament.runStats.bestGAPer90.player) : null"
+          >
             <div class="flex items-center justify-between">
               <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Efficiency</span>
               <UIcon
@@ -1019,7 +1043,7 @@ function restartDraft() {
             <h3 class="text-xs sm:text-sm font-bold font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200">
               Complete Squad Performance Table
             </h3>
-            <span class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">11 Starters</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">11 Starters · Click row for full card</span>
           </div>
 
           <div class="overflow-x-auto custom-scroll -mx-2 sm:mx-0 px-2 sm:px-0">
@@ -1092,14 +1116,20 @@ function restartDraft() {
                 <tr
                   v-for="p in sortedPlayerStats"
                   :key="p.player.id"
-                  class="hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                  class="hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+                  title="Click to view full player attributes"
+                  @click="inspectPlayer(p.player)"
                 >
-                  <td class="py-2.5 px-2 font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <td class="py-2.5 px-2 font-bold text-zinc-900 dark:text-white flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
                     <CountryFlag
                       :country="p.player.country"
                       size="sm"
                     />
                     <span class="truncate max-w-[7.5rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
+                    <UIcon
+                      name="i-lucide-info"
+                      class="size-3 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    />
                   </td>
                   <td class="py-2.5 px-2 text-zinc-600 dark:text-zinc-400 font-semibold">
                     {{ p.player.primaryPosition }}
@@ -1155,6 +1185,12 @@ function restartDraft() {
       :matches="tournament.playerMatches"
       :group-standing-rank="playerGroupStanding?.rank"
       :group-points="playerGroupStanding?.standing.points"
+    />
+
+    <!-- Player Stat Card Modal -->
+    <PlayerStatCardModal
+      v-model:open="isStatModalOpen"
+      :player="inspectedPlayer"
     />
   </div>
 </template>

@@ -1,0 +1,98 @@
+name: "⚽ Player Position / Rating Correction"
+description: "Suggest a correction for a historical player's tactical position, secondary positions, or ratings"
+title: "data(player): correct position for [Player Name]"
+labels: ["data", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping keep EuroDraft historical data authentic and accurate!
+        Please fill in the details below so we can verify and update the historical player registry.
+
+  - type: input
+    id: player_name
+    attributes:
+      label: "Player Full Name"
+      description: "Exact name of the player as shown in EuroDraft"
+      placeholder: "e.g. Yuri Zhirkov, Karel Poborský, Lothar Matthäus"
+    validations:
+      required: true
+
+  - type: input
+    id: tournament_edition
+    attributes:
+      label: "Tournament Edition & Country"
+      description: "Which European tournament and national team squad?"
+      placeholder: "e.g. Euro 2008 — Russia, Euro 1996 — Czech Republic"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: current_position
+    attributes:
+      label: "Current Position in EuroDraft"
+      options:
+        - "GK (Goalkeeper)"
+        - "LB (Left-Back)"
+        - "LWB (Left Wing-Back)"
+        - "CB (Centre-Back)"
+        - "RWB (Right Wing-Back)"
+        - "RB (Right-Back)"
+        - "CDM (Defensive Midfielder)"
+        - "CM (Central Midfielder)"
+        - "CAM (Attacking Midfielder)"
+        - "LM (Left Midfielder)"
+        - "RM (Right Midfielder)"
+        - "LW (Left Winger)"
+        - "RW (Right Winger)"
+        - "CF (Centre-Forward / Second Striker)"
+        - "ST (Striker)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: correct_primary_position
+    attributes:
+      label: "Proposed Primary Position"
+      description: "The primary tactical position the player played in this tournament"
+      options:
+        - "GK (Goalkeeper)"
+        - "LB (Left-Back)"
+        - "LWB (Left Wing-Back)"
+        - "CB (Centre-Back)"
+        - "RWB (Right Wing-Back)"
+        - "RB (Right-Back)"
+        - "CDM (Defensive Midfielder)"
+        - "CM (Central Midfielder)"
+        - "CAM (Attacking Midfielder)"
+        - "LM (Left Midfielder)"
+        - "RM (Right Midfielder)"
+        - "LW (Left Winger)"
+        - "RW (Right Winger)"
+        - "CF (Centre-Forward / Second Striker)"
+        - "ST (Striker)"
+    validations:
+      required: true
+
+  - type: input
+    id: secondary_positions
+    attributes:
+      label: "Secondary / Alternate Playable Positions (Optional)"
+      description: "Comma-separated list of secondary positions"
+      placeholder: "e.g. LB, CM, LWB"
+
+  - type: input
+    id: source_reference
+    attributes:
+      label: "Source / Reference Link"
+      description: "Reputable link (Transfermarkt profile, tournament match lineup, UEFA archive, or Wikipedia)"
+      placeholder: "e.g. https://www.transfermarkt.com/... or match lineup link"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Additional Context / Tactical Notes"
+      description: "Any extra tactical context about the player's role in this tournament"
+      placeholder: "e.g. In Euro 2008, Zhirkov started all 5 matches as an attacking Left-Back under Guus Hiddink rather than LM."

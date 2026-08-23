@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DraftSlot } from '~/types'
+import type { DraftSlot, Player } from '~/types'
 
 const props = defineProps<{
   slots: DraftSlot[]
@@ -11,7 +11,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'select-slot', slot: DraftSlot): void
+  (e: 'inspect-player', player: Player): void
 }>()
+
+function handleSlotClick(slot: DraftSlot) {
+  if (slot.player) {
+    emit('inspect-player', slot.player)
+  }
+  emit('select-slot', slot)
+}
 
 function isSlotHighlighted(slot: DraftSlot): boolean {
   if (props.highlightedSlotIds && props.highlightedSlotIds.length > 0) {
@@ -158,8 +166,8 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
           'scale-110': activeSlotId === slot.id,
           'scale-105': isSlotHighlighted(slot) && !slot.player
         }"
-        :disabled="!interactive"
-        @click="emit('select-slot', slot)"
+        :disabled="!interactive && !slot.player"
+        @click="handleSlotClick(slot)"
       >
         <!-- Slot Token / Disc -->
         <div
