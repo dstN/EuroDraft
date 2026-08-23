@@ -67,7 +67,7 @@ This document tracks all planned features by milestone.
 - [x] Dedicated result sharing API and public view route (`/r/[id]`) on `ed.rntm.de`
 - [x] Opt-in explicit database storage consent
 - [ ] Global Leaderboard: submit your squad OVR score (#15)
-- [ ] "Challenge" mode: given a random formation, must pick exactly 1 player per roulette spin (#16)
+- [x] "Challenge" mode: given a random formation, must pick exactly 1 player per roulette spin (#16)
 - [x] Compare two squads head-to-head (#17)
 - [x] Twitter/X card meta tags for shareable results (#18)
 
