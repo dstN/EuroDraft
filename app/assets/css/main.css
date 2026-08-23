@@ -44,6 +44,10 @@ html {
   min-height: 100%;
   overflow-x: hidden;
   width: 100%;
+  /* Reserve the vertical scrollbar's width permanently, so opening a dropdown/modal
+     (which locks body scroll and hides the scrollbar) never changes the available
+     content width -- without this, the sticky header visibly shifts left each time. */
+  scrollbar-gutter: stable;
 }
 
 html.dark {
