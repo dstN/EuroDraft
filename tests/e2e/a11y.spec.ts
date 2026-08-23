@@ -29,6 +29,7 @@ const staticPages = [
 for (const { name, path, theme } of staticPages) {
   test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto(path)
+    await page.locator('[role="status"][aria-label="Loading EuroDraft"]').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
     await page.waitForSelector('main', { state: 'visible' })
     await setTheme(page, theme)
     await page.waitForTimeout(300)
@@ -63,6 +64,7 @@ const interactivePages = [
 for (const { name, theme } of interactivePages) {
   test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto('/draft/formation')
+    await page.locator('[role="status"][aria-label="Loading EuroDraft"]').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
     const firstCard = page.locator('.surface-card').filter({ has: page.locator('.pitch-bg') }).first()
     await firstCard.click()
     await expect(page).toHaveURL('/draft')

@@ -29,13 +29,25 @@ useSeoMeta({
   twitterCard: 'summary_large_image'
 })
 
+import AppLoadingScreen from '~/components/shared/AppLoadingScreen.vue'
+
 // Load the database once at app root
 const db = useDatabase()
 await db.load()
+
+const isInitialLoading = ref(true)
+
+onMounted(() => {
+  // Graceful fadeout after initial entrance animation
+  setTimeout(() => {
+    isInitialLoading.value = false
+  }, 750)
+})
 </script>
 
 <template>
   <UApp :locale="uiLocale">
+    <AppLoadingScreen :show="isInitialLoading" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

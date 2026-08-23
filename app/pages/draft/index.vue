@@ -134,10 +134,10 @@ function cancelSelection() {
 }
 
 function positionColor(pos: string): string {
-  if (pos === 'GK') return 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-300 border-yellow-500/30'
-  if (['CB', 'LB', 'RB'].includes(pos)) return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30'
-  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
-  return 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30'
+  if (pos === 'GK') return 'bg-yellow-500/15 text-yellow-950 dark:text-yellow-300 border-yellow-500/30'
+  if (['CB', 'LB', 'RB'].includes(pos)) return 'bg-emerald-500/15 text-emerald-950 dark:text-emerald-300 border-emerald-500/30'
+  if (['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(pos)) return 'bg-amber-500/15 text-amber-950 dark:text-amber-300 border-amber-500/30'
+  return 'bg-rose-500/15 text-rose-950 dark:text-rose-300 border-rose-500/30'
 }
 
 function isPlayerEligibleForSelectedSlot(player: Player): boolean {
@@ -334,7 +334,7 @@ const currentCountryDisplayName = computed(() => {
                 @click="onPlayerClick(entry.player)"
               >
                 <!-- Shirt number -->
-                <span class="w-6 text-center font-mono text-xs text-zinc-600 dark:text-zinc-400 font-bold shrink-0">
+                <span class="w-6 text-center font-mono text-xs text-zinc-700 dark:text-zinc-300 font-bold shrink-0">
                   {{ entry.player.shirtNumber ?? '–' }}
                 </span>
 
@@ -355,9 +355,9 @@ const currentCountryDisplayName = computed(() => {
                 <span
                   class="font-mono text-xs font-black px-2 py-0.5 rounded-md border shrink-0"
                   :class="entry.player.stats.overall >= 90
-                    ? 'bg-gold-500/15 border-gold-500/40 text-gold-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-950 dark:text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
                     : entry.player.stats.overall >= 85
-                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
+                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-950 dark:text-emerald-300'
                       : 'bg-zinc-200/60 dark:bg-zinc-800 border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300'"
                 >
                   {{ entry.player.stats.overall }}
@@ -395,7 +395,7 @@ const currentCountryDisplayName = computed(() => {
             <div>
               <h3 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
                 <span>Tactical Pitch</span>
-                <span class="text-xs font-mono font-normal text-zinc-500">({{ draft.formation?.label }})</span>
+                <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">({{ draft.formation?.label }})</span>
               </h3>
             </div>
             <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
