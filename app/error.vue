@@ -34,14 +34,16 @@ const STATUS_COPY: Record<number, { eyebrow: string, title: string, message: str
   }
 }
 
-const copy = computed(() => STATUS_COPY[props.error.statusCode] ?? {
+const statusCode = computed(() => props.error.statusCode ?? 500)
+
+const copy = computed(() => STATUS_COPY[statusCode.value] ?? {
   eyebrow: 'Full Time',
   title: 'Unexpected Error',
   message: props.error.statusMessage || 'Something didn\'t go to plan. Try heading back to the homepage.'
 })
 
 useSeoMeta({
-  title: `${props.error.statusCode} — EuroDraft`,
+  title: `${statusCode.value} — EuroDraft`,
   robots: 'noindex'
 })
 
@@ -72,7 +74,7 @@ function goHome() {
       <div class="surface-card p-8 space-y-5 w-full">
         <div class="space-y-2">
           <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-xs uppercase font-mono tracking-[0.2em] font-bold text-emerald-800 dark:text-emerald-300">
-            {{ copy.eyebrow }} · {{ error.statusCode }}
+            {{ copy.eyebrow }} · {{ statusCode }}
           </div>
           <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
             {{ copy.title }}

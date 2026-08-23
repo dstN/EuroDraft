@@ -1,4 +1,5 @@
 import compression from 'compression'
+import type { NodeMiddleware } from 'h3'
 import { fromNodeMiddleware } from 'h3'
 
 // Compresses SSR-rendered pages and API/JSON responses. Static assets
@@ -23,10 +24,13 @@ import { fromNodeMiddleware } from 'h3'
 // Accept-Encoding was the only difference between the real page and
 // nothing at all. Error pages are small anyway, so skipping compression
 // for them (and their internal render fetch) costs nothing.
+// compression()'s Express-typed RequestHandler is structurally identical to
+// h3's NodeMiddleware at runtime (req, res, next) -- the mismatch TS flags
+// is Express's own generic param typing, not an actual signature conflict.
 export default fromNodeMiddleware(compression({
   filter: (req, res) => {
     if (res.statusCode >= 400) return false
     if (req.url?.startsWith('/__nuxt_error')) return false
     return compression.filter(req, res)
   }
-}))
+}) as NodeMiddleware)
