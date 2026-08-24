@@ -15,9 +15,13 @@ CREATE TABLE IF NOT EXISTS leaderboard (
   mid_rating TINYINT UNSIGNED NOT NULL,
   att_rating TINYINT UNSIGNED NOT NULL,
   outcome VARCHAR(20) NOT NULL,
-  -- Best-effort link back to /r/<share_id>. The share store is in-memory only
-  -- (see server/utils/shareStorage.ts), so this can point at a link that no
-  -- longer resolves after a server restart -- that's expected, not a bug.
+  -- Link back to /r/<share_id>. Since a leaderboard submission requires
+  -- DATABASE_URL to be configured in the first place (see
+  -- server/api/leaderboard.post.ts), shared_runs (002_create_shared_runs.sql)
+  -- is persisted in the same database alongside this table -- no soft/lossy
+  -- reference here, just a plain unenforced link (kept unenforced, not a
+  -- FOREIGN KEY, so deleting a share doesn't cascade-delete leaderboard
+  -- history -- see server/utils/shareStorage.ts).
   share_id VARCHAR(20) NULL,
   submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_ovr (ovr DESC, submitted_at ASC),

@@ -13,14 +13,14 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
   const token = typeof body?.token === 'string' ? body.token : ''
 
-  if (!verifyDeleteToken(id, token)) {
+  if (!await verifyDeleteToken(id, token)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'Missing or invalid deletion token for this share ID.'
     })
   }
 
-  const success = deleteSharedRun(id)
+  const success = await deleteSharedRun(id)
 
   if (!success) {
     throw createError({

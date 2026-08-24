@@ -24,7 +24,9 @@ function parseShareRefs(body: unknown): ShareRef[] {
 // proven per entry, share ID alone is not sufficient.
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
-  const shareRefs = parseShareRefs(body).filter(ref => verifyDeleteToken(ref.id, ref.token))
+  const candidates = parseShareRefs(body)
+  const verified = await Promise.all(candidates.map(ref => verifyDeleteToken(ref.id, ref.token)))
+  const shareRefs = candidates.filter((_ref, i) => verified[i])
 
   if (shareRefs.length === 0) {
     return {
@@ -41,7 +43,7 @@ export default defineEventHandler(async (event) => {
   const db = isDbConfigured() ? getDbPool() : null
 
   for (const { id } of shareRefs) {
-    if (deleteSharedRun(id)) {
+    if (await deleteSharedRun(id)) {
       deletedCount++
       deletedIds.push(id)
     }

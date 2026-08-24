@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
   const squad = Array.isArray(body?.squad) ? body.squad.slice(0, MAX_SQUAD_SIZE) : []
   const matches = Array.isArray(body?.matches) ? body.matches.slice(0, MAX_MATCHES) : []
 
-  const { record, deleteToken } = saveSharedRun({
+  const { record, deleteToken } = await saveSharedRun({
     teamName,
     teamEmblem,
     formation,

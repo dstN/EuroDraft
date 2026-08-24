@@ -139,23 +139,29 @@ those before spawning the process, so no extra config should be needed
 there (this is standard Passenger Node.js behavior — "control is inversed",
 per Passenger's own docs — not specific to this app).
 
-## Provisioning the leaderboard database (optional, do this when ready)
+## Provisioning the database (optional, do this when ready)
 
 The rest of the app does not need this — it's fine to deploy without it and
-add it later.
+add it later. Provisioning it does two things at once: it turns on the
+`/leaderboard` feature, and it makes share links (`/r/<id>`) durable --
+without `DATABASE_URL`, share links live only in the memory of the worker
+process that created them (see `server/utils/shareStorage.ts`), so they
+vanish on restart and don't resolve on a sibling Passenger worker.
 
 1. **Plesk → Databases → Add Database.** Create a MySQL/MariaDB database
    (e.g. `eurodraft`) and a user scoped to it.
-2. **Run the migration once**, from any machine that can reach the DB:
+2. **Run both migrations once**, from any machine that can reach the DB:
    ```sh
    mysql -u <user> -p <dbname> < server/db/migrations/001_create_leaderboard.sql
+   mysql -u <user> -p <dbname> < server/db/migrations/002_create_shared_runs.sql
    ```
-   It's a single `CREATE TABLE IF NOT EXISTS`, safe to re-run.
+   Each is a single `CREATE TABLE IF NOT EXISTS`, safe to re-run.
 3. **Set `DATABASE_URL`** under Node.js → Custom environment variables, in
    the `mysql://user:pass@host:3306/dbname` form, then restart Passenger.
 4. **Verify**: `curl -s https://<domain>/api/health` should report
-   `"database":"connected"`, and `/leaderboard` should stop showing
-   "Coming Soon".
+   `"database":"connected"`, `/leaderboard` should stop showing "Coming
+   Soon", and a share link created after this point should still resolve
+   after a Passenger restart.
 
 If MariaDB and the app's MySQL client version ever mismatch (this has come
 up before on this account — MariaDB's `mysqldump` against a MySQL 8.4

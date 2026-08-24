@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deleteSharedRun, getSharedRun, saveSharedRun, verifyDeleteToken } from '../../server/utils/shareStorage'
+import { deleteSharedRun, getSharedRun, isShareStoragePersistent, saveSharedRun, verifyDeleteToken } from '../../server/utils/shareStorage'
 
 function makeRun(overrides: Partial<Parameters<typeof saveSharedRun>[0]> = {}) {
   return saveSharedRun({
@@ -17,34 +17,39 @@ function makeRun(overrides: Partial<Parameters<typeof saveSharedRun>[0]> = {}) {
 }
 
 describe('GDPR Self-Service Server Storage', () => {
-  it('saves and allows instant retrieval and deletion of a shared tournament run', () => {
-    const { record, deleteToken } = makeRun()
+  it('falls back to the in-memory store when DATABASE_URL is unset (as in this test env)', () => {
+    expect(isShareStoragePersistent()).toBe(false)
+  })
+
+  it('saves and allows instant retrieval and deletion of a shared tournament run', async () => {
+    const { record, deleteToken } = await makeRun()
 
     expect(record.id).toBeDefined()
     expect(record.teamName).toBe('Test XI')
     expect(deleteToken).toBeDefined()
 
     // Retrieve
-    const found = getSharedRun(record.id)
+    const found = await getSharedRun(record.id)
     expect(found).toBeDefined()
     expect(found?.id).toBe(record.id)
 
     // Delete (Art. 17 GDPR Self-Service)
-    const deleted = deleteSharedRun(record.id)
+    const deleted = await deleteSharedRun(record.id)
     expect(deleted).toBe(true)
 
     // Verify it is gone
-    const gone = getSharedRun(record.id)
+    const gone = await getSharedRun(record.id)
     expect(gone).toBeUndefined()
   })
 
-  it('returns false when attempting to delete non-existent ID', () => {
-    const result = deleteSharedRun('non_existent_id_999')
+  it('returns false when attempting to delete non-existent ID', async () => {
+    const result = await deleteSharedRun('non_existent_id_999')
     expect(result).toBe(false)
   })
 
-  it('generates unpredictable, non-sequential IDs', () => {
-    const ids = new Set(Array.from({ length: 20 }, () => makeRun().record.id))
+  it('generates unpredictable, non-sequential IDs', async () => {
+    const runs = await Promise.all(Array.from({ length: 20 }, () => makeRun()))
+    const ids = new Set(runs.map(r => r.record.id))
     expect(ids.size).toBe(20)
     for (const id of ids) {
       expect(id).not.toMatch(/^\d+$/)
@@ -52,18 +57,18 @@ describe('GDPR Self-Service Server Storage', () => {
     }
   })
 
-  it('rejects deletion/export without the token issued at creation', () => {
-    const { record, deleteToken } = makeRun()
+  it('rejects deletion/export without the token issued at creation', async () => {
+    const { record, deleteToken } = await makeRun()
 
-    expect(verifyDeleteToken(record.id, 'wrong-token')).toBe(false)
-    expect(verifyDeleteToken(record.id, '')).toBe(false)
-    expect(verifyDeleteToken('some-other-id', deleteToken)).toBe(false)
-    expect(verifyDeleteToken(record.id, deleteToken)).toBe(true)
+    expect(await verifyDeleteToken(record.id, 'wrong-token')).toBe(false)
+    expect(await verifyDeleteToken(record.id, '')).toBe(false)
+    expect(await verifyDeleteToken('some-other-id', deleteToken)).toBe(false)
+    expect(await verifyDeleteToken(record.id, deleteToken)).toBe(true)
   })
 
-  it('invalidates the token once the record is deleted', () => {
-    const { record, deleteToken } = makeRun()
-    expect(deleteSharedRun(record.id)).toBe(true)
-    expect(verifyDeleteToken(record.id, deleteToken)).toBe(false)
+  it('invalidates the token once the record is deleted', async () => {
+    const { record, deleteToken } = await makeRun()
+    expect(await deleteSharedRun(record.id)).toBe(true)
+    expect(await verifyDeleteToken(record.id, deleteToken)).toBe(false)
   })
 })
