@@ -1,10 +1,22 @@
-export default defineEventHandler((event) => {
+import { verifyDeleteToken, deleteSharedRun } from '../../utils/shareStorage'
+
+export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
   if (!id) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid or missing share ID.'
+    })
+  }
+
+  const body = await readBody(event).catch(() => ({}))
+  const token = typeof body?.token === 'string' ? body.token : ''
+
+  if (!verifyDeleteToken(id, token)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Missing or invalid deletion token for this share ID.'
     })
   }
 

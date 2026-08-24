@@ -201,6 +201,7 @@
     "gdpr_my_shares_heading": "Ссылки, созданные на этом устройстве",
     "gdpr_delete_btn": "Удалить с сервера",
     "gdpr_delete_record_btn": "Удалить запись с сервера",
-    "gdpr_manual_share_placeholder": "Введите ID или ссылку для удаления..."
+    "gdpr_manual_share_placeholder": "Введите ID или ссылку для удаления...",
+    "gdpr_manual_token_placeholder": "Токен удаления (из экспорта данных)…"
   }
 }

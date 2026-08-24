@@ -1,22 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { deleteSharedRun, getSharedRun, saveSharedRun } from '../../server/utils/shareStorage'
+import { deleteSharedRun, getSharedRun, saveSharedRun, verifyDeleteToken } from '../../server/utils/shareStorage'
+
+function makeRun(overrides: Partial<Parameters<typeof saveSharedRun>[0]> = {}) {
+  return saveSharedRun({
+    teamName: 'Test XI',
+    teamEmblem: 'de',
+    formation: '4-3-3',
+    teamOVR: 86,
+    outcome: 'Winner',
+    lineRatings: { def: 85, mid: 86, att: 87, overall: 86 },
+    runStats: null,
+    squad: [],
+    matches: [],
+    ...overrides
+  })
+}
 
 describe('GDPR Self-Service Server Storage', () => {
   it('saves and allows instant retrieval and deletion of a shared tournament run', () => {
-    const record = saveSharedRun({
-      teamName: 'Test XI',
-      teamEmblem: 'de',
-      formation: '4-3-3',
-      teamOVR: 86,
-      outcome: 'Winner',
-      lineRatings: { def: 85, mid: 86, att: 87, overall: 86 },
-      runStats: null,
-      squad: [],
-      matches: []
-    })
+    const { record, deleteToken } = makeRun()
 
     expect(record.id).toBeDefined()
     expect(record.teamName).toBe('Test XI')
+    expect(deleteToken).toBeDefined()
 
     // Retrieve
     const found = getSharedRun(record.id)
@@ -35,5 +41,29 @@ describe('GDPR Self-Service Server Storage', () => {
   it('returns false when attempting to delete non-existent ID', () => {
     const result = deleteSharedRun('non_existent_id_999')
     expect(result).toBe(false)
+  })
+
+  it('generates unpredictable, non-sequential IDs', () => {
+    const ids = new Set(Array.from({ length: 20 }, () => makeRun().record.id))
+    expect(ids.size).toBe(20)
+    for (const id of ids) {
+      expect(id).not.toMatch(/^\d+$/)
+      expect(id.length).toBeGreaterThanOrEqual(8)
+    }
+  })
+
+  it('rejects deletion/export without the token issued at creation', () => {
+    const { record, deleteToken } = makeRun()
+
+    expect(verifyDeleteToken(record.id, 'wrong-token')).toBe(false)
+    expect(verifyDeleteToken(record.id, '')).toBe(false)
+    expect(verifyDeleteToken('some-other-id', deleteToken)).toBe(false)
+    expect(verifyDeleteToken(record.id, deleteToken)).toBe(true)
+  })
+
+  it('invalidates the token once the record is deleted', () => {
+    const { record, deleteToken } = makeRun()
+    expect(deleteSharedRun(record.id)).toBe(true)
+    expect(verifyDeleteToken(record.id, deleteToken)).toBe(false)
   })
 })

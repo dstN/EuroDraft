@@ -1,30 +1,10 @@
 import nodemailer from 'nodemailer'
-
-// In-memory rate limiting: IP -> timestamps[]
-const rateLimitMap = new Map<string, number[]>()
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const windowMs = 10 * 60 * 1000 // 10 minutes
-  const maxRequests = 5
-
-  const timestamps = rateLimitMap.get(ip) || []
-  const validTimestamps = timestamps.filter(t => now - t < windowMs)
-
-  if (validTimestamps.length >= maxRequests) {
-    rateLimitMap.set(ip, validTimestamps)
-    return false
-  }
-
-  validTimestamps.push(now)
-  rateLimitMap.set(ip, validTimestamps)
-  return true
-}
+import { checkRateLimit } from '../utils/rateLimit'
 
 export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) || '127.0.0.1'
 
-  if (!checkRateLimit(ip)) {
+  if (!checkRateLimit(`contact:${ip}`, { windowMs: 10 * 60 * 1000, max: 5 })) {
     throw createError({
       statusCode: 429,
       statusMessage: 'Too many requests. Please wait a few minutes before sending another message.'

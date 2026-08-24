@@ -49,7 +49,7 @@ export function useShareSubmission(props: {
           matches: props.matches
         }
 
-        const res = await $fetch<{ success: boolean, id: string }>('/api/share', {
+        const res = await $fetch<{ success: boolean, id: string, deleteToken: string }>('/api/share', {
           method: 'POST',
           body: payload
         })
@@ -57,13 +57,18 @@ export function useShareSubmission(props: {
         if (res?.id) {
           shareId.value = res.id
           if (typeof window !== 'undefined') {
-            localStorage.setItem(`eurodraft_shared_${res.id}`, JSON.stringify(payload))
+            // deleteToken proves ownership for DELETE /api/share/:id and the
+            // GDPR export/delete endpoints -- it's returned exactly once, in
+            // this response, and kept only here and in GdprSelfService's
+            // tracked-shares list (see server/utils/shareStorage.ts).
+            localStorage.setItem(`eurodraft_shared_${res.id}`, JSON.stringify({ ...payload, deleteToken: res.deleteToken }))
             try {
               const list = JSON.parse(localStorage.getItem('eurodraft_my_shares') || '[]')
               list.unshift({
                 id: res.id,
                 teamName: props.teamName || 'EuroDraft Squad',
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                deleteToken: res.deleteToken
               })
               localStorage.setItem('eurodraft_my_shares', JSON.stringify(list.slice(0, 30)))
             } catch {

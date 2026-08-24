@@ -201,6 +201,7 @@
     "gdpr_my_shares_heading": "Bu cihazda oluşturulan paylaşım linkleri",
     "gdpr_delete_btn": "Sunucudan Sil",
     "gdpr_delete_record_btn": "Sunucu Kaydını Sil",
-    "gdpr_manual_share_placeholder": "Silmek için Paylaşım ID'si veya link girin..."
+    "gdpr_manual_share_placeholder": "Silmek için Paylaşım ID'si veya link girin...",
+    "gdpr_manual_token_placeholder": "Silme jetonu (veri dışa aktarımınızdan)…"
   }
 }
