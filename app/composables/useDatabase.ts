@@ -1,12 +1,35 @@
 import type { EuroDraftDB, Player, Tournament } from '~/types'
 
 // ============================================================
-// useDatabase — loads and queries the static eurodraft_db.json
+// useDatabase — loads and queries the static /eurodraft_db.json
 // ============================================================
+//
+// Fetched as a plain static asset rather than through a custom API route:
+//
+// 1. A custom route reading the file from disk has to resolve a path, and
+//    `process.cwd()` is not reliable for that -- it depends on how the
+//    process was launched, and the deploy runbook only uploads `.output/`,
+//    never the source `public/` dir the old route read from (see
+//    DEPLOYMENT.md). Nitro's own static-asset handler resolves relative to
+//    the running server module instead, which is correct under any deploy
+//    layout -- `$fetch` routes through that handler in-process on the
+//    server, and through a real (cacheable, brotli-negotiated, ETag'd)
+//    HTTP request in the browser.
+// 2. Wrapping the fetch in `useAsyncData` would embed the full ~2.8MB
+//    payload into the SSR-rendered HTML on every request that (re)builds
+//    the index. A plain `$fetch` keeps SSR HTML size stable regardless of
+//    server-side caching state.
+//
+// Caching is intentionally module-scoped on both sides: the dataset is an
+// immutable per-deploy artifact (it only changes via a rebuild + redeploy),
+// so persisting the parsed indexes for the lifetime of a server worker (or
+// a client SPA session) is correct and avoids re-parsing 2.8MB of JSON on
+// every request. `_loadPromise` dedupes concurrent cold-cache callers.
 
 let _db: EuroDraftDB | null = null
 let _playersByCountryYear: Map<string, Player[]> | null = null
 let _countryYearKeys: string[] | null = null
+let _loadPromise: Promise<void> | null = null
 
 export function parseTeamKey(key: string): { country: string, year: number } {
   const lastDash = key.lastIndexOf('-')
@@ -19,37 +42,39 @@ export function parseTeamKey(key: string): { country: string, year: number } {
   }
 }
 
+function buildIndexes(db: EuroDraftDB) {
+  _playersByCountryYear = new Map()
+  _countryYearKeys = []
+
+  for (const player of db.players) {
+    const key = `${player.country}-${player.year}`
+    if (!_playersByCountryYear.has(key)) {
+      _playersByCountryYear.set(key, [])
+      _countryYearKeys.push(key)
+    }
+    _playersByCountryYear.get(key)!.push(player)
+  }
+}
+
 export function useDatabase() {
   /**
-   * Load the database (called once in a layout or app.vue)
-   * Uses Nuxt's useAsyncData so it's deduped and cached.
+   * Load the database (called once in route middleware). Deduped across
+   * concurrent callers; a no-op once already loaded.
    */
   async function load() {
-    const { data: db } = await useAsyncData<EuroDraftDB>('eurodraft-db', () =>
-      $fetch<EuroDraftDB>('/api/db')
-    )
+    if (_db) return
+    if (_loadPromise) return _loadPromise
 
-    if (db.value) {
-      _db = db.value
-      _buildIndexes()
-    }
+    _loadPromise = $fetch<EuroDraftDB>('/eurodraft_db.json')
+      .then((db) => {
+        _db = db
+        buildIndexes(db)
+      })
+      .finally(() => {
+        _loadPromise = null
+      })
 
-    return db
-  }
-
-  function _buildIndexes() {
-    if (!_db) return
-    _playersByCountryYear = new Map()
-    _countryYearKeys = []
-
-    for (const player of _db.players) {
-      const key = `${player.country}-${player.year}`
-      if (!_playersByCountryYear.has(key)) {
-        _playersByCountryYear.set(key, [])
-        _countryYearKeys.push(key)
-      }
-      _playersByCountryYear.get(key)!.push(player)
-    }
+    return _loadPromise
   }
 
   function ensureLoaded() {
