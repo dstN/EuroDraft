@@ -115,8 +115,12 @@ mkdir -p tmp && touch tmp/restart.txt
 
 # 4. Smoke-test:
 curl -s https://<domain>/api/health
-#    Expect {"status":"ok","database":"not_configured"} before the
-#    leaderboard DB is provisioned, or "connected" after.
+#    Expect {"status":"ok","database":"not_configured","playerDatabase":"ok"}
+#    before the leaderboard DB is provisioned, or "connected" after.
+#    "playerDatabase":"unreachable" (status 503) means the upload is
+#    incomplete -- draft and tournament (the whole product) are broken even
+#    though the server itself started. Re-check that .output/public/ made it
+#    into the upload.
 ```
 
 ## Environment variables
@@ -182,11 +186,16 @@ same shareId-keyed request that already exists.
 
 ## Health check
 
-`GET /api/health` returns `200 {"status":"ok", "database": "not_configured" | "connected" | "disconnected"}`,
-or `503` only when `DATABASE_URL` is set but unreachable (an unconfigured
-DB is healthy, not a problem — the app doesn't need it). Point an uptime
-monitor (e.g. UptimeRobot, same as this account's other apps) at this
-endpoint once the app is live.
+`GET /api/health` returns `200 {"status":"ok", "database": "not_configured" | "connected" | "disconnected", "playerDatabase": "ok" | "unreachable"}`.
+
+`database` is `503` only when `DATABASE_URL` is set but unreachable (an
+unconfigured DB is healthy, not a problem — the app doesn't need it).
+`playerDatabase` is unconditional and always `503`s if `"unreachable"` — the
+player database is not optional, draft and tournament are the whole product.
+`"unreachable"` means the upload was incomplete (`.output/public/` missing or
+partial), not a config problem — re-check the upload, not an env var. Point
+an uptime monitor (e.g. UptimeRobot, same as this account's other apps) at
+this endpoint once the app is live.
 
 ## Where this came from
 
