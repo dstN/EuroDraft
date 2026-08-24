@@ -7,9 +7,10 @@ docs — see "Where this came from" at the bottom before treating any of it as
 gospel for this specific app.
 
 EuroDraft is simpler than GourMerge: no auth, no sessions, no scheduled
-jobs. The only optional server-side state is the `/leaderboard` feature's
-MySQL table — everything else (draft, tournament sim, share links, OG
-images) runs from the bundled Nitro server with no database at all.
+jobs. MySQL is entirely optional — the `/leaderboard` feature and durable
+(restart-surviving) share links (`/r/<id>`) use it when `DATABASE_URL` is
+set; everything else (draft, tournament sim, OG images) runs from the
+bundled Nitro server with no database at all.
 
 ## Architecture: two roots, not one
 
@@ -79,15 +80,21 @@ panel's Node.js fields are the only place to configure this here.
 
 ## What to upload
 
-`nuxt.config.ts` sets `nitro.externals.inline: ['mysql2']` so the driver's
-actual code is bundled into the build output rather than left as a bare
-`node_modules` import — verified by building and grepping `.output/server/`
-for `from 'mysql2'` before and after adding that option (present, then
-gone; `mysql2` also drops out of `.output/server/package.json`'s dependency
-list once inlined). Without that line the build still succeeds, but the
-server throws `ERR_MODULE_NOT_FOUND` on `/api/leaderboard`/`/api/health`
-unless `node_modules/mysql2` is also uploaded — do not remove it. Upload
-just:
+An earlier version of `nuxt.config.ts` set `nitro.externals.inline: ['mysql2']`,
+reasoning that the driver's own code should be bundled into the build output
+rather than left as a bare `node_modules` import. That setting is gone now —
+verified live, against a real reachable database, not just a build check:
+inlining mysql2 through Nitro's Rollup bundler breaks its own internal
+code-generation (a CJS/ESM interop mismatch in a dependency mysql2 uses to
+build fast query parsers) with `TypeError: genFunc$1 is not a function` on
+every actual query. Connection-only checks like `/api/health`'s old `SELECT 1`
+before this was caught didn't exercise that path, which is exactly why it
+went unnoticed. Without the override, Nitro's *default* behavior already
+does what the override was trying to achieve: it traces mysql2 (pure JS, no
+native bindings) and copies the real, unmangled package into
+`.output/server/node_modules/mysql2` automatically — confirmed present after
+a build, and confirmed working end-to-end against a live database (share
+create → read → process restart → read again, still resolves). Upload just:
 
 - The startup file (`.output/server/index.mjs` directly, or `entry.cjs` —
   whichever the section above ends up using)
