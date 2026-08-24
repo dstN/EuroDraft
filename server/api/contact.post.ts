@@ -68,13 +68,25 @@ export default defineEventHandler(async (event) => {
   const fromEmail = process.env.SMTP_FROM || `"EuroDraft System" <system@rntm.de>`
   const recipientEmail = process.env.CONTACT_RECIPIENT || 'info@rntm.de'
 
-  // If SMTP is not configured (e.g. local development without credentials)
+  // If SMTP is not configured: in production this must fail loudly rather
+  // than tell the sender their message was delivered when it wasn't --
+  // see DEPLOYMENT.md's env table, which now documents every SMTP_* /
+  // MAIL_* variable this reads, and /api/health, which reports this same
+  // condition so it doesn't have to be discovered via a support email that
+  // never arrives. The dev-mode mock path only applies outside production
+  // (NODE_ENV, set by Passenger's Application Mode per DEPLOYMENT.md --
+  // never set manually), and no longer logs the message body or the
+  // sender's email address.
   if (!smtpHost || !smtpPass) {
-    console.log('\n[CONTACT FORM INQUIRY - DEV MOCK]')
-    console.log(`From: ${name} <${email}>`)
-    console.log(`Subject: ${subject}`)
-    console.log(`IP: ${ip}`)
-    console.log(`Message:\n${message}\n`)
+    if (process.env.NODE_ENV === 'production') {
+      console.error(`[contact] SMTP not configured in production -- message from "${name}" (subject: "${subject}") was not delivered`)
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'The contact form is temporarily unavailable. Please email info@rntm.de directly.'
+      })
+    }
+
+    console.log(`[CONTACT FORM INQUIRY - DEV MOCK] from "${name}", subject: "${subject}" (SMTP unconfigured; not sent)`)
 
     return {
       success: true,
