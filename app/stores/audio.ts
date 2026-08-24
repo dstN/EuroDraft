@@ -1,8 +1,16 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useAudioStore = defineStore('audio', () => {
-  const isMuted = ref(false)
+  // useCookie (not localStorage) so SSR and the client agree on first
+  // render -- the cookie travels with the request, unlike localStorage,
+  // which only exists client-side and previously forced a mute preference
+  // read after the fact, producing a hydration mismatch on the header's
+  // mute icon and its aria-label for anyone who had muted before.
+  const isMuted = useCookie<boolean>('eurodraft_sound_muted', {
+    default: () => false,
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax'
+  })
   let audioCtx: AudioContext | null = null
 
   function getAudioContext(): AudioContext | null {
@@ -19,27 +27,8 @@ export const useAudioStore = defineStore('audio', () => {
     return audioCtx
   }
 
-  // Initialize from localStorage
-  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-    try {
-      const saved = localStorage.getItem('eurodraft_sound_muted')
-      if (saved !== null) {
-        isMuted.value = saved === 'true'
-      }
-    } catch {
-      // Ignore if localStorage unavailable
-    }
-  }
-
   function toggleMute() {
     isMuted.value = !isMuted.value
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem('eurodraft_sound_muted', String(isMuted.value))
-      } catch {
-        // Ignore
-      }
-    }
     if (!isMuted.value) {
       playTick()
     }

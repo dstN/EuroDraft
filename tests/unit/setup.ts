@@ -7,8 +7,14 @@ vi.stubGlobal('navigateTo', vi.fn())
 vi.stubGlobal('useNuxtApp', vi.fn(() => ({ $i18n: { t: (k: string) => k } })))
 
 // Pinia stores under app/stores/** rely on Nuxt auto-importing ref/computed
-// (only app/stores/audio.ts imports them explicitly) -- outside a Nuxt build,
-// nothing provides those globals, so any other store errors with
-// "ref is not defined" the moment defineStore()'s setup function runs.
+// -- outside a Nuxt build, nothing provides those globals, so a store
+// errors with "ref is not defined" the moment defineStore()'s setup
+// function runs.
 vi.stubGlobal('ref', ref)
 vi.stubGlobal('computed', computed)
+
+// useCookie (app/stores/audio.ts) is Nuxt's SSR-aware cookie composable --
+// outside a Nuxt build there's no request/response to sync against, so this
+// stub only reproduces the part unit tests actually exercise: a reactive
+// ref seeded from `options.default()`.
+vi.stubGlobal('useCookie', <T>(_name: string, options?: { default?: () => T }) => ref(options?.default?.()))
