@@ -456,9 +456,9 @@ const formationShortName = computed(() => {
               name="i-lucide-shield-alert"
               class="size-10 text-amber-500"
             />
-            <h3 class="text-base font-black text-zinc-900 dark:text-white">
+            <h2 class="text-base font-black text-zinc-900 dark:text-white">
               No More Eligible Squads
-            </h3>
+            </h2>
             <p class="text-xs text-zinc-600 dark:text-zinc-400 max-w-xs">
               {{ draft.isLegendMode
                 ? "No remaining historical squad has a 90+ rated player for your open positions. Try a different formation — some position combinations are too scarce in Legend Mode."
@@ -585,10 +585,10 @@ const formationShortName = computed(() => {
 
           <div class="flex items-center justify-between px-1 shrink-0">
             <div>
-              <h3 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
+              <h2 class="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
                 <span>Tactical Pitch</span>
                 <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">({{ formationShortName }})</span>
-              </h3>
+              </h2>
             </div>
             <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
               {{ draft.filledSlots.length }}/11 Selected

@@ -195,9 +195,9 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
                 size="md"
               />
               <div class="min-w-0">
-                <h3 class="font-black text-zinc-900 dark:text-white truncate">
+                <h2 class="font-black text-zinc-900 dark:text-white truncate">
                   {{ slotA.teamName }}
-                </h3>
+                </h2>
                 <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
                   {{ slotA.formation }} · {{ slotA.teamOVR }} OVR
                 </p>
@@ -249,9 +249,9 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
                 size="md"
               />
               <div class="min-w-0">
-                <h3 class="font-black text-zinc-900 dark:text-white truncate">
+                <h2 class="font-black text-zinc-900 dark:text-white truncate">
                   {{ slotB.teamName }}
-                </h3>
+                </h2>
                 <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
                   {{ slotB.formation }} · {{ slotB.teamOVR }} OVR
                 </p>

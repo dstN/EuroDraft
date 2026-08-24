@@ -4,7 +4,7 @@ import CountryFlag from '~/components/shared/CountryFlag.vue'
 
 type SortField = 'name' | 'primaryPosition' | 'overall' | 'matches' | 'minutes' | 'goals' | 'assists' | 'ga' | 'rating'
 
-defineProps<{
+const props = defineProps<{
   runStats: TournamentRunStats
   sortedPlayerStats: PlayerTournamentStats[]
   sortField: SortField
@@ -15,6 +15,11 @@ defineProps<{
 const emit = defineEmits<{
   inspectPlayer: [player: Player]
 }>()
+
+function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
+  if (props.sortField !== field) return 'none'
+  return props.sortOrder === 'asc' ? 'ascending' : 'descending'
+}
 </script>
 
 <template>
@@ -35,8 +40,11 @@ const emit = defineEmits<{
     <!-- 4 Top Performer Spotlight Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- MVP / Most G+A -->
-      <div
-        class="surface-card p-4 space-y-2 cursor-pointer hover:border-amber-500/40 transition-all"
+      <button
+        type="button"
+        class="surface-card p-4 space-y-2 text-left w-full transition-all disabled:cursor-not-allowed"
+        :class="runStats.mvp ? 'cursor-pointer hover:border-amber-500/40' : ''"
+        :disabled="!runStats.mvp"
         @click="runStats.mvp ? emit('inspectPlayer', runStats.mvp.player) : undefined"
       >
         <div class="flex items-center justify-between">
@@ -65,11 +73,14 @@ const emit = defineEmits<{
             —
           </p>
         </template>
-      </div>
+      </button>
 
       <!-- Top Scorer -->
-      <div
-        class="surface-card p-4 space-y-2 cursor-pointer hover:border-amber-500/40 transition-all"
+      <button
+        type="button"
+        class="surface-card p-4 space-y-2 text-left w-full transition-all disabled:cursor-not-allowed"
+        :class="runStats.topScorer && runStats.topScorer.goals > 0 ? 'cursor-pointer hover:border-amber-500/40' : ''"
+        :disabled="!runStats.topScorer || runStats.topScorer.goals === 0"
         @click="runStats.topScorer ? emit('inspectPlayer', runStats.topScorer.player) : undefined"
       >
         <div class="flex items-center justify-between">
@@ -98,11 +109,14 @@ const emit = defineEmits<{
             No goals scored
           </p>
         </template>
-      </div>
+      </button>
 
       <!-- Top Playmaker -->
-      <div
-        class="surface-card p-4 space-y-2 cursor-pointer hover:border-emerald-500/40 transition-all"
+      <button
+        type="button"
+        class="surface-card p-4 space-y-2 text-left w-full transition-all disabled:cursor-not-allowed"
+        :class="runStats.topAssister && runStats.topAssister.assists > 0 ? 'cursor-pointer hover:border-emerald-500/40' : ''"
+        :disabled="!runStats.topAssister || runStats.topAssister.assists === 0"
         @click="runStats.topAssister ? emit('inspectPlayer', runStats.topAssister.player) : undefined"
       >
         <div class="flex items-center justify-between">
@@ -131,11 +145,14 @@ const emit = defineEmits<{
             No assists recorded
           </p>
         </template>
-      </div>
+      </button>
 
       <!-- Efficiency -->
-      <div
-        class="surface-card p-4 space-y-2 cursor-pointer hover:border-sky-500/40 transition-all"
+      <button
+        type="button"
+        class="surface-card p-4 space-y-2 text-left w-full transition-all disabled:cursor-not-allowed"
+        :class="runStats.bestGAPer90 ? 'cursor-pointer hover:border-sky-500/40' : ''"
+        :disabled="!runStats.bestGAPer90"
         @click="runStats.bestGAPer90 ? emit('inspectPlayer', runStats.bestGAPer90.player) : undefined"
       >
         <div class="flex items-center justify-between">
@@ -164,7 +181,7 @@ const emit = defineEmits<{
             —
           </p>
         </template>
-      </div>
+      </button>
     </div>
 
     <!-- Extended All-Players Performance Table (with Interactive Sorting) -->
@@ -181,64 +198,133 @@ const emit = defineEmits<{
           <thead>
             <tr class="text-zinc-600 dark:text-zinc-400 uppercase border-b border-zinc-200 dark:border-white/10 pb-2 font-bold select-none">
               <th
-                class="py-2.5 px-2 cursor-pointer hover:text-zinc-900 dark:hover:text-white"
-                @click="setSort('name')"
+                scope="col"
+                class="py-2.5 px-2"
+                :aria-sort="ariaSortFor('name')"
               >
-                Player <span v-if="sortField === 'name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  @click="setSort('name')"
+                >
+                  Player <span v-if="sortField === 'name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 cursor-pointer hover:text-zinc-900 dark:hover:text-white"
-                @click="setSort('primaryPosition')"
+                scope="col"
+                class="py-2.5 px-2"
+                :aria-sort="ariaSortFor('primaryPosition')"
               >
-                POS <span v-if="sortField === 'primaryPosition'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  @click="setSort('primaryPosition')"
+                >
+                  POS <span v-if="sortField === 'primaryPosition'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 cursor-pointer hover:text-zinc-900 dark:hover:text-white"
-                @click="setSort('overall')"
+                scope="col"
+                class="py-2.5 px-2"
+                :aria-sort="ariaSortFor('overall')"
               >
-                OVR <span v-if="sortField === 'overall'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  @click="setSort('overall')"
+                >
+                  OVR <span v-if="sortField === 'overall'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 text-center cursor-pointer hover:text-zinc-900 dark:hover:text-white"
-                @click="setSort('matches')"
+                scope="col"
+                class="py-2.5 px-2 text-center"
+                :aria-sort="ariaSortFor('matches')"
               >
-                P <span v-if="sortField === 'matches'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  @click="setSort('matches')"
+                >
+                  P <span v-if="sortField === 'matches'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 text-center cursor-pointer hover:text-zinc-900 dark:hover:text-white"
-                @click="setSort('minutes')"
+                scope="col"
+                class="py-2.5 px-2 text-center"
+                :aria-sort="ariaSortFor('minutes')"
               >
-                MIN <span v-if="sortField === 'minutes'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  @click="setSort('minutes')"
+                >
+                  MIN <span v-if="sortField === 'minutes'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 text-center text-emerald-700 dark:text-emerald-400 font-black cursor-pointer"
-                @click="setSort('goals')"
+                scope="col"
+                class="py-2.5 px-2 text-center text-emerald-700 dark:text-emerald-400 font-black"
+                :aria-sort="ariaSortFor('goals')"
               >
-                G <span v-if="sortField === 'goals'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer"
+                  @click="setSort('goals')"
+                >
+                  G <span v-if="sortField === 'goals'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 text-center text-sky-700 dark:text-sky-400 font-bold cursor-pointer"
-                @click="setSort('assists')"
+                scope="col"
+                class="py-2.5 px-2 text-center text-sky-700 dark:text-sky-400 font-bold"
+                :aria-sort="ariaSortFor('assists')"
               >
-                A <span v-if="sortField === 'assists'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer"
+                  @click="setSort('assists')"
+                >
+                  A <span v-if="sortField === 'assists'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
               <th
-                class="py-2.5 px-2 text-center font-black text-amber-700 dark:text-amber-400 cursor-pointer"
-                @click="setSort('ga')"
+                scope="col"
+                class="py-2.5 px-2 text-center font-black text-amber-700 dark:text-amber-400"
+                :aria-sort="ariaSortFor('ga')"
               >
-                G+A <span v-if="sortField === 'ga'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer"
+                  @click="setSort('ga')"
+                >
+                  G+A <span v-if="sortField === 'ga'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
-              <th class="py-2.5 px-2 text-center text-amber-700 dark:text-amber-300">
+              <th
+                scope="col"
+                class="py-2.5 px-2 text-center text-amber-700 dark:text-amber-300"
+              >
                 🟨
               </th>
-              <th class="py-2.5 px-2 text-center text-rose-700 dark:text-rose-400">
+              <th
+                scope="col"
+                class="py-2.5 px-2 text-center text-rose-700 dark:text-rose-400"
+              >
                 🟥
               </th>
               <th
-                class="py-2.5 px-2 text-right text-emerald-700 dark:text-emerald-400 font-black cursor-pointer"
-                @click="setSort('rating')"
+                scope="col"
+                class="py-2.5 px-2 text-right text-emerald-700 dark:text-emerald-400 font-black"
+                :aria-sort="ariaSortFor('rating')"
               >
-                RATING <span v-if="sortField === 'rating'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer"
+                  @click="setSort('rating')"
+                >
+                  RATING <span v-if="sortField === 'rating'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </button>
               </th>
             </tr>
           </thead>
@@ -246,20 +332,25 @@ const emit = defineEmits<{
             <tr
               v-for="p in sortedPlayerStats"
               :key="p.player.id"
-              class="hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
-              title="Click to view full player attributes"
-              @click="emit('inspectPlayer', p.player)"
+              class="hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors group"
             >
-              <td class="py-2.5 px-2 font-bold text-zinc-900 dark:text-white flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
-                <CountryFlag
-                  :country="p.player.country"
-                  size="sm"
-                />
-                <span class="truncate max-w-[7.5rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
-                <UIcon
-                  name="i-lucide-info"
-                  class="size-3 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                />
+              <td class="py-2.5 px-2 font-bold text-zinc-900 dark:text-white">
+                <button
+                  type="button"
+                  class="w-full flex items-center gap-2 text-left cursor-pointer group-hover:text-emerald-400 transition-colors"
+                  title="Click to view full player attributes"
+                  @click="emit('inspectPlayer', p.player)"
+                >
+                  <CountryFlag
+                    :country="p.player.country"
+                    size="sm"
+                  />
+                  <span class="truncate max-w-[7.5rem] sm:max-w-[12rem]">{{ p.player.name }}</span>
+                  <UIcon
+                    name="i-lucide-info"
+                    class="size-3 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  />
+                </button>
               </td>
               <td class="py-2.5 px-2 text-zinc-600 dark:text-zinc-400 font-semibold">
                 {{ p.player.primaryPosition }}
