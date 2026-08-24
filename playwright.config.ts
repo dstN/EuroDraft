@@ -10,6 +10,11 @@ export default defineConfig({
   timeout: 45000,
   retries: 1,
   globalSetup: './tests/e2e/global-setup.ts',
+  // Explicit so CI has an HTML report to upload as an artifact on failure
+  // (Playwright's own default reporter in CI is 'dot', which produces no
+  // file output at all -- github's "list" is the closest human-readable
+  // terminal reporter to what local runs already use).
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
     headless: true,
