@@ -131,8 +131,24 @@ Passenger after any change.
 
 | Variable       | Required | Description                                                        |
 | --------------- | -------- | -------------------------------------------------------------------- |
-| `DATABASE_URL` | no       | `mysql://user:pass@host:3306/dbname`. Unset = leaderboard shows a "coming soon" state; everything else works normally. |
-| `NODE_ENV`     | no       | Set by Passenger from the panel's Application Mode — don't set it manually. |
+| `DATABASE_URL` | no       | `mysql://user:pass@host:3306/dbname`. Unset = leaderboard shows "coming soon" and share links (`/r/<id>`) are ephemeral (in-memory, per worker); everything else works normally. |
+| `NODE_ENV`     | no       | Set by Passenger from the panel's Application Mode — don't set it manually. Also gates the contact form's failure mode below. |
+| `SMTP_HOST` / `MAIL_HOST` | see below | SMTP server hostname. |
+| `SMTP_PORT` / `MAIL_PORT` | no       | Default `587`. |
+| `SMTP_USER` / `MAIL_USER` | no       | Default `system@rntm.de`. |
+| `SMTP_PASS` / `MAIL_PASS` / `SMTP_PASSWORD` | see below | SMTP password. |
+| `SMTP_SECURE` | no       | `true` forces implicit TLS; otherwise inferred from `SMTP_PORT === 465`. |
+| `SMTP_FROM`    | no       | Default `"EuroDraft System" <system@rntm.de>`. |
+| `CONTACT_RECIPIENT` | no  | Where contact-form submissions are sent. Default `info@rntm.de`. |
+
+`SMTP_HOST`/`MAIL_HOST` and `SMTP_PASS`/`MAIL_PASS`/`SMTP_PASSWORD` are
+required *together* for the contact form (`server/api/contact.post.ts`) to
+actually send mail. Without them: in dev, submissions are logged to the
+console instead (`mock: true` in the response); **in production, the
+endpoint returns `503`** rather than falsely reporting success — check
+`GET /api/health`'s `contactForm` field (`"configured"` /
+`"not_configured"`), which only counts against overall health when
+`NODE_ENV=production`.
 
 Nitro's `node-server` preset reads `PORT`/`HOST` itself; Passenger sets
 those before spawning the process, so no extra config should be needed

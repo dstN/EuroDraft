@@ -17,6 +17,19 @@ export default defineEventHandler(async (event) => {
   let database: 'connected' | 'disconnected' | 'not_configured' = 'not_configured'
   let playerDatabase: 'ok' | 'unreachable' = 'ok'
 
+  // Only unhealthy when SMTP is missing in production -- see
+  // server/api/contact.post.ts, which throws 503 rather than silently
+  // dropping messages in exactly that state. Locally/in dev, an
+  // unconfigured SMTP is expected (the endpoint logs to console instead).
+  const contactFormConfigured = !!(
+    (process.env.SMTP_HOST || process.env.MAIL_HOST)
+    && (process.env.SMTP_PASS || process.env.MAIL_PASS || process.env.SMTP_PASSWORD)
+  )
+  const contactForm: 'configured' | 'not_configured' = contactFormConfigured ? 'configured' : 'not_configured'
+  if (!contactFormConfigured && process.env.NODE_ENV === 'production') {
+    problems.push('SMTP_HOST/SMTP_PASS')
+  }
+
   if (isDbConfigured()) {
     try {
       const db = getDbPool()
@@ -46,6 +59,7 @@ export default defineEventHandler(async (event) => {
     uptime: process.uptime(),
     database,
     playerDatabase,
+    contactForm,
     ...(problems.length ? { problems } : {})
   }
 
