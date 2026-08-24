@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /r/
+Disallow: /og/
+
+Sitemap: https://ed.rntm.de/sitemap.xml
