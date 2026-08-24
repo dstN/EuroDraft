@@ -70,7 +70,7 @@ function skipCurrentMatch() {
     <div class="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
       <div class="flex items-center gap-2">
         <span class="size-2 rounded-full bg-rose-600 animate-ping" />
-        <span class="text-xs font-mono font-bold uppercase tracking-widest text-rose-700 dark:text-rose-400">
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-rose-800 dark:text-rose-300">
           Live Match · {{ match.phase.toUpperCase() }}
         </span>
       </div>
@@ -96,18 +96,18 @@ function skipCurrentMatch() {
         />
         <h3
           class="text-sm sm:text-base font-black truncate max-w-full"
-          :class="match.teamA.team.id === playerTeamId ? 'text-emerald-700 dark:text-emerald-400' : 'text-zinc-900 dark:text-white'"
+          :class="match.teamA.team.id === playerTeamId ? 'text-emerald-800 dark:text-emerald-300' : 'text-zinc-900 dark:text-white'"
         >
           {{ match.teamA.team.countryName }}
         </h3>
-        <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
+        <span class="text-xs font-mono text-zinc-700 dark:text-zinc-300 font-bold">
           OVR {{ match.teamA.team.averageOVR }}
         </span>
       </div>
 
       <!-- Live Score Numbers with Pop Animation on Change -->
       <div class="text-center px-4 shrink-0">
-        <div class="font-mono text-3xl sm:text-5xl font-black text-emerald-700 dark:text-emerald-400 tracking-wider">
+        <div class="font-mono text-3xl sm:text-5xl font-black text-emerald-800 dark:text-emerald-300 tracking-wider">
           {{ currentScoreA }} – {{ currentScoreB }}
         </div>
         <p
@@ -118,7 +118,7 @@ function skipCurrentMatch() {
         </p>
         <p
           v-else
-          class="text-xs font-mono uppercase text-zinc-600 dark:text-zinc-400 mt-1 font-bold"
+          class="text-xs font-mono uppercase text-zinc-700 dark:text-zinc-300 mt-1 font-bold"
         >
           {{ isFinished ? 'Full-Time' : 'In Progress' }}
         </p>
@@ -132,37 +132,42 @@ function skipCurrentMatch() {
         />
         <h3
           class="text-sm sm:text-base font-black truncate max-w-full"
-          :class="match.teamB.team.id === playerTeamId ? 'text-emerald-700 dark:text-emerald-400' : 'text-zinc-900 dark:text-white'"
+          :class="match.teamB.team.id === playerTeamId ? 'text-emerald-800 dark:text-emerald-300' : 'text-zinc-900 dark:text-white'"
         >
           {{ match.teamB.team.countryName }}
         </h3>
-        <span class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
+        <span class="text-xs font-mono text-zinc-700 dark:text-zinc-300 font-bold">
           OVR {{ match.teamB.team.averageOVR }}
         </span>
       </div>
     </div>
 
     <!-- Live Commentary Feed -->
-    <div class="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/10 max-h-48 overflow-y-auto custom-scroll pr-1">
+    <div
+      class="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/10 max-h-48 overflow-y-auto custom-scroll pr-1"
+      tabindex="0"
+      role="log"
+      aria-label="Live match commentary"
+    >
       <div
         v-for="(ev, idx) in currentEvents"
         :key="idx"
         class="flex items-start gap-2.5 text-xs p-2 rounded-lg transition-all"
         :class="[
           ev.type === 'goal'
-            ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-500/30 shadow-sm'
+            ? 'bg-emerald-500/15 text-emerald-950 dark:text-emerald-200 font-bold border border-emerald-500/30 shadow-sm'
             : ev.type === 'yellow-card' || ev.type === 'red-card'
-              ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30'
+              ? 'bg-amber-500/15 text-amber-950 dark:text-amber-200 font-bold border border-amber-500/30'
               : ev.type === 'extra-time' || ev.type === 'penalty-shootout'
                 ? 'bg-violet-500/15 text-violet-800 dark:text-violet-300 font-bold border border-violet-500/30 shadow-sm'
                 : 'bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200'
         ]"
       >
-        <span class="font-mono font-bold text-zinc-600 dark:text-zinc-400 w-7 shrink-0">{{ ev.minute }}'</span>
+        <span class="font-mono font-bold text-zinc-700 dark:text-zinc-300 w-7 shrink-0">{{ ev.minute }}'</span>
         <span class="flex-1 leading-snug">{{ ev.description }}</span>
         <span
           v-if="ev.type === 'goal'"
-          class="font-mono font-black text-xs px-1.5 py-0.5 rounded bg-emerald-700 text-white shrink-0"
+          class="font-mono font-black text-xs px-1.5 py-0.5 rounded bg-emerald-900 text-white shrink-0"
         >
           {{ ev.scoreA }}–{{ ev.scoreB }}
         </span>

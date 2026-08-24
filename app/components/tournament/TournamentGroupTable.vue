@@ -32,7 +32,7 @@ const isOpen = defineModel<boolean>('open', { default: false })
             <span
               v-if="standing"
               class="text-xs font-mono px-2 py-0.5 rounded-md font-bold"
-              :class="standing.rank <= 2 ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'"
+              :class="standing.rank <= 2 ? 'bg-emerald-500/20 text-emerald-950 dark:text-emerald-200' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'"
             >
               {{ standing.rank }}. Place · {{ standing.standing.points }} Pts
             </span>
