@@ -29,7 +29,9 @@ function parseShareRefs(body: unknown): ShareRef[] {
 // neither of which should surface any information about the record.
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
-  const shareRefs = parseShareRefs(body).filter(ref => verifyDeleteToken(ref.id, ref.token))
+  const candidates = parseShareRefs(body)
+  const verified = await Promise.all(candidates.map(ref => verifyDeleteToken(ref.id, ref.token)))
+  const shareRefs = candidates.filter((_ref, i) => verified[i])
 
   const serverRecords: unknown[] = []
   const leaderboardRecords: unknown[] = []
@@ -37,7 +39,7 @@ export default defineEventHandler(async (event) => {
   const db = isDbConfigured() ? getDbPool() : null
 
   for (const { id } of shareRefs) {
-    const record = getSharedRun(id)
+    const record = await getSharedRun(id)
     if (record) {
       serverRecords.push(record)
     }
