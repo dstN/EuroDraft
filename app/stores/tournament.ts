@@ -32,7 +32,7 @@ function buildTournamentTeam(
   }
 }
 
-function buildGroupStandings(teams: TournamentTeam[], matches: MatchResult[]): GroupStanding[] {
+export function buildGroupStandings(teams: TournamentTeam[], matches: MatchResult[]): GroupStanding[] {
   const standings: Map<string, GroupStanding> = new Map(
     teams.map(t => [t.id, {
       team: t, played: 0, won: 0, drawn: 0, lost: 0,
