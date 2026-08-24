@@ -88,12 +88,6 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'node-server',
-    // mysql2 is pure JS (no native bindings) but Nitro's default externals
-    // heuristic still leaves it out of the bundle -- inline it so the deploy
-    // artifact needs no node_modules on the server. See DEPLOYMENT.md.
-    externals: {
-      inline: ['mysql2']
-    },
     // On the node-server preset, the static-asset manifest embedded in the
     // server bundle is frozen while `.output/public` is still empty --
     // compression that runs later in the same build (including this option)
