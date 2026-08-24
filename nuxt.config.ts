@@ -132,6 +132,9 @@ export default defineNuxtConfig({
     ],
     defaultLocale: 'en',
     langDir: 'locales/'
+    // vue-i18n options like `fallbackLocale` aren't set here -- this module
+    // version resolves them from `i18n.config.ts` at the project root
+    // (its `vueI18n` option default), not inline in this block.
   },
 
   // @nuxt/icon, @nuxt/fonts, @nuxtjs/color-mode are auto-registered by @nuxt/ui

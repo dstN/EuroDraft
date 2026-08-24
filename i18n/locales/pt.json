@@ -4,6 +4,9 @@
     "tagline": "Monta a tua equipa de sonho",
     "description": "Escolhe jogadores das seleções históricas continentais e compete numa simulação completa de torneio."
   },
+  "common": {
+    "skip_to_content": "Saltar para o conteúdo principal"
+  },
   "nav": {
     "draft": "Draft",
     "tournament": "Torneio",

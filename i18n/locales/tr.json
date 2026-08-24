@@ -4,6 +4,9 @@
     "tagline": "Hayalindeki takımı kur",
     "description": "Tarihsel kıtasal turnuva kadrolarından oyuncu seç ve tam bir simülasyonda yarış."
   },
+  "common": {
+    "skip_to_content": "Ana içeriğe geç"
+  },
   "nav": {
     "draft": "Draft",
     "tournament": "Turnuva",
