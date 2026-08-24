@@ -56,7 +56,12 @@ watch([() => props.open, activeTab], ([isOpen]) => {
         class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto"
         @click.self="emit('update:open', false)"
       >
-        <div class="relative w-full max-w-2xl bg-zinc-900 border border-zinc-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col space-y-4 p-5 sm:p-6 text-zinc-100 animate-scale-in max-h-[90vh]">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-modal-title"
+          class="relative w-full max-w-2xl bg-zinc-900 border border-zinc-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col space-y-4 p-5 sm:p-6 text-zinc-100 animate-scale-in max-h-[90vh]"
+        >
           <!-- Modal Header -->
           <div class="flex items-center justify-between pb-3 border-b border-white/10">
             <div class="flex items-center gap-2.5">
@@ -66,7 +71,10 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                   class="size-5"
                 />
               </div>
-              <h3 class="text-base sm:text-lg font-bold text-white">
+              <h3
+                id="share-modal-title"
+                class="text-base sm:text-lg font-bold text-white"
+              >
                 Share Your Tournament Run
               </h3>
             </div>
@@ -74,6 +82,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
             <button
               type="button"
               class="size-8 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center cursor-pointer transition-colors"
+              aria-label="Close share modal"
               @click="emit('update:open', false)"
             >
               <UIcon
@@ -136,6 +145,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               <input
                 readonly
                 :value="shareLinkUrl"
+                aria-label="Your shareable link"
                 class="flex-1 px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-xs font-mono text-emerald-300 select-all focus:outline-none"
               >
               <button
@@ -205,6 +215,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 readonly
                 rows="9"
                 :value="wordleShareText"
+                aria-label="Shareable text summary of your tournament run"
                 class="w-full p-3.5 rounded-xl bg-black/60 border border-white/10 text-xs font-mono text-zinc-200 resize-none focus:outline-none select-all"
               />
             </div>

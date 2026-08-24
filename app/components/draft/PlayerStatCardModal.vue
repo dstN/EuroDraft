@@ -102,6 +102,9 @@ function getPositionColor(pos: PositionCode) {
         @click.self="close"
       >
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="player-stat-card-title"
           class="relative w-full max-w-md rounded-2xl border p-5 sm:p-6 transition-all select-none overflow-hidden"
           :class="tierStyles.glow"
         >
@@ -165,7 +168,10 @@ function getPositionColor(pos: PositionCode) {
                 </span>
               </div>
 
-              <h3 class="text-lg sm:text-xl font-black text-white tracking-tight truncate">
+              <h3
+                id="player-stat-card-title"
+                class="text-lg sm:text-xl font-black text-white tracking-tight truncate"
+              >
                 {{ player.name }}
               </h3>
 
