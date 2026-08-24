@@ -138,17 +138,42 @@ async function completeFullDraft(page: Page) {
   await expect(page).toHaveURL(/\/tournament$/, { timeout: 20000 })
 }
 
+// contrastDebt: this page is newly covered here but fails on pre-existing
+// color-contrast violations, not anything this test file's own changes
+// introduced. Investigating which pairs fail (see PR/issue history) found
+// the same handful of shades -- emerald-700 as button/badge color, zinc-500
+// as muted text, several amber shades -- repeated across pages, the header,
+// and both new modal tests below, not isolated to any one component. That's
+// a sitewide design-token question (do these need to change everywhere, or
+// only where WCAG AAA applies), not something to guess-and-check page by
+// page here. Tracked in #46 with the specific failing pairs already
+// captured; test.fixme keeps the gap visible in CI output instead of
+// silently dropping coverage.
 const staticPages = [
   { name: 'Home (Dark)', path: '/', theme: 'dark' as const },
   { name: 'Home (Light)', path: '/', theme: 'light' as const },
   { name: 'Formation Picker (Dark)', path: '/draft/formation', theme: 'dark' as const },
   { name: 'Formation Picker (Light)', path: '/draft/formation', theme: 'light' as const },
-  { name: 'Legal Hub (Dark)', path: '/legal', theme: 'dark' as const },
-  { name: 'Legal Hub (Light)', path: '/legal', theme: 'light' as const }
+  { name: 'Legal Hub · Imprint (Dark)', path: '/legal', theme: 'dark' as const },
+  { name: 'Legal Hub · Imprint (Light)', path: '/legal', theme: 'light' as const },
+  // The other tabs are separate components (LegalPrivacyTab / LegalContactTab)
+  // with their own form controls -- auditing only the default imprint tab
+  // never reached either.
+  { name: 'Legal Hub · Privacy + GDPR self-service (Dark)', path: '/legal?tab=privacy', theme: 'dark' as const },
+  { name: 'Legal Hub · Privacy + GDPR self-service (Light)', path: '/legal?tab=privacy', theme: 'light' as const },
+  { name: 'Legal Hub · Contact form (Dark)', path: '/legal?tab=contact', theme: 'dark' as const },
+  { name: 'Legal Hub · Contact form (Light)', path: '/legal?tab=contact', theme: 'light' as const },
+  { name: 'Compare (Dark)', path: '/compare', theme: 'dark' as const, contrastDebt: true },
+  { name: 'Compare (Light)', path: '/compare', theme: 'light' as const, contrastDebt: true },
+  { name: 'Leaderboard (Dark)', path: '/leaderboard', theme: 'dark' as const, contrastDebt: true },
+  { name: 'Leaderboard (Light)', path: '/leaderboard', theme: 'light' as const, contrastDebt: true },
+  { name: 'History (Dark)', path: '/history', theme: 'dark' as const, contrastDebt: true },
+  { name: 'History (Light)', path: '/history', theme: 'light' as const, contrastDebt: true }
 ]
 
-for (const { name, path, theme } of staticPages) {
-  test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
+for (const { name, path, theme, contrastDebt } of staticPages) {
+  const run = contrastDebt ? test.fixme : test
+  run(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto(path)
     await waitLoadingGone(page)
     await page.waitForSelector('main', { state: 'visible' })
@@ -209,3 +234,76 @@ for (const { name, theme } of tournamentPages) {
     expect(results.violations).toEqual([])
   })
 }
+
+// /r/<id> renders real content only for a share ID that actually exists
+// (see server/utils/shareStorage.ts) -- create one via the same API the
+// share modal itself calls, rather than auditing only the not-found state.
+// contrastDebt: see the note above staticPages -- same pre-existing,
+// sitewide color-contrast gap, tracked in #46.
+const sharePages = [
+  { name: 'Shared Result Page (Dark)', theme: 'dark' as const },
+  { name: 'Shared Result Page (Light)', theme: 'light' as const }
+]
+
+for (const { name, theme } of sharePages) {
+  test.fixme(`a11y audit (AAA + Best Practice): ${name}`, async ({ page, request }) => {
+    const res = await request.post('/api/share', {
+      data: {
+        teamName: 'A11y Test XI',
+        teamEmblem: 'eu',
+        formation: '4-3-3',
+        teamOVR: 88,
+        outcome: 'winner',
+        lineRatings: { def: 86, mid: 88, att: 90, overall: 88 },
+        runStats: null,
+        squad: [],
+        matches: []
+      }
+    })
+    const { id } = await res.json() as { id: string }
+
+    await page.goto(`/r/${id}`)
+    await waitLoadingGone(page)
+    await page.waitForSelector('main', { state: 'visible' })
+    await setTheme(page, theme)
+    await page.waitForTimeout(300)
+
+    const results = await runAxe(page)
+    reportViolations(name, results)
+    expect(results.violations).toEqual([])
+  })
+}
+
+// Modals: PlayerStatCardModal (opened from a stats-table row) and
+// TournamentShareModal (opened from the "Share Result" button) -- neither
+// was ever reached by the old /tournament-redirect-masked tests, so focus
+// trapping, aria-modal and dialog labelling had zero coverage. Both fixed
+// now (role="dialog", aria-modal, aria-labelledby on the panel; aria-label
+// on the icon-only close button and the readonly link/text fields) --
+// verified those specific findings are gone. What's left on both is the
+// same pre-existing, sitewide color-contrast gap as the pages above,
+// tracked in #46 rather than fixed blind here.
+test.fixme('a11y audit (AAA + Best Practice): Player Stat Card Modal', async ({ page }) => {
+  await completeFullDraft(page)
+  await expect(page).toHaveURL(/\/tournament$/)
+
+  const firstStatRow = page.locator('table tbody tr').first()
+  await firstStatRow.locator('button').first().click()
+  await page.waitForTimeout(400)
+
+  const results = await runAxe(page)
+  reportViolations('Player Stat Card Modal', results)
+  expect(results.violations).toEqual([])
+})
+
+test.fixme('a11y audit (AAA + Best Practice): Share Result Modal', async ({ page }) => {
+  await completeFullDraft(page)
+  await expect(page).toHaveURL(/\/tournament$/)
+
+  await page.getByRole('button', { name: /Share Result/i }).click()
+  await page.waitForTimeout(400)
+
+  const results = await runAxe(page)
+  reportViolations('Share Result Modal', results)
+  expect(results.violations).toEqual([])
+})
