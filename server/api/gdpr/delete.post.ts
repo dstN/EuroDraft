@@ -1,10 +1,32 @@
 import { getDbPool, isDbConfigured } from '../../utils/db'
+import { deleteSharedRun, verifyDeleteToken } from '../../utils/shareStorage'
 
+interface ShareRef {
+  id: string
+  token: string
+}
+
+function parseShareRefs(body: unknown): ShareRef[] {
+  const raw = body && typeof body === 'object' && Array.isArray((body as { shares?: unknown }).shares)
+    ? (body as { shares: unknown[] }).shares
+    : []
+
+  return raw
+    .filter((s): s is Record<string, unknown> => !!s && typeof s === 'object')
+    .map(s => ({
+      id: String(s.id ?? '').trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, ''),
+      token: String(s.token ?? '')
+    }))
+    .filter(s => s.id && s.token)
+}
+
+// Same ownership requirement as gdpr/export.post.ts -- a deletion token
+// proven per entry, share ID alone is not sufficient.
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
-  const shareIds: string[] = Array.isArray(body?.shareIds) ? body.shareIds : (body?.shareId ? [String(body.shareId)] : [])
+  const shareRefs = parseShareRefs(body).filter(ref => verifyDeleteToken(ref.id, ref.token))
 
-  if (shareIds.length === 0) {
+  if (shareRefs.length === 0) {
     return {
       success: true,
       deletedCount: 0,
@@ -18,14 +40,13 @@ export default defineEventHandler(async (event) => {
 
   const db = isDbConfigured() ? getDbPool() : null
 
-  for (const id of shareIds) {
-    const cleanId = String(id).trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, '')
-    if (deleteSharedRun(cleanId)) {
+  for (const { id } of shareRefs) {
+    if (deleteSharedRun(id)) {
       deletedCount++
-      deletedIds.push(cleanId)
+      deletedIds.push(id)
     }
     if (db) {
-      const [result] = await db.query('DELETE FROM leaderboard WHERE share_id = ?', [cleanId])
+      const [result] = await db.query('DELETE FROM leaderboard WHERE share_id = ?', [id])
       deletedLeaderboardCount += (result as { affectedRows: number }).affectedRows
     }
   }

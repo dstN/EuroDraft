@@ -204,6 +204,7 @@
     "gdpr_my_shares_heading": "Auf diesem Gerät erstellte Share-Links",
     "gdpr_delete_btn": "Vom Server löschen",
     "gdpr_delete_record_btn": "Server-Datensatz löschen",
-    "gdpr_manual_share_placeholder": "Share-ID (z. B. k8s9f2ja) oder Link zum Löschen eingeben..."
+    "gdpr_manual_share_placeholder": "Share-ID (z. B. k8s9f2ja) oder Link zum Löschen eingeben...",
+    "gdpr_manual_token_placeholder": "Löschtoken (aus deinem Datenexport)…"
   }
 }

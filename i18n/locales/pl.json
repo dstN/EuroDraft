@@ -204,6 +204,7 @@
     "gdpr_my_shares_heading": "Linki udostępniania utworzone na tym urządzeniu",
     "gdpr_delete_btn": "Usuń z serwera",
     "gdpr_delete_record_btn": "Usuń wpis z serwera",
-    "gdpr_manual_share_placeholder": "Wpisz ID udostępnienia lub link do usunięcia..."
+    "gdpr_manual_share_placeholder": "Wpisz ID udostępnienia lub link do usunięcia...",
+    "gdpr_manual_token_placeholder": "Token usunięcia (z eksportu danych)…"
   }
 }

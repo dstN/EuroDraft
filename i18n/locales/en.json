@@ -204,6 +204,7 @@
     "gdpr_my_shares_heading": "Share links created on this device",
     "gdpr_delete_btn": "Delete from Server",
     "gdpr_delete_record_btn": "Delete Server Record",
-    "gdpr_manual_share_placeholder": "Enter Share ID (e.g. k8s9f2ja) or URL to delete..."
+    "gdpr_manual_share_placeholder": "Enter Share ID (e.g. k8s9f2ja) or URL to delete...",
+    "gdpr_manual_token_placeholder": "Deletion token (from your data export)…"
   }
 }

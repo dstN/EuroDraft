@@ -3,6 +3,7 @@ interface MyShareItem {
   id: string
   teamName: string
   createdAt: string
+  deleteToken: string
 }
 
 const { t } = useI18n()
@@ -24,6 +25,7 @@ const localKeys = ref<Array<{ key: string, size: number, value: string }>>([])
 const totalStorageBytes = ref(0)
 const myShares = ref<MyShareItem[]>([])
 const manualShareInput = ref('')
+const manualTokenInput = ref('')
 const isExporting = ref(false)
 const isDeletingServer = ref(false)
 const actionMessage = ref<{ type: 'success' | 'error' | 'info', text: string } | null>(null)
@@ -81,8 +83,10 @@ async function handleExportData() {
       }
     }
 
-    // Query server for any shared run records
-    const shareIds = myShares.value.map(s => s.id)
+    // Query server for any shared run records this device holds a
+    // deletion token for -- a share ID alone no longer proves ownership
+    // (see server/utils/shareStorage.ts)
+    const shares = myShares.value.map(s => ({ id: s.id, token: s.deleteToken }))
     const serverRes = await $fetch<{
       success: boolean
       timestamp: string
@@ -91,7 +95,7 @@ async function handleExportData() {
       serverStoredRecords: Record<string, unknown>[]
     }>('/api/gdpr/export', {
       method: 'POST',
-      body: { shareIds }
+      body: { shares }
     }).catch(() => null)
 
     const exportBundle = {
@@ -133,15 +137,16 @@ async function handleExportData() {
   }
 }
 
-async function handleDeleteShareId(id: string) {
-  if (!id) return
+async function handleDeleteShareId(id: string, token: string) {
+  if (!id || !token) return
   isDeletingServer.value = true
   actionMessage.value = null
 
   try {
     const cleanId = id.trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, '')
     const res = await $fetch<{ success: boolean, message: string }>(`/api/share/${cleanId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      body: { token }
     })
 
     // Remove from local tracking
@@ -155,6 +160,7 @@ async function handleDeleteShareId(id: string) {
       text: res.message || `Shared run "${cleanId}" was permanently deleted from the server.`
     }
     manualShareInput.value = ''
+    manualTokenInput.value = ''
   } catch (err: unknown) {
     const errorMsg = (err as { data?: { statusMessage?: string } })?.data?.statusMessage || 'Could not find or delete this shared run record from the server.'
     actionMessage.value = {
@@ -378,7 +384,7 @@ function handleWipeLocalStorage() {
               type="button"
               :disabled="isDeletingServer"
               class="px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white font-bold text-xs flex items-center gap-1 transition cursor-pointer disabled:opacity-50"
-              @click="handleDeleteShareId(item.id)"
+              @click="handleDeleteShareId(item.id, item.deleteToken)"
             >
               <UIcon
                 name="i-lucide-trash-2"
@@ -390,19 +396,35 @@ function handleWipeLocalStorage() {
         </div>
       </div>
 
-      <!-- Manual Share ID Input Deletion -->
+      <!-- Manual Share ID + Token Input Deletion -->
       <div class="flex flex-col sm:flex-row gap-2 pt-2">
+        <label
+          for="gdpr-manual-share-id"
+          class="sr-only"
+        >{{ $t('legal.gdpr_manual_share_placeholder', 'Enter Share ID (e.g. k8s9f2ja) or URL to delete...') }}</label>
         <input
+          id="gdpr-manual-share-id"
           v-model="manualShareInput"
           type="text"
           :placeholder="$t('legal.gdpr_manual_share_placeholder', 'Enter Share ID (e.g. k8s9f2ja) or URL to delete...')"
           class="flex-1 px-3 py-2 text-xs rounded-lg bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-emerald-500"
         >
+        <label
+          for="gdpr-manual-token"
+          class="sr-only"
+        >{{ $t('legal.gdpr_manual_token_placeholder', 'Deletion token (from your data export)…') }}</label>
+        <input
+          id="gdpr-manual-token"
+          v-model="manualTokenInput"
+          type="text"
+          :placeholder="$t('legal.gdpr_manual_token_placeholder', 'Deletion token (from your data export)…')"
+          class="flex-1 px-3 py-2 text-xs rounded-lg bg-white dark:bg-black/40 border border-zinc-300 dark:border-white/10 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-emerald-500"
+        >
         <button
           type="button"
-          :disabled="!manualShareInput.trim() || isDeletingServer"
+          :disabled="!manualShareInput.trim() || !manualTokenInput.trim() || isDeletingServer"
           class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-40"
-          @click="handleDeleteShareId(manualShareInput)"
+          @click="handleDeleteShareId(manualShareInput, manualTokenInput)"
         >
           <UIcon
             v-if="isDeletingServer"

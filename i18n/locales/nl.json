@@ -204,6 +204,7 @@
     "gdpr_my_shares_heading": "Deellinks gemaakt op dit apparaat",
     "gdpr_delete_btn": "Verwijderen van server",
     "gdpr_delete_record_btn": "Serverrecord verwijderen",
-    "gdpr_manual_share_placeholder": "Voer Deel-ID of link in om te verwijderen..."
+    "gdpr_manual_share_placeholder": "Voer Deel-ID of link in om te verwijderen...",
+    "gdpr_manual_token_placeholder": "Verwijderingstoken (uit je gegevensexport)…"
   }
 }

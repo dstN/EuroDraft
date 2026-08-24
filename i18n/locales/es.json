@@ -204,6 +204,7 @@
     "gdpr_my_shares_heading": "Enlaces de compartir creados en este dispositivo",
     "gdpr_delete_btn": "Eliminar del servidor",
     "gdpr_delete_record_btn": "Eliminar registro del servidor",
-    "gdpr_manual_share_placeholder": "Ingrese el ID de compartir o enlace para eliminar..."
+    "gdpr_manual_share_placeholder": "Ingrese el ID de compartir o enlace para eliminar...",
+    "gdpr_manual_token_placeholder": "Token de eliminación (de tu exportación de datos)…"
   }
 }

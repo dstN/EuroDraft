@@ -21,14 +21,32 @@ function truncate(value: string, max: number): string {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value
 }
 
+// The API route that creates records (server/api/share.post.ts) already
+// validates every field before it reaches storage -- this coercion is
+// deliberate defense-in-depth, not the primary control: SharedRunRecord's
+// TypeScript types aren't enforced at runtime, and this renderer has no way
+// to know whether the record it was handed came from that validated path.
+// A non-numeric value here previously reached the SVG unescaped (verified:
+// a crafted `lineRatings.def` string produced a well-formed, executable
+// `<script>` in the served image/svg+xml response).
+function safeInt(value: unknown, min: number, max: number, fallback: number): number {
+  const n = Math.round(Number(value))
+  return Number.isFinite(n) && n >= min && n <= max ? n : fallback
+}
+
 /** Renders a 1200x630 Open Graph card for a shared tournament run, matching the site's static og-image.svg style */
 export function renderShareOgImage(record: SharedRunRecord | undefined): string {
   const teamName = escapeXml(truncate(record?.teamName || 'Dream XI', 26))
   const formation = escapeXml(record?.formation || '4-4-2')
-  const ovr = Number.isFinite(record?.teamOVR) ? record!.teamOVR : 0
+  const ovr = safeInt(record?.teamOVR, 0, 99, 0)
   const outcomeLabel = OUTCOME_LABELS[record?.outcome ?? ''] ?? 'TOURNAMENT RESULT'
   const isWinner = record?.outcome === 'winner'
-  const lineRatings = record?.lineRatings ?? { def: 0, mid: 0, att: 0, overall: ovr }
+  const lineRatings = {
+    def: safeInt(record?.lineRatings?.def, 0, 99, 0),
+    mid: safeInt(record?.lineRatings?.mid, 0, 99, 0),
+    att: safeInt(record?.lineRatings?.att, 0, 99, 0),
+    overall: safeInt(record?.lineRatings?.overall, 0, 99, ovr)
+  }
 
   const stat = (label: string, value: number, x: number) => `
     <g transform="translate(${x}, 410)" text-anchor="middle">

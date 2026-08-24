@@ -1,22 +1,48 @@
 import { getDbPool, isDbConfigured } from '../../utils/db'
+import { getSharedRun, verifyDeleteToken } from '../../utils/shareStorage'
 
+interface ShareRef {
+  id: string
+  token: string
+}
+
+function parseShareRefs(body: unknown): ShareRef[] {
+  const raw = body && typeof body === 'object' && Array.isArray((body as { shares?: unknown }).shares)
+    ? (body as { shares: unknown[] }).shares
+    : []
+
+  return raw
+    .filter((s): s is Record<string, unknown> => !!s && typeof s === 'object')
+    .map(s => ({
+      id: String(s.id ?? '').trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, ''),
+      token: String(s.token ?? '')
+    }))
+    .filter(s => s.id && s.token)
+}
+
+// Each entry must prove ownership with the deletion token issued at
+// creation time (POST /api/share) -- a share ID alone is not sufficient,
+// since share links are deliberately public and shared with other people.
+// Unproven entries are silently excluded rather than erroring the whole
+// request: the client only ever sends {id, token} pairs it holds locally,
+// so a mismatch means either a stale/foreign ID or a tampered request,
+// neither of which should surface any information about the record.
 export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
-  const shareIds: string[] = Array.isArray(body?.shareIds) ? body.shareIds : (body?.shareId ? [String(body.shareId)] : [])
+  const shareRefs = parseShareRefs(body).filter(ref => verifyDeleteToken(ref.id, ref.token))
 
   const serverRecords: unknown[] = []
   const leaderboardRecords: unknown[] = []
 
   const db = isDbConfigured() ? getDbPool() : null
 
-  for (const id of shareIds) {
-    const cleanId = String(id).trim().replace(/^https?:\/\/ed\.rntm\.de\/r\//, '')
-    const record = getSharedRun(cleanId)
+  for (const { id } of shareRefs) {
+    const record = getSharedRun(id)
     if (record) {
       serverRecords.push(record)
     }
     if (db) {
-      const [rows] = await db.query('SELECT * FROM leaderboard WHERE share_id = ?', [cleanId])
+      const [rows] = await db.query('SELECT * FROM leaderboard WHERE share_id = ?', [id])
       leaderboardRecords.push(...(rows as unknown[]))
     }
   }
