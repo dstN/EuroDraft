@@ -65,7 +65,20 @@ export function useDatabase() {
     if (_db) return
     if (_loadPromise) return _loadPromise
 
-    _loadPromise = $fetch<EuroDraftDB>('/eurodraft_db.json')
+    // A relative $fetch during SSR normally takes Nitro's "local fetch"
+    // shortcut (dispatch straight into the server's own request pipeline,
+    // no real network round-trip) -- but that shortcut only traverses
+    // Nitro's own route handlers, not Vite's dev-mode static-file
+    // middleware that actually serves public/ in `nuxt dev`. The result
+    // (verified): local fetch resolves relative paths correctly against
+    // the production build's compiled asset manifest, but 404s them in
+    // dev, which crashed SSR for every /draft/** and /tournament/** route.
+    // An absolute URL forces a real request instead, which both Vite's
+    // dev middleware and the production static handler answer correctly
+    // -- verified: identical ~2ms overhead in production, and dev works.
+    const url = import.meta.server ? `${useRequestURL().origin}/eurodraft_db.json` : '/eurodraft_db.json'
+
+    _loadPromise = $fetch<EuroDraftDB>(url)
       .then((db) => {
         _db = db
         buildIndexes(db)
