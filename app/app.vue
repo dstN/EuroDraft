@@ -33,14 +33,14 @@ useSeoMeta({
   description: 'Pick legendary players from Europe\'s top continental tournaments since 1960 and battle for glory in a full simulated tournament.',
   ogTitle: 'EuroDraft — Draft Your Euro Dream Team',
   ogDescription: 'Pick legendary players from 64 years of European tournament history and simulate a full continental championship.',
-  ogImage: '/og-image.svg',
+  ogImage: '/og-image.png',
   ogImageWidth: 1200,
   ogImageHeight: 630,
   ogType: 'website',
   twitterCard: 'summary_large_image',
   twitterTitle: 'EuroDraft — Draft Your Euro Dream Team',
   twitterDescription: 'Pick legendary players from 64 years of European tournament history and simulate a full continental championship.',
-  twitterImage: '/og-image.svg'
+  twitterImage: '/og-image.png'
 })
 
 const appLoading = useAppLoading()

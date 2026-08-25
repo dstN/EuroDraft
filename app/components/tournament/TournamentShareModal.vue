@@ -23,7 +23,8 @@ const activeTab = ref<'text' | 'image'>('text')
 const localePath = useLocalePath()
 
 const cardData = useShareCardData(props)
-const submission = useShareSubmission(props)
+const { canvasRef, copiedImage, renderCanvas, copyCanvasImage, downloadCanvasImage, uploadOgImage } = useShareCardCanvas(props, cardData)
+const submission = useShareSubmission(props, uploadOgImage)
 const {
   agreeToSave,
   shareLinkUrl,
@@ -38,7 +39,6 @@ const {
   onLeaderboardToggle
 } = submission
 const { wordleShareText, copiedText, copyShareText } = useShareCardText(props, cardData, submission)
-const { canvasRef, copiedImage, renderCanvas, copyCanvasImage, downloadCanvasImage } = useShareCardCanvas(props, cardData)
 
 watch([() => props.open, activeTab], ([isOpen]) => {
   if (isOpen) {
@@ -208,7 +208,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
 
           <!-- TAB 1: TEXT FORMAT -->
           <div
-            v-if="activeTab === 'text'"
+            v-show="activeTab === 'text'"
             class="space-y-4"
           >
             <div class="relative">
@@ -235,8 +235,13 @@ watch([() => props.open, activeTab], ([isOpen]) => {
           </div>
 
           <!-- TAB 2: CANVAS IMAGE FORMAT -->
+          <!-- v-show, not v-if/v-else: the canvas element must stay mounted
+               (so canvasRef is non-null) even while the text tab is showing,
+               since uploadOgImage() needs to render+capture it regardless of
+               which tab the user happens to have open when they opt in to
+               sharing. -->
           <div
-            v-else
+            v-show="activeTab === 'image'"
             class="space-y-4 flex flex-col items-center"
           >
             <div class="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg bg-black">
