@@ -47,19 +47,22 @@ function setTab(tab: LegalTab) {
       </p>
     </div>
 
-    <!-- Navigation Tabs (2x2 grid on mobile so long translated labels never force
-         horizontal scrolling; single row from sm up). overflow-hidden matters here:
-         the outer rounded-2xl (16px) minus its 6px padding leaves only 10px of
-         clearance, less than the active tab's own rounded-xl (12px) corner radius --
-         without clipping, that corner visibly pokes past the outer background at
-         the grid's own corners. -->
-    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden select-none">
+    <!-- Navigation Tabs: 4 equal-size tiles filling the bar edge-to-edge (2x2
+         grid on mobile so long translated labels never force horizontal
+         scrolling; single row from sm up), separated by a 1px "grout line"
+         (the gap-px + container background trick) instead of floating pills
+         with gaps around them -- reads as one clearly-bounded 4-way touch
+         surface instead of an odd, unevenly-shaped blob. overflow-hidden +
+         rounded-2xl on the container does ALL the corner rounding via clipping;
+         the tiles themselves are square, so there's no risk of a tile's own
+         corner radius mismatching and poking past the container's. -->
+    <div class="grid grid-cols-2 sm:flex gap-px bg-zinc-200 dark:bg-white/10 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden select-none">
       <button
         type="button"
-        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
+        class="sm:flex-1 py-3 px-2 sm:px-3.5 font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer text-center"
         :class="activeTab === 'imprint'
-          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
-          : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
+          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white'
+          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'"
         @click="setTab('imprint')"
       >
         <UIcon
@@ -71,10 +74,10 @@ function setTab(tab: LegalTab) {
 
       <button
         type="button"
-        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
+        class="sm:flex-1 py-3 px-2 sm:px-3.5 font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer text-center"
         :class="activeTab === 'privacy'
-          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
-          : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
+          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white'
+          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'"
         @click="setTab('privacy')"
       >
         <UIcon
@@ -86,10 +89,10 @@ function setTab(tab: LegalTab) {
 
       <button
         type="button"
-        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
+        class="sm:flex-1 py-3 px-2 sm:px-3.5 font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer text-center"
         :class="activeTab === 'terms'
-          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
-          : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
+          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white'
+          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'"
         @click="setTab('terms')"
       >
         <UIcon
@@ -101,10 +104,10 @@ function setTab(tab: LegalTab) {
 
       <button
         type="button"
-        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
+        class="sm:flex-1 py-3 px-2 sm:px-3.5 font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors cursor-pointer text-center"
         :class="activeTab === 'contact'
-          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
-          : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
+          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white'
+          : 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'"
         @click="setTab('contact')"
       >
         <UIcon
@@ -115,7 +118,10 @@ function setTab(tab: LegalTab) {
       </button>
     </div>
 
-    <LegalImprintTab v-if="activeTab === 'imprint'" />
+    <LegalImprintTab
+      v-if="activeTab === 'imprint'"
+      @switch-to-contact-tab="setTab('contact')"
+    />
     <LegalPrivacyTab v-else-if="activeTab === 'privacy'" />
     <LegalTermsTab v-else-if="activeTab === 'terms'" />
     <LegalContactTab
