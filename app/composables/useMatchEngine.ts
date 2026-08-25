@@ -168,10 +168,18 @@ export function useMatchEngine() {
     // Formation shape modifies each team's own attack/defense output; squad
     // chemistry then boosts (or leaves untouched) the resulting lambda --
     // see calculateFormationShape/calculateChemistryBonus above.
+    //
+    // Chemistry is gated to the player's own team (isPlayerTeam) -- an AI
+    // opponent is always a single real historical squad (one nation, one
+    // year, see buildTournamentTeam() in stores/tournament.ts), so *every*
+    // one of its players always shares country and year with all 10
+    // teammates. Applying the same formula to them wouldn't reward a lucky
+    // draft the way it does for the player -- it would just hand every AI
+    // team a permanent +11%, which is the opposite of the intent.
     const shapeA = calculateFormationShape(teamA.squad)
     const shapeB = calculateFormationShape(teamB.squad)
-    const chemistryA = calculateChemistryBonus(teamA.squad)
-    const chemistryB = calculateChemistryBonus(teamB.squad)
+    const chemistryA = teamA.isPlayerTeam ? calculateChemistryBonus(teamA.squad) : 0
+    const chemistryB = teamB.isPlayerTeam ? calculateChemistryBonus(teamB.squad) : 0
     const ovrBonusA = calculateOverallRatingBonus(teamA.averageOVR, teamB.averageOVR)
     const ovrBonusB = calculateOverallRatingBonus(teamB.averageOVR, teamA.averageOVR)
 
