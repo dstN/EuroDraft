@@ -176,7 +176,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
             />
             <UButton
               color="primary"
-              class="bg-emerald-800 hover:bg-emerald-700"
+              class="bg-emerald-800 hover:bg-emerald-700 !text-white"
               :loading="loadingA"
               :label="$t('compare.load')"
               @click="loadSlot('a')"
@@ -231,7 +231,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
             />
             <UButton
               color="primary"
-              class="bg-emerald-800 hover:bg-emerald-700"
+              class="bg-emerald-800 hover:bg-emerald-700 !text-white"
               :loading="loadingB"
               :label="$t('compare.load')"
               @click="loadSlot('b')"
