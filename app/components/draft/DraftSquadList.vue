@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DraftSlot, Player } from '~/types'
+import { abbreviateFirstName } from '~/utils/playerName'
 
 const props = defineProps<{
   squadWithEligibility: { player: Player, canDraft: boolean, compatibleSlots: DraftSlot[] }[]
@@ -20,8 +21,22 @@ const scrollContainer = ref<HTMLElement | null>(null)
 // not just when eligibility flags update within the same squad -- otherwise a
 // freshly-drafted squad opens at the same scroll offset the previous squad was
 // left at, which reads as broken/unfinished rather than a fresh list.
+//
+// A single scrollTop reset isn't reliable on touch devices: if the user was
+// still mid-flick when the reroll fired, iOS/Android momentum scrolling keeps
+// animating the list for a bit afterwards and silently overrides a one-shot
+// reset. Re-asserting scrollTop across a few animation frames outlasts that
+// momentum without needing to detect/cancel it directly.
 watch(() => props.squadKey, () => {
-  scrollContainer.value?.scrollTo({ top: 0 })
+  const el = scrollContainer.value
+  if (!el) return
+  let frames = 0
+  function forceTop() {
+    el!.scrollTop = 0
+    frames++
+    if (frames < 12) requestAnimationFrame(forceTop)
+  }
+  forceTop()
 })
 
 function positionColor(pos: string): string {
@@ -66,7 +81,7 @@ function positionColor(pos: string): string {
         <!-- Main Draft Selection Button -->
         <button
           type="button"
-          class="flex-1 flex items-center gap-3 px-2.5 py-1.5 text-left rounded-lg transition-transform focus:outline-none"
+          class="flex-1 min-w-0 flex items-center gap-3 px-2.5 py-1.5 text-left rounded-lg transition-transform focus:outline-none"
           :class="isPlayerEligible(entry.player) ? 'cursor-pointer active:scale-[0.99]' : 'cursor-not-allowed'"
           :disabled="!isPlayerEligible(entry.player)"
           :aria-label="$t('draft.aria_draft_player', { name: entry.player.name, position: entry.player.primaryPosition, rating: entry.player.stats.overall })"
@@ -85,9 +100,12 @@ function positionColor(pos: string): string {
             {{ entry.player.primaryPosition }}
           </span>
 
-          <!-- Name -->
+          <!-- Name: full on sm+ (more room); first-name-initial below sm, where
+               it would otherwise get truncated down to just a handful of
+               characters before hitting the shirt number/badges/rating -->
           <span class="flex-1 min-w-0 text-sm font-bold text-zinc-900 dark:text-white truncate">
-            {{ entry.player.name }}
+            <span class="hidden sm:inline">{{ entry.player.name }}</span>
+            <span class="sm:hidden">{{ abbreviateFirstName(entry.player.name) }}</span>
           </span>
 
           <!-- OVR rating badge with generous padding -->
