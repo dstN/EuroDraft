@@ -229,13 +229,15 @@ describe('formation shape and chemistry influence match outcomes', () => {
     expect(back4.conceded).toBeLessThan(back3.conceded)
   })
 
-  it('a squad with full chemistry outscores an otherwise-identical squad with none, on average', () => {
+  it('a player squad with full chemistry outscores an otherwise-identical one with none, on average', () => {
     const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
     const linkedSquad = positions.map((pos, i) => makePlayer(`linked-${i}`, pos, 75, { country: 'nl', year: 2008 }))
     const unlinkedSquad = positions.map((pos, i) => makePlayer(`unlinked-${i}`, pos, 75, { country: `c${i}`, year: 1980 + i }))
 
-    const teamLinked: TournamentTeam = { ...makeTeam('linked', 'Linked'), squad: linkedSquad }
-    const teamUnlinked: TournamentTeam = { ...makeTeam('unlinked', 'Unlinked'), squad: unlinkedSquad }
+    // Both marked isPlayerTeam -- chemistry is gated to the player's own
+    // team (see the next test), so this isolates the bonus itself.
+    const teamLinked: TournamentTeam = { ...makeTeam('linked', 'Linked'), squad: linkedSquad, isPlayerTeam: true }
+    const teamUnlinked: TournamentTeam = { ...makeTeam('unlinked', 'Unlinked'), squad: unlinkedSquad, isPlayerTeam: true }
 
     let linkedGoalsTotal = 0
     let unlinkedGoalsTotal = 0
@@ -247,6 +249,36 @@ describe('formation shape and chemistry influence match outcomes', () => {
     }
 
     expect(linkedGoalsTotal).toBeGreaterThan(unlinkedGoalsTotal)
+  })
+
+  it('chemistry does NOT apply to AI opponents, even though every real historical squad is 100% linked by construction', () => {
+    // Every AI team in this game is one real nation's squad from one real
+    // year (see buildTournamentTeam() in stores/tournament.ts) -- so every
+    // AI player always shares country AND year with all 10 teammates.
+    // Without gating on isPlayerTeam, calculateChemistryBonus would hand
+    // every single AI opponent the full +11%, always -- not a meaningful
+    // signal, just an artifact of how the data happens to be structured.
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const nationalSquad = positions.map((pos, i) => makePlayer(`nat-${i}`, pos, 75, { country: 'nl', year: 2008 }))
+    expect(calculateChemistryBonus(nationalSquad)).toBe(0.11) // the formula itself is correctly maxed...
+
+    const aiTeam: TournamentTeam = { ...makeTeam('nl2008', 'Netherlands'), squad: nationalSquad, isPlayerTeam: false }
+    const neutralOpponent = makeTeam('opp', 'Opponent')
+
+    let aiGoalsTotal = 0
+    let neutralGoalsTotal = 0
+    const runs = 400
+    for (let seed = 1; seed <= runs; seed++) {
+      const match = simulateMatch(aiTeam, neutralOpponent, 'group', seed)
+      aiGoalsTotal += match.teamA.goals
+      neutralGoalsTotal += match.teamB.goals
+    }
+
+    // ...but since aiTeam.isPlayerTeam is false, it should score the same
+    // as an equally-rated opponent on average, not benefit from it.
+    const ratio = aiGoalsTotal / neutralGoalsTotal
+    expect(ratio).toBeGreaterThan(0.85)
+    expect(ratio).toBeLessThan(1.15)
   })
 })
 
