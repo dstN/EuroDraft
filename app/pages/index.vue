@@ -72,22 +72,23 @@ const activeLegendIndex = ref(0)
 const currentLegend = computed(() => showcaseLegends[activeLegendIndex.value]!)
 
 // Mini Interactive Roulette Preview on Homepage
+const countryName = useCountryName()
 const previewSpinCountry = ref('nl')
-const previewSpinCountryName = ref('Netherlands')
 const previewSpinYear = ref(1988)
+const previewSpinCountryName = computed(() => countryName(previewSpinCountry.value))
 const isSpinningPreview = ref(false)
 
 const previewPool = [
-  { code: 'nl', name: 'Netherlands', year: 1988 },
-  { code: 'fr', name: 'France', year: 2000 },
-  { code: 'es', name: 'Spain', year: 2012 },
-  { code: 'de', name: 'Germany', year: 1996 },
-  { code: 'it', name: 'Italy', year: 2020 },
-  { code: 'pt', name: 'Portugal', year: 2016 },
-  { code: 'dk', name: 'Denmark', year: 1992 },
-  { code: 'gr', name: 'Greece', year: 2004 },
-  { code: 'gb-eng', name: 'England', year: 1996 },
-  { code: 'cz', name: 'Czech Republic', year: 1996 }
+  { code: 'nl', year: 1988 },
+  { code: 'fr', year: 2000 },
+  { code: 'es', year: 2012 },
+  { code: 'de', year: 1996 },
+  { code: 'it', year: 2020 },
+  { code: 'pt', year: 2016 },
+  { code: 'dk', year: 1992 },
+  { code: 'gr', year: 2004 },
+  { code: 'gb-eng', year: 1996 },
+  { code: 'cz', year: 1996 }
 ]
 
 function spinPreview() {
@@ -98,7 +99,6 @@ function spinPreview() {
   const interval = setInterval(() => {
     const pick = previewPool[Math.floor(Math.random() * previewPool.length)]!
     previewSpinCountry.value = pick.code
-    previewSpinCountryName.value = pick.name
     previewSpinYear.value = pick.year
     step++
     if (step >= maxSteps) {
@@ -108,37 +108,21 @@ function spinPreview() {
   }, 75)
 }
 
-// 4 Eras Bento Grid Data
-const tournamentEras = [
-  {
-    era: '1960 — 1980',
-    title: 'The Pioneer Era',
-    subtitle: 'From Yashin\'s penalty saves to Panenka\'s daring chip that created football history.',
-    tag: '4 Teams Era',
-    stars: ['Lev Yashin \'60', 'Gerd Müller \'72', 'Franz Beckenbauer \'72', 'Antonín Panenka \'76']
-  },
-  {
-    era: '1984 — 1992',
-    title: 'The Golden Age of Strikers',
-    subtitle: 'Platini\'s magical 9-goal masterpiece, Van Basten\'s volley, and Denmark\'s fairytale.',
-    tag: '8 Teams Era',
-    stars: ['Michel Platini \'84', 'Marco van Basten \'88', 'Ruud Gullit \'88', 'Peter Schmeichel \'92']
-  },
-  {
-    era: '1996 — 2004',
-    title: 'Superstars & Golden Goals',
-    subtitle: 'Zidane, Figo, Nedved, and the golden goal drama before Greece shocked the world.',
-    tag: '16 Teams Era',
-    stars: ['Zinedine Zidane \'00', 'Pavel Nedved \'04', 'Thierry Henry \'00', 'Wayne Rooney \'04']
-  },
-  {
-    era: '2008 — 2024',
-    title: 'Dynasties & Next Generation',
-    subtitle: 'Spain\'s back-to-back dominance, CR7\'s triumph, and Yamal\'s historic 2024 arrival.',
-    tag: '24 Teams Era',
-    stars: ['Andres Iniesta \'12', 'Cristiano Ronaldo \'16', 'Toni Kroos \'24', 'Lamine Yamal \'24']
-  }
+// 4 Eras Bento Grid Data — year range and star names are proper nouns/dates,
+// left untranslated; title/subtitle/tag are pulled from i18n by era index below.
+const { t } = useI18n()
+const tournamentEraMeta = [
+  { era: '1960 — 1980', stars: ['Lev Yashin \'60', 'Gerd Müller \'72', 'Franz Beckenbauer \'72', 'Antonín Panenka \'76'] },
+  { era: '1984 — 1992', stars: ['Michel Platini \'84', 'Marco van Basten \'88', 'Ruud Gullit \'88', 'Peter Schmeichel \'92'] },
+  { era: '1996 — 2004', stars: ['Zinedine Zidane \'00', 'Pavel Nedved \'04', 'Thierry Henry \'00', 'Wayne Rooney \'04'] },
+  { era: '2008 — 2024', stars: ['Andres Iniesta \'12', 'Cristiano Ronaldo \'16', 'Toni Kroos \'24', 'Lamine Yamal \'24'] }
 ]
+const tournamentEras = computed(() => tournamentEraMeta.map((meta, i) => ({
+  ...meta,
+  title: t(`landing.era_${i + 1}_title`),
+  subtitle: t(`landing.era_${i + 1}_subtitle`),
+  tag: t(`landing.era_${i + 1}_tag`)
+})))
 </script>
 
 <template>
@@ -155,19 +139,19 @@ const tournamentEras = [
               size="sm"
             />
             <span class="text-xs font-mono font-bold uppercase tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
-              EUROPEAN SQUADS 1960 — 2024
+              {{ $t('landing.hero_eyebrow') }}
             </span>
           </div>
 
           <!-- Main Championship Headline -->
           <h1 class="text-3xl sm:text-6xl font-black tracking-tight text-zinc-900 dark:text-white leading-[1.1] break-words">
-            Draft Europe's <br>
-            <span class="gold-text">Greatest Squads.</span>
+            {{ $t('landing.hero_headline_prefix') }} <br>
+            <span class="gold-text">{{ $t('landing.hero_headline_highlight') }}</span>
           </h1>
 
           <!-- Value Prop Paragraph -->
           <p class="text-base sm:text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-xl">
-            Choose your tactical formation, spin historical nations across 64 years of European tournament history, and build the ultimate XI to conquer the tournament.
+            {{ $t('landing.hero_subline') }}
           </p>
 
           <!-- CTAs with Button-in-Button Architecture -->
@@ -192,7 +176,7 @@ const tournamentEras = [
               variant="outline"
               color="neutral"
               class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100 w-full sm:w-auto justify-center"
-              label="Explore Eras & Roster"
+              :label="$t('landing.cta_explore')"
             />
           </div>
 
@@ -203,7 +187,7 @@ const tournamentEras = [
                 17
               </p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">
-                Tournaments
+                {{ $t('landing.stat_tournaments') }}
               </p>
             </div>
             <div>
@@ -211,7 +195,7 @@ const tournamentEras = [
                 4,658
               </p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">
-                Real Players
+                {{ $t('landing.stat_real_players') }}
               </p>
             </div>
             <div>
@@ -219,7 +203,7 @@ const tournamentEras = [
                 205
               </p>
               <p class="text-xs text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">
-                Historic Squads
+                {{ $t('landing.stat_historic_squads') }}
               </p>
             </div>
           </div>
@@ -273,10 +257,10 @@ const tournamentEras = [
     >
       <div class="text-center max-w-xl mx-auto mb-8 space-y-2">
         <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
-          How the Roulette Works
+          {{ $t('landing.roulette_heading') }}
         </h2>
         <p class="text-zinc-700 dark:text-zinc-300 text-sm">
-          Each draft round, the tournament wheel spins a random historical nation and year. Pick one player from that squad to lock into your tactical formation!
+          {{ $t('landing.roulette_description') }}
         </p>
       </div>
 
@@ -289,7 +273,7 @@ const tournamentEras = [
           />
           <div class="text-left">
             <span class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-widest block">
-              Continental Squad · {{ previewSpinYear }}
+              {{ $t('landing.roulette_squad_label', { year: previewSpinYear }) }}
             </span>
             <h3 class="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
               {{ previewSpinCountryName }}
@@ -309,7 +293,7 @@ const tournamentEras = [
               class="size-4 text-white"
               aria-hidden="true"
             />
-            <span>{{ isSpinningPreview ? 'Spinning Wheel...' : 'Test Spin the Wheel' }}</span>
+            <span>{{ isSpinningPreview ? $t('landing.roulette_spin_active') : $t('landing.roulette_spin_idle') }}</span>
           </button>
         </div>
       </div>
@@ -319,13 +303,13 @@ const tournamentEras = [
     <section class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
       <div class="max-w-xl mb-8 space-y-2">
         <span class="text-xs font-mono uppercase tracking-[0.2em] font-bold text-emerald-800 dark:text-emerald-300">
-          Historical Depth
+          {{ $t('landing.eras_eyebrow') }}
         </span>
         <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-          Four Eras of Legends.
+          {{ $t('landing.eras_heading') }}
         </h2>
         <p class="text-zinc-700 dark:text-zinc-300 text-sm">
-          Every tournament generation brings unique legends, iconic tactical styles, and authentic player ratings.
+          {{ $t('landing.eras_description') }}
         </p>
       </div>
 
@@ -356,7 +340,7 @@ const tournamentEras = [
           <!-- Notable Stars Tags -->
           <div class="pt-3 border-t border-zinc-200 dark:border-white/10">
             <p class="text-xs uppercase font-mono tracking-widest text-zinc-700 dark:text-zinc-300 mb-1.5 font-bold">
-              Notable Icons
+              {{ $t('landing.eras_notable_icons') }}
             </p>
             <div class="flex flex-wrap gap-1.5">
               <span
@@ -381,10 +365,10 @@ const tournamentEras = [
           aria-hidden="true"
         />
         <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-          Ready to Build Your <span class="gold-text">Champion XI</span>?
+          {{ $t('landing.footer_cta_heading_prefix') }} <span class="gold-text">{{ $t('landing.footer_cta_heading_highlight') }}</span>
         </h2>
         <p class="text-zinc-700 dark:text-zinc-300 text-sm sm:text-base max-w-md mx-auto">
-          Choose your formation, conquer the draft roulette, and test your dream team in a simulated continental tournament.
+          {{ $t('landing.footer_cta_description') }}
         </p>
         <div class="pt-2">
           <NuxtLink
