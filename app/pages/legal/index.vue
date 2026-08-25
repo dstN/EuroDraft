@@ -48,8 +48,12 @@ function setTab(tab: LegalTab) {
     </div>
 
     <!-- Navigation Tabs (2x2 grid on mobile so long translated labels never force
-         horizontal scrolling; single row from sm up) -->
-    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl select-none">
+         horizontal scrolling; single row from sm up). overflow-hidden matters here:
+         the outer rounded-2xl (16px) minus its 6px padding leaves only 10px of
+         clearance, less than the active tab's own rounded-xl (12px) corner radius --
+         without clipping, that corner visibly pokes past the outer background at
+         the grid's own corners. -->
+    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden select-none">
       <button
         type="button"
         class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
