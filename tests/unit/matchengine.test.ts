@@ -428,4 +428,63 @@ describe('individual legend scorer weight', () => {
 
     expect(legendGoals).toBeGreaterThan(rwGoals)
   })
+
+  it('is neutral in Legend Mode -- every player already qualifies as a legend, so ranking them is meaningless', () => {
+    const squad: Player[] = [
+      makePlayer('gk', 'GK', 91),
+      makePlayer('cb1', 'CB', 91),
+      makePlayer('cb2', 'CB', 91),
+      makePlayer('lb', 'LB', 91),
+      makePlayer('rb', 'RB', 91),
+      makePlayer('cdm', 'CDM', 91),
+      makePlayer('cm1', 'CM', 91),
+      makePlayer('cm2', 'CM', 91),
+      makePlayer('top-rated', 'ST', 99), // highest-rated, would dominate scorer weight outside Legend Mode
+      makePlayer('lw', 'LW', 91),
+      makePlayer('rw', 'RW', 91)
+    ]
+    const opponent = makeTeam('opp', 'Opponent')
+    const team: TournamentTeam = { ...makeTeam('legend-mode-team', 'LegendModeTeam'), squad, isLegendMode: true }
+
+    let topRatedGoals = 0
+    let rwGoals = 0
+    for (let seed = 1; seed <= 3000; seed++) {
+      const match = simulateMatch(team, opponent, 'group', seed)
+      for (const ev of match.events) {
+        if (ev.type !== 'goal' || ev.team !== 'A') continue
+        if (ev.playerId === 'top-rated') topRatedGoals++
+        if (ev.playerId === 'rw') rwGoals++
+      }
+    }
+
+    const ratio = topRatedGoals / rwGoals
+    expect(ratio).toBeGreaterThan(0.85)
+    expect(ratio).toBeLessThan(1.15)
+  })
+})
+
+describe('legend bonuses are suppressed for teams drafted in Legend Mode', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('row bonuses do not apply even though every player is 90+', () => {
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const legendModeSquad = positions.map((pos, i) => makePlayer(`p${i}`, pos, 92))
+
+    const legendModeTeam: TournamentTeam = { ...makeTeam('lm', 'LegendMode'), squad: legendModeSquad, isLegendMode: true }
+    const equallyRatedTeam: TournamentTeam = { ...makeTeam('lm-control', 'LegendModeControl'), squad: legendModeSquad, isLegendMode: false }
+    const opponent = makeTeam('opp', 'Opponent')
+
+    // Same squad ratings either way (both built from the same 92-rated
+    // positions), but the isLegendMode:false control should score more on
+    // average since it still gets the row bonuses.
+    let legendModeGoals = 0
+    let controlGoals = 0
+    const runs = 3000
+    for (let seed = 1; seed <= runs; seed++) {
+      legendModeGoals += simulateMatch(legendModeTeam, opponent, 'group', seed).teamA.goals
+      controlGoals += simulateMatch(equallyRatedTeam, opponent, 'group', seed).teamA.goals
+    }
+
+    expect(controlGoals).toBeGreaterThan(legendModeGoals)
+  })
 })

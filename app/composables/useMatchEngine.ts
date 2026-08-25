@@ -260,8 +260,13 @@ export function useMatchEngine() {
     const chemistryB = teamB.isPlayerTeam ? calculateChemistryBonus(teamB.squad) : 0
     const ovrBonusA = calculateOverallRatingBonus(teamA.averageOVR, teamB.averageOVR)
     const ovrBonusB = calculateOverallRatingBonus(teamB.averageOVR, teamA.averageOVR)
-    const rowLegendA = calculateRowLegendBonuses(teamA.squad)
-    const rowLegendB = calculateRowLegendBonuses(teamB.squad)
+    // Legend Mode restricts drafting to 90+ rated players only, so every
+    // single player in that squad is trivially a "legend" -- the whole
+    // point of these bonuses (a rare, earned edge) would be meaningless
+    // there, maxed out every single run. Never set for AI opponents, so
+    // this only ever suppresses the bonus for the player's own team.
+    const rowLegendA = teamA.isLegendMode ? { attack: 0, midfield: 0, defense: 0 } : calculateRowLegendBonuses(teamA.squad)
+    const rowLegendB = teamB.isLegendMode ? { attack: 0, midfield: 0, defense: 0 } : calculateRowLegendBonuses(teamB.squad)
 
     const effAttackA = teamA.attackRating * shapeA.attackMult * (1 + rowLegendA.attack)
     const effDefenseA = teamA.defenseRating * shapeA.defenseMult * (1 + rowLegendA.defense)
@@ -380,7 +385,10 @@ export function useMatchEngine() {
       )
       const defaultScorer = scoringTeam.squad[0] ?? _getFallbackPlayer(scoringTeam, 'scorer')
       const scorerPool = scorers.length > 0 ? scorers : scoringTeam.squad
-      const scorer = pickWeighted(scorerPool, p => legendScorerWeight(p, scoringTeam.squad), rng) ?? defaultScorer
+      // In Legend Mode every player is 90+ already, so ranking "the" legends
+      // among them is meaningless -- weight stays uniform there.
+      const scorerWeight = scoringTeam.isLegendMode ? () => 1 : (p: Player) => legendScorerWeight(p, scoringTeam.squad)
+      const scorer = pickWeighted(scorerPool, scorerWeight, rng) ?? defaultScorer
 
       const otherSquad = scoringTeam.squad.filter(p => p.id !== scorer.id)
       const maybeAssist = rng() > 0.4 && otherSquad.length > 0

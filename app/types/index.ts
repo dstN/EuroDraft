@@ -97,6 +97,12 @@ export interface TournamentTeam {
   countryName: string
   squad: Player[]
   isPlayerTeam: boolean
+  // True only for the player's own team when drafted under Legend Mode
+  // (every player is 90+ by construction there) -- never set for AI
+  // opponents, who don't have a "mode" they were drafted under. Used to
+  // switch off the legend-count bonuses in useMatchEngine.ts, which would
+  // otherwise be trivially maxed out for every single Legend Mode run.
+  isLegendMode?: boolean
   // Computed section ratings (0-99)
   averageOVR: number
   attackRating: number
