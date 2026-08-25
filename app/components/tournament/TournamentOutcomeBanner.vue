@@ -7,6 +7,8 @@ const emit = defineEmits<{
   playAgain: []
   share: []
 }>()
+
+const localePath = useLocalePath()
 </script>
 
 <template>
@@ -41,10 +43,10 @@ const emit = defineEmits<{
         class="size-14 mx-auto mb-2 text-slate-300"
       />
       <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white">
-        Finalist Finish
+        {{ $t('results.runner_up_title') }}
       </h2>
       <p class="text-zinc-600 dark:text-zinc-300 max-w-md mx-auto text-sm">
-        Your squad battled all the way to the Final and finished as proud runners-up!
+        {{ $t('results.runner_up_subtitle') }}
       </p>
     </div>
 
@@ -58,10 +60,10 @@ const emit = defineEmits<{
         class="size-12 mx-auto mb-2 text-amber-600"
       />
       <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
-        Semi-Final Finish
+        {{ $t('results.semi_final_title') }}
       </h2>
       <p class="text-zinc-600 dark:text-zinc-300 max-w-md mx-auto text-sm">
-        A remarkable tournament run that concluded in the Semi-Finals.
+        {{ $t('results.semi_final_subtitle') }}
       </p>
     </div>
 
@@ -75,10 +77,10 @@ const emit = defineEmits<{
         class="size-12 mx-auto mb-2 text-zinc-400"
       />
       <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
-        Quarter-Final Finish
+        {{ $t('results.quarter_final_title') }}
       </h2>
       <p class="text-zinc-600 dark:text-zinc-300 max-w-md mx-auto text-sm">
-        Your squad advanced from the group stage and reached the Quarter-Finals.
+        {{ $t('results.quarter_final_subtitle') }}
       </p>
     </div>
 
@@ -92,10 +94,10 @@ const emit = defineEmits<{
         class="size-12 mx-auto mb-2 text-zinc-500"
       />
       <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white">
-        Group Stage Eliminated
+        {{ $t('results.group_stage_title') }}
       </h2>
       <p class="text-zinc-600 dark:text-zinc-300 max-w-md mx-auto text-sm">
-        Your squad fought hard but was unable to qualify for the knockout stage.
+        {{ $t('results.group_stage_subtitle') }}
       </p>
     </div>
 
@@ -122,35 +124,35 @@ const emit = defineEmits<{
           name="i-lucide-share-2"
           class="size-4"
         />
-        <span>Share Result</span>
+        <span>{{ $t('results.share') }}</span>
       </button>
 
       <NuxtLink
-        to="/history"
+        :to="localePath('/history')"
         class="rounded-full px-5 py-2.5 font-bold text-sm bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white inline-flex items-center gap-2 transition-colors"
       >
         <UIcon
           name="i-lucide-history"
           class="size-4"
         />
-        <span>View History</span>
+        <span>{{ $t('results.view_history') }}</span>
       </NuxtLink>
 
       <NuxtLink
-        to="/"
+        :to="localePath('/')"
         class="rounded-full px-5 py-2.5 font-bold text-sm bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white inline-flex items-center gap-2 transition-colors"
       >
         <UIcon
           name="i-lucide-home"
           class="size-4"
         />
-        <span>Exit to Home</span>
+        <span>{{ $t('results.exit_home') }}</span>
       </NuxtLink>
     </div>
 
     <!-- Scroll Notice -->
     <p class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-400 pt-2 animate-pulse">
-      ↓ Scroll down for complete squad line ratings & player statistics
+      {{ $t('results.scroll_notice') }}
     </p>
   </div>
 </template>

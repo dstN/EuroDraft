@@ -17,6 +17,8 @@ const ratingTierClass = computed(() => {
   return 'text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-white/10 bg-zinc-100 dark:bg-zinc-800 font-bold'
 })
 
+const countryName = useCountryName()
+
 const positionBadgeColor = computed(() => {
   const p = props.player.primaryPosition
   if (p === 'GK') return 'bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-500/40'
@@ -49,7 +51,7 @@ const positionBadgeColor = computed(() => {
           class="text-xs font-bold font-mono px-1.5 py-0.5 rounded border uppercase"
           :class="positionBadgeColor"
         >
-          {{ player.primaryPosition }}
+          {{ $t(`draft.positions.${player.primaryPosition}`) }}
         </span>
       </div>
 
@@ -75,7 +77,7 @@ const positionBadgeColor = computed(() => {
         {{ player.name }}
       </p>
       <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider truncate">
-        {{ player.countryName }}
+        {{ countryName(player.country) }}
       </p>
     </div>
 
@@ -85,27 +87,27 @@ const positionBadgeColor = computed(() => {
       class="grid grid-cols-6 gap-1 pt-2 border-t border-zinc-200 dark:border-white/10 text-center text-xs font-mono"
     >
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PAC</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.pace') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.pace }}</span>
       </div>
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">SHO</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.shooting') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.shooting }}</span>
       </div>
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PAS</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.passing') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.passing }}</span>
       </div>
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">DRI</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.dribbling') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.dribbling }}</span>
       </div>
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">DEF</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.defending') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.defending }}</span>
       </div>
       <div>
-        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">PHY</span>
+        <span class="block text-zinc-700 dark:text-zinc-300 text-[10px] uppercase font-bold">{{ $t('draft.stats.physical') }}</span>
         <span class="font-bold text-zinc-900 dark:text-zinc-100">{{ player.stats.physical }}</span>
       </div>
     </div>

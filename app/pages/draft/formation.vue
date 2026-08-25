@@ -8,6 +8,9 @@ definePageMeta({ layout: 'default', middleware: ['ensure-database'] })
 const draft = useDraftStore()
 const roulette = useRouletteStore()
 const audio = useAudioStore()
+const { t } = useI18n()
+const countryName = useCountryName()
+const localePath = useLocalePath()
 
 // Pick 3 formations with SSR-safe hydration
 const formations = useState<Formation[]>('draft-formations', () => pickRandomFormations(3))
@@ -33,20 +36,9 @@ function reassignChallengeFormation() {
 }
 
 // Custom Formation Builder: pick exact position counts. GK is always 1 (fixed).
-const CUSTOM_POSITIONS: { code: Exclude<PositionCode, 'GK'>, label: string }[] = [
-  { code: 'CB', label: 'Center Back' },
-  { code: 'LB', label: 'Left Back' },
-  { code: 'RB', label: 'Right Back' },
-  { code: 'CDM', label: 'Def. Mid' },
-  { code: 'CM', label: 'Center Mid' },
-  { code: 'CAM', label: 'Att. Mid' },
-  { code: 'LM', label: 'Left Mid' },
-  { code: 'RM', label: 'Right Mid' },
-  { code: 'LW', label: 'Left Wing' },
-  { code: 'RW', label: 'Right Wing' },
-  { code: 'ST', label: 'Striker' },
-  { code: 'CF', label: 'Center Fwd' }
-]
+// Labels come from the shared draft.position_labels i18n key (not a local list)
+// so this stays in sync with every other position label in the app.
+const CUSTOM_POSITIONS: Exclude<PositionCode, 'GK'>[] = ['CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LM', 'RM', 'LW', 'RW', 'ST', 'CF']
 const CUSTOM_MAX_PER_POSITION = 6
 
 type CustomPositionCounts = Record<Exclude<PositionCode, 'GK'>, number>
@@ -73,7 +65,7 @@ const customFormationLabel = computed(() => `${customDefenseCount.value}-${custo
 
 const customFormation = computed<Formation>(() => ({
   id: 'custom',
-  label: `Custom (${customFormationLabel.value})`,
+  label: t('formation.custom_label', { formation: customFormationLabel.value }),
   slots: { GK: 1, ...customCounts.value }
 }))
 
@@ -81,93 +73,28 @@ const customFormation = computed<Formation>(() => ({
 const legendModeToggle = ref(false)
 
 // Top Picked Popular Nationalities
-const TOP_EMBLEM_CHOICES = [
-  { code: 'eu', label: 'Europe (All-Stars)' },
-  { code: 'de', label: 'Germany' },
-  { code: 'fr', label: 'France' },
-  { code: 'es', label: 'Spain' },
-  { code: 'it', label: 'Italy' },
-  { code: 'gb-eng', label: 'England' },
-  { code: 'nl', label: 'Netherlands' },
-  { code: 'pt', label: 'Portugal' },
-  { code: 'hr', label: 'Croatia' },
-  { code: 'tr', label: 'Türkiye' },
-  { code: 'be', label: 'Belgium' },
-  { code: 'at', label: 'Austria' }
-]
+const TOP_EMBLEM_CHOICES = ['eu', 'de', 'fr', 'es', 'it', 'gb-eng', 'nl', 'pt', 'hr', 'tr', 'be', 'at']
 
-// All 55+ European Nations & Territories
+// All 55+ European Nations & Territories -- codes only, labels come from
+// the countries.* i18n namespace via useCountryName() so this list doesn't
+// duplicate translation work already done for the shared country-name map.
 const ALL_EUROPEAN_FLAGS = [
-  { code: 'eu', label: 'Europe (All-Stars)' },
-  { code: 'al', label: 'Albania' },
-  { code: 'ad', label: 'Andorra' },
-  { code: 'am', label: 'Armenia' },
-  { code: 'at', label: 'Austria' },
-  { code: 'az', label: 'Azerbaijan' },
-  { code: 'by', label: 'Belarus' },
-  { code: 'be', label: 'Belgium' },
-  { code: 'ba', label: 'Bosnia & Herzegovina' },
-  { code: 'bg', label: 'Bulgaria' },
-  { code: 'hr', label: 'Croatia' },
-  { code: 'cy', label: 'Cyprus' },
-  { code: 'cz', label: 'Czechia' },
-  { code: 'cs', label: 'Czechoslovakia (Hist.)' },
-  { code: 'dk', label: 'Denmark' },
-  { code: 'gb-eng', label: 'England' },
-  { code: 'ee', label: 'Estonia' },
-  { code: 'fo', label: 'Faroe Islands' },
-  { code: 'fi', label: 'Finland' },
-  { code: 'fr', label: 'France' },
-  { code: 'ge', label: 'Georgia' },
-  { code: 'de', label: 'Germany' },
-  { code: 'gi', label: 'Gibraltar' },
-  { code: 'gr', label: 'Greece' },
-  { code: 'hu', label: 'Hungary' },
-  { code: 'is', label: 'Iceland' },
-  { code: 'ie', label: 'Ireland (Republic)' },
-  { code: 'il', label: 'Israel' },
-  { code: 'it', label: 'Italy' },
-  { code: 'kz', label: 'Kazakhstan' },
-  { code: 'xk', label: 'Kosovo' },
-  { code: 'lv', label: 'Latvia' },
-  { code: 'li', label: 'Liechtenstein' },
-  { code: 'lt', label: 'Lithuania' },
-  { code: 'lu', label: 'Luxembourg' },
-  { code: 'mt', label: 'Malta' },
-  { code: 'md', label: 'Moldova' },
-  { code: 'me', label: 'Montenegro' },
-  { code: 'nl', label: 'Netherlands' },
-  { code: 'mk', label: 'North Macedonia' },
-  { code: 'gb-nir', label: 'Northern Ireland' },
-  { code: 'no', label: 'Norway' },
-  { code: 'pl', label: 'Poland' },
-  { code: 'pt', label: 'Portugal' },
-  { code: 'ro', label: 'Romania' },
-  { code: 'sm', label: 'San Marino' },
-  { code: 'gb-sct', label: 'Scotland' },
-  { code: 'rs', label: 'Serbia' },
-  { code: 'sk', label: 'Slovakia' },
-  { code: 'si', label: 'Slovenia' },
-  { code: 'es', label: 'Spain' },
-  { code: 'se', label: 'Sweden' },
-  { code: 'ch', label: 'Switzerland' },
-  { code: 'tr', label: 'Türkiye' },
-  { code: 'ua', label: 'Ukraine' },
-  { code: 'gb-wls', label: 'Wales' },
-  { code: 'yu', label: 'Yugoslavia (Hist.)' }
+  'eu', 'al', 'ad', 'am', 'at', 'az', 'by', 'be', 'ba', 'bg', 'hr', 'cy', 'cz', 'cs', 'dk',
+  'gb-eng', 'ee', 'fo', 'fi', 'fr', 'ge', 'de', 'gi', 'gr', 'hu', 'is', 'ie', 'il', 'it',
+  'kz', 'xk', 'lv', 'li', 'lt', 'lu', 'mt', 'md', 'me', 'nl', 'mk', 'gb-nir', 'no', 'pl',
+  'pt', 'ro', 'sm', 'gb-sct', 'rs', 'sk', 'si', 'es', 'se', 'ch', 'tr', 'ua', 'gb-wls', 'yu'
 ]
 
-const NAME_PRESETS = [
-  'Dream XI',
-  'Total Football',
-  'Galácticos',
-  'Euro Titans',
-  'Vintage Kings'
-]
+const NAME_PRESETS = computed(() => [
+  t('formation.name_presets.dream_xi'),
+  t('formation.name_presets.total_football'),
+  t('formation.name_presets.galacticos'),
+  t('formation.name_presets.euro_titans'),
+  t('formation.name_presets.vintage_kings')
+])
 
 function getCountryLabel(code: string): string {
-  const found = ALL_EUROPEAN_FLAGS.find(f => f.code.toLowerCase() === code.toLowerCase())
-  return found ? found.label : code.toUpperCase()
+  return countryName(code)
 }
 
 function selectFormation(f: Formation) {
@@ -206,21 +133,21 @@ function startCustom() {
     <!-- Header -->
     <div class="text-center space-y-3">
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-        Step 1 · Squad Setup
+        {{ $t('formation.step_badge') }}
       </div>
       <h1 class="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Create Your Squad
+        {{ $t('formation.create_squad_title') }}
       </h1>
       <p class="text-zinc-700 dark:text-zinc-300 text-sm sm:text-base max-w-md mx-auto">
-        Name your dream team, choose an emblem, and pick your tactical formation for the continental tournament.
+        {{ $t('formation.create_squad_subtitle') }}
       </p>
     </div>
 
     <!-- Team Customization Box -->
     <div class="surface-card p-6 space-y-6">
       <div class="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3">
-        <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Team Identity</span>
-        <span class="text-xs font-mono text-emerald-800 dark:text-emerald-300 font-bold">Custom Tournament Club</span>
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('formation.team_identity') }}</span>
+        <span class="text-xs font-mono text-emerald-800 dark:text-emerald-300 font-bold">{{ $t('formation.custom_club') }}</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -230,14 +157,14 @@ function startCustom() {
             for="team-name-input"
             class="block text-xs font-bold text-zinc-800 dark:text-zinc-200"
           >
-            Team Name
+            {{ $t('formation.team_name_label') }}
           </label>
           <input
             id="team-name-input"
             v-model="teamNameInput"
             type="text"
             maxlength="24"
-            placeholder="Enter Team Name..."
+            :placeholder="$t('formation.team_name_placeholder')"
             class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 dark:border-white/10 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
 
@@ -265,9 +192,9 @@ function startCustom() {
               for="all-nations-select"
               class="block text-xs font-bold text-zinc-900 dark:text-zinc-100"
             >
-              Team Emblem / Flag
+              {{ $t('formation.team_emblem_label') }}
             </label>
-            <span class="text-[11px] font-mono text-zinc-700 dark:text-zinc-300 font-bold">55+ European Nations</span>
+            <span class="text-[11px] font-mono text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('formation.nations_count') }}</span>
           </div>
 
           <!-- All Nations Dropdown Selector -->
@@ -280,10 +207,10 @@ function startCustom() {
               >
                 <option
                   v-for="nation in ALL_EUROPEAN_FLAGS"
-                  :key="nation.code"
-                  :value="nation.code"
+                  :key="nation"
+                  :value="nation"
                 >
-                  {{ nation.label }}
+                  {{ countryName(nation) }}
                 </option>
               </select>
               <UIcon
@@ -306,24 +233,24 @@ function startCustom() {
 
           <!-- Top Picked Fast Selection Grid -->
           <div class="space-y-1.5 pt-1">
-            <span class="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">Popular Emblems</span>
+            <span class="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">{{ $t('formation.popular_emblems') }}</span>
             <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
               <button
                 v-for="emb in TOP_EMBLEM_CHOICES"
-                :key="emb.code"
+                :key="emb"
                 type="button"
                 class="p-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer text-left min-w-0"
-                :class="selectedEmblem === emb.code
+                :class="selectedEmblem === emb
                   ? 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-600 dark:border-emerald-400 ring-2 ring-emerald-500/50'
                   : 'bg-zinc-100 dark:bg-zinc-800/80 border-zinc-300 dark:border-white/10 hover:border-zinc-400'"
-                @click="selectedEmblem = emb.code"
+                @click="selectedEmblem = emb"
               >
                 <CountryFlag
-                  :country="emb.code"
+                  :country="emb"
                   size="xs"
                   class="shrink-0"
                 />
-                <span class="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ emb.label.split(' ')[0] }}</span>
+                <span class="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 truncate">{{ countryName(emb).split(' ')[0] }}</span>
               </button>
             </div>
           </div>
@@ -334,16 +261,16 @@ function startCustom() {
     <!-- Formation Choice Section Title -->
     <div class="text-center pt-2 space-y-3">
       <h2 class="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-        Select Starting Formation
+        {{ $t('formation.select_starting_formation') }}
       </h2>
 
       <!-- Formation Source Selector -->
       <div class="inline-flex items-center rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 p-1">
         <button
           v-for="opt in [
-            { value: 'classic', label: 'Classic' },
-            { value: 'challenge', label: '🎲 Challenge' },
-            { value: 'custom', label: '🛠️ Custom' }
+            { value: 'classic', label: $t('formation.mode_classic') },
+            { value: 'challenge', label: $t('formation.mode_challenge') },
+            { value: 'custom', label: $t('formation.mode_custom') }
           ]"
           :key="opt.value"
           type="button"
@@ -362,9 +289,9 @@ function startCustom() {
         <label class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-zinc-300 dark:border-white/10 bg-zinc-100/80 dark:bg-zinc-800/80 cursor-pointer select-none">
           <USwitch v-model="legendModeToggle" />
           <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
-            ⭐ Legend Mode
+            {{ $t('formation.legend_mode') }}
           </span>
-          <UTooltip text="Only players rated 90+ overall are draftable. Combinable with any formation source above.">
+          <UTooltip :text="$t('formation.legend_mode_tooltip')">
             <UIcon
               name="i-lucide-info"
               class="size-3.5 text-zinc-500"
@@ -389,15 +316,15 @@ function startCustom() {
               {{ challengeFormation.label }}
             </p>
             <p class="text-xs text-center text-amber-700 dark:text-amber-400 font-bold font-mono uppercase tracking-wider mt-1">
-              Your Challenge Formation
+              {{ $t('formation.your_challenge_formation') }}
             </p>
           </div>
           <NuxtLink
-            to="/draft"
+            :to="localePath('/draft')"
             class="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm no-underline"
             @click="startChallenge"
           >
-            <span>Start Challenge</span>
+            <span>{{ $t('formation.start_challenge') }}</span>
             <UIcon
               name="i-lucide-swords"
               class="size-4"
@@ -412,7 +339,7 @@ function startCustom() {
             color="neutral"
             size="sm"
             leading-icon="i-lucide-refresh-cw"
-            label="Reassign Formation"
+            :label="$t('formation.reassign_formation')"
             class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
             @click="reassignChallengeFormation"
           />
@@ -427,7 +354,7 @@ function startCustom() {
         <div class="surface-card p-5 space-y-3">
           <div class="flex items-center justify-between pb-1">
             <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
-              Position Counts
+              {{ $t('formation.position_counts') }}
             </span>
             <span
               class="text-xs font-mono font-black px-2.5 py-1 rounded-full"
@@ -435,22 +362,22 @@ function startCustom() {
                 ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
                 : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'"
             >
-              {{ customTotal }} / 11 Players
+              {{ $t('formation.players_count', { count: customTotal }) }}
             </span>
           </div>
 
           <div class="flex items-center justify-between py-1.5 px-2 rounded-lg bg-zinc-100/60 dark:bg-zinc-800/40">
-            <span class="text-xs font-bold text-zinc-500">GK (fixed)</span>
+            <span class="text-xs font-bold text-zinc-500">{{ $t('formation.gk_fixed') }}</span>
             <span class="text-xs font-mono font-black text-zinc-500">1</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             <div
               v-for="pos in CUSTOM_POSITIONS"
-              :key="pos.code"
+              :key="pos"
               class="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40"
             >
-              <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ pos.label }}</span>
+              <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ $t(`draft.position_labels.${pos}`) }}</span>
               <div class="flex items-center gap-2">
                 <UButton
                   size="xs"
@@ -458,18 +385,18 @@ function startCustom() {
                   color="neutral"
                   icon="i-lucide-minus"
                   square
-                  :disabled="customCounts[pos.code] <= 0"
-                  @click="adjustCustomCount(pos.code, -1)"
+                  :disabled="customCounts[pos] <= 0"
+                  @click="adjustCustomCount(pos, -1)"
                 />
-                <span class="w-4 text-center font-mono font-black text-sm text-zinc-900 dark:text-white">{{ customCounts[pos.code] }}</span>
+                <span class="w-4 text-center font-mono font-black text-sm text-zinc-900 dark:text-white">{{ customCounts[pos] }}</span>
                 <UButton
                   size="xs"
                   variant="outline"
                   color="neutral"
                   icon="i-lucide-plus"
                   square
-                  :disabled="customCounts[pos.code] >= CUSTOM_MAX_PER_POSITION"
-                  @click="adjustCustomCount(pos.code, 1)"
+                  :disabled="customCounts[pos] >= CUSTOM_MAX_PER_POSITION"
+                  @click="adjustCustomCount(pos, 1)"
                 />
               </div>
             </div>
@@ -489,10 +416,10 @@ function startCustom() {
               {{ customFormationLabel }}
             </p>
             <p class="text-xs text-center text-emerald-700 dark:text-emerald-400 font-bold font-mono uppercase tracking-wider mt-1">
-              Your Custom Formation
+              {{ $t('formation.your_custom_formation') }}
             </p>
           </div>
-          <UTooltip :text="customTotal !== 11 ? `Adjust positions until you have exactly 11 players (currently ${customTotal})` : ''">
+          <UTooltip :text="customTotal !== 11 ? $t('formation.adjust_positions_hint', { count: customTotal }) : ''">
             <NuxtLink
               :to="customTotal === 11 ? '/draft' : undefined"
               class="w-full py-2.5 px-4 rounded-xl text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm no-underline"
@@ -501,7 +428,7 @@ function startCustom() {
                 : 'bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed opacity-60'"
               @click="customTotal === 11 && startCustom()"
             >
-              <span>Confirm & Draft</span>
+              <span>{{ $t('formation.confirm_and_draft') }}</span>
               <UIcon
                 name="i-lucide-arrow-right"
                 class="size-4"
@@ -520,7 +447,7 @@ function startCustom() {
         <NuxtLink
           v-for="formation in formations"
           :key="formation.id"
-          to="/draft"
+          :to="localePath('/draft')"
           class="surface-card p-5 space-y-4 group text-left cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] active:scale-[0.98] block no-underline"
           @click="selectFormation(formation)"
         >
@@ -542,7 +469,7 @@ function startCustom() {
           <!-- CTA Button with strong WCAG AAA contrast -->
           <div class="pt-1">
             <div class="w-full py-2.5 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm">
-              <span>Confirm & Draft</span>
+              <span>{{ $t('formation.confirm_and_draft') }}</span>
               <UIcon
                 name="i-lucide-arrow-right"
                 class="size-4 transition-transform group-hover:translate-x-1"
@@ -560,7 +487,7 @@ function startCustom() {
           color="neutral"
           size="md"
           leading-icon="i-lucide-refresh-cw"
-          label="Draw 3 New Formations"
+          :label="$t('formation.draw_new_formations')"
           class="rounded-full px-6 font-bold text-zinc-900 dark:text-zinc-100"
           @click="formations = pickRandomFormations(3)"
         />

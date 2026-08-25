@@ -145,7 +145,7 @@ function getSlotStyle(slot: DraftSlot, _index: number, _total: number) {
               ? 'bg-emerald-500 text-black font-extrabold border border-emerald-300 shadow-lg'
               : 'bg-black/70 text-zinc-300 border border-white/10'"
         >
-          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? 'Place' : slot.position }}
+          {{ slot.player ? slot.player.name : isSlotHighlighted(slot) ? $t('draft.place_slot') : slot.position }}
         </div>
       </button>
     </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
+const countryName = useCountryName()
+
 const props = withDefaults(defineProps<{
   isSpinning: boolean
   targetCountry: string | null
@@ -21,7 +23,7 @@ const emit = defineEmits<{
 // animation starts -- see settleToTarget()/the props watcher below).
 const displayCountry = ref(props.targetCountry || 'nl')
 const displayYear = ref(props.targetYear || 1988)
-const displayCountryName = ref(props.targetCountryName || getCountryName(displayCountry.value))
+const displayCountryName = ref(props.targetCountryName || countryName(displayCountry.value))
 
 const SAMPLE_NATIONS = [
   'nl', 'fr', 'es', 'de', 'it', 'pt', 'dk', 'gr', 'gb-eng', 'cz', 'hr', 'be', 'pl', 'tr', 'at', 'se'
@@ -35,7 +37,7 @@ let spinInterval: ReturnType<typeof setInterval> | null = null
 
 function settleToTarget() {
   displayCountry.value = props.targetCountry || 'nl'
-  displayCountryName.value = props.targetCountryName || getCountryName(displayCountry.value)
+  displayCountryName.value = props.targetCountryName || countryName(displayCountry.value)
   displayYear.value = props.targetYear || 1988
 }
 
@@ -47,10 +49,10 @@ watch(() => props.isSpinning, (spinning) => {
       if (props.spinType === 'nation' || props.spinType === 'all') {
         const randCountry = SAMPLE_NATIONS[Math.floor(Math.random() * SAMPLE_NATIONS.length)]!
         displayCountry.value = randCountry
-        displayCountryName.value = getCountryName(randCountry)
+        displayCountryName.value = countryName(randCountry)
       } else {
         displayCountry.value = props.targetCountry || 'nl'
-        displayCountryName.value = props.targetCountryName || getCountryName(displayCountry.value)
+        displayCountryName.value = props.targetCountryName || countryName(displayCountry.value)
       }
 
       if (props.spinType === 'year' || props.spinType === 'all') {
@@ -105,7 +107,7 @@ onUnmounted(() => {
 
       <div class="min-w-0">
         <p class="text-xs font-mono font-black uppercase tracking-[0.15em] text-emerald-950 dark:text-emerald-300">
-          European Squad · {{ displayYear }}
+          {{ $t('draft.european_squad_year', { year: displayYear }) }}
         </p>
         <h2 class="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white tracking-tight truncate">
           {{ displayCountryName }}

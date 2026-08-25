@@ -30,10 +30,10 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
           name="i-lucide-bar-chart-2"
           class="size-5 text-emerald-600 dark:text-emerald-400 shrink-0"
         />
-        <span>Player Tournament Performance</span>
+        <span>{{ $t('tournament.player_performance') }}</span>
       </h2>
       <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider shrink-0 whitespace-nowrap self-start sm:self-auto px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-white/10">
-        Top Performers & Stats
+        {{ $t('tournament.top_performers') }}
       </span>
     </div>
 
@@ -48,7 +48,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
         @click="runStats.mvp ? emit('inspectPlayer', runStats.mvp.player) : undefined"
       >
         <div class="flex items-center justify-between">
-          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Tournament MVP</span>
+          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">{{ $t('tournament.mvp') }}</span>
           <UIcon
             name="i-lucide-sparkles"
             class="size-4 text-amber-500"
@@ -65,7 +65,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
             </p>
           </div>
           <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
-            {{ runStats.mvp.ga }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">G+A ({{ runStats.mvp.goals }}G, {{ runStats.mvp.assists }}A)</span>
+            {{ runStats.mvp.ga }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ $t('tournament.ga_breakdown', { goals: runStats.mvp.goals, assists: runStats.mvp.assists }) }}</span>
           </p>
         </template>
         <template v-else>
@@ -84,7 +84,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
         @click="runStats.topScorer ? emit('inspectPlayer', runStats.topScorer.player) : undefined"
       >
         <div class="flex items-center justify-between">
-          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Golden Boot</span>
+          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">{{ $t('tournament.golden_boot') }}</span>
           <UIcon
             name="i-lucide-award"
             class="size-4 text-amber-500"
@@ -101,12 +101,12 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
             </p>
           </div>
           <p class="text-xl font-black font-mono text-amber-700 dark:text-amber-400">
-            {{ runStats.topScorer.goals }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">Goals</span>
+            {{ runStats.topScorer.goals }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ $t('tournament.goals_label') }}</span>
           </p>
         </template>
         <template v-else>
           <p class="text-xs text-zinc-500 italic py-2">
-            No goals scored
+            {{ $t('tournament.no_goals_scored') }}
           </p>
         </template>
       </button>
@@ -120,7 +120,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
         @click="runStats.topAssister ? emit('inspectPlayer', runStats.topAssister.player) : undefined"
       >
         <div class="flex items-center justify-between">
-          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Top Playmaker</span>
+          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">{{ $t('tournament.top_playmaker') }}</span>
           <UIcon
             name="i-lucide-crosshair"
             class="size-4 text-emerald-600 dark:text-emerald-400"
@@ -137,12 +137,12 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
             </p>
           </div>
           <p class="text-xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-            {{ runStats.topAssister.assists }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">Assists</span>
+            {{ runStats.topAssister.assists }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ $t('tournament.assists_label') }}</span>
           </p>
         </template>
         <template v-else>
           <p class="text-xs text-zinc-500 italic py-2">
-            No assists recorded
+            {{ $t('tournament.no_assists_recorded') }}
           </p>
         </template>
       </button>
@@ -156,7 +156,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
         @click="runStats.bestGAPer90 ? emit('inspectPlayer', runStats.bestGAPer90.player) : undefined"
       >
         <div class="flex items-center justify-between">
-          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">Efficiency</span>
+          <span class="text-xs uppercase font-mono font-bold tracking-widest text-zinc-600 dark:text-zinc-400">{{ $t('tournament.efficiency') }}</span>
           <UIcon
             name="i-lucide-gauge"
             class="size-4 text-sky-600 dark:text-sky-400"
@@ -173,7 +173,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
             </p>
           </div>
           <p class="text-xl font-black font-mono text-sky-700 dark:text-sky-400">
-            {{ runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">G+A / 90'</span>
+            {{ runStats.bestGAPer90.gaPer90 }} <span class="text-xs text-zinc-600 dark:text-zinc-400 font-bold">{{ $t('tournament.ga_per_90') }}</span>
           </p>
         </template>
         <template v-else>
@@ -188,9 +188,9 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
     <div class="surface-card p-4 sm:p-5 space-y-4 overflow-hidden">
       <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-white/10">
         <h3 class="text-xs sm:text-sm font-bold font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200">
-          Complete Squad Performance Table
+          {{ $t('tournament.complete_performance_table') }}
         </h3>
-        <span class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">11 Starters · Click row for full card</span>
+        <span class="text-xs text-zinc-600 dark:text-zinc-400 font-mono font-bold">{{ $t('tournament.starters_click_hint') }}</span>
       </div>
 
       <div class="overflow-x-auto custom-scroll -mx-2 sm:mx-0 px-2 sm:px-0">
@@ -207,7 +207,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                   @click="setSort('name')"
                 >
-                  Player <span v-if="sortField === 'name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_player') }} <span v-if="sortField === 'name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -220,7 +220,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                   @click="setSort('primaryPosition')"
                 >
-                  POS <span v-if="sortField === 'primaryPosition'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_pos') }} <span v-if="sortField === 'primaryPosition'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -233,7 +233,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                   @click="setSort('overall')"
                 >
-                  OVR <span v-if="sortField === 'overall'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('draft.stats.overall') }} <span v-if="sortField === 'overall'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -246,7 +246,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                   @click="setSort('matches')"
                 >
-                  P <span v-if="sortField === 'matches'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_played') }} <span v-if="sortField === 'matches'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -259,7 +259,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer hover:text-zinc-900 dark:hover:text-white"
                   @click="setSort('minutes')"
                 >
-                  MIN <span v-if="sortField === 'minutes'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_min') }} <span v-if="sortField === 'minutes'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -272,7 +272,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer"
                   @click="setSort('goals')"
                 >
-                  G <span v-if="sortField === 'goals'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_goals') }} <span v-if="sortField === 'goals'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -285,7 +285,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer"
                   @click="setSort('assists')"
                 >
-                  A <span v-if="sortField === 'assists'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_assists') }} <span v-if="sortField === 'assists'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -298,7 +298,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer"
                   @click="setSort('ga')"
                 >
-                  G+A <span v-if="sortField === 'ga'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_ga') }} <span v-if="sortField === 'ga'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
               <th
@@ -323,7 +323,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                   class="cursor-pointer"
                   @click="setSort('rating')"
                 >
-                  RATING <span v-if="sortField === 'rating'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                  {{ $t('tournament.table_rating') }} <span v-if="sortField === 'rating'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
                 </button>
               </th>
             </tr>
@@ -338,7 +338,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                 <button
                   type="button"
                   class="w-full flex items-center gap-2 text-left cursor-pointer group-hover:text-emerald-400 transition-colors"
-                  title="Click to view full player attributes"
+                  :title="$t('tournament.click_view_attributes')"
                   @click="emit('inspectPlayer', p.player)"
                 >
                   <CountryFlag
@@ -353,7 +353,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
                 </button>
               </td>
               <td class="py-2.5 px-2 text-zinc-600 dark:text-zinc-400 font-semibold">
-                {{ p.player.primaryPosition }}
+                {{ $t(`draft.positions.${p.player.primaryPosition}`) }}
               </td>
               <td
                 class="py-2.5 px-2 font-black"

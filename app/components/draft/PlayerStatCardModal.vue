@@ -13,6 +13,8 @@ const emit = defineEmits<{
   (e: 'draft', player: Player): void
 }>()
 
+const countryName = useCountryName()
+
 function close() {
   emit('update:open', false)
 }
@@ -61,21 +63,22 @@ const tierStyles = computed(() => {
 interface StatItem {
   key: string
   label: string
-  fullName: string
   val: number
   icon: string
 }
+
+const { t } = useI18n()
 
 const statsList = computed<StatItem[]>(() => {
   if (!props.player) return []
   const s = props.player.stats
   return [
-    { key: 'pac', label: 'PAC', fullName: 'Pace & Acceleration', val: s.pace, icon: 'i-lucide-zap' },
-    { key: 'sho', label: 'SHO', fullName: 'Shooting & Finishing', val: s.shooting, icon: 'i-lucide-crosshair' },
-    { key: 'pas', label: 'PAS', fullName: 'Passing & Vision', val: s.passing, icon: 'i-lucide-sparkles' },
-    { key: 'dri', label: 'DRI', fullName: 'Dribbling & Agility', val: s.dribbling, icon: 'i-lucide-activity' },
-    { key: 'def', label: 'DEF', fullName: 'Defending & Tackling', val: s.defending, icon: 'i-lucide-shield' },
-    { key: 'phy', label: 'PHY', fullName: 'Physical & Strength', val: s.physical, icon: 'i-lucide-dumbbell' }
+    { key: 'pac', label: t('draft.stats.pace'), val: s.pace, icon: 'i-lucide-zap' },
+    { key: 'sho', label: t('draft.stats.shooting'), val: s.shooting, icon: 'i-lucide-crosshair' },
+    { key: 'pas', label: t('draft.stats.passing'), val: s.passing, icon: 'i-lucide-sparkles' },
+    { key: 'dri', label: t('draft.stats.dribbling'), val: s.dribbling, icon: 'i-lucide-activity' },
+    { key: 'def', label: t('draft.stats.defending'), val: s.defending, icon: 'i-lucide-shield' },
+    { key: 'phy', label: t('draft.stats.physical'), val: s.physical, icon: 'i-lucide-dumbbell' }
   ]
 })
 
@@ -112,7 +115,7 @@ function getPositionColor(pos: PositionCode) {
           <button
             type="button"
             class="absolute top-4 right-4 z-20 size-8 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
-            aria-label="Close stat card"
+            :aria-label="$t('draft.close_stat_card')"
             @click="close"
           >
             <UIcon
@@ -127,10 +130,10 @@ function getPositionColor(pos: PositionCode) {
               class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border"
               :class="tierStyles.badge"
             >
-              {{ cardTier === 'legend' ? '⭐ Legendary Master' : cardTier === 'star' ? '✨ Continental Star' : '🛡️ Tournament Starter' }}
+              {{ cardTier === 'legend' ? $t('draft.tier_legend') : cardTier === 'star' ? $t('draft.tier_star') : $t('draft.tier_starter') }}
             </span>
             <span class="text-xs font-mono font-bold text-zinc-400">
-              Euro {{ player.year }}
+              {{ $t('draft.euro_year', { year: player.year }) }}
             </span>
           </div>
 
@@ -145,7 +148,7 @@ function getPositionColor(pos: PositionCode) {
                 {{ player.stats.overall }}
               </span>
               <span class="text-[9px] font-mono font-bold tracking-widest text-zinc-400 mt-0.5">
-                GES
+                {{ $t('draft.stats.overall') }}
               </span>
             </div>
 
@@ -158,7 +161,7 @@ function getPositionColor(pos: PositionCode) {
                   class="size-5 shrink-0"
                 />
                 <span class="text-xs font-bold font-mono text-zinc-300 truncate">
-                  {{ player.countryName }}
+                  {{ countryName(player.country) }}
                 </span>
                 <span
                   v-if="player.shirtNumber"
@@ -180,10 +183,10 @@ function getPositionColor(pos: PositionCode) {
                   class="px-2 py-0.5 rounded-md text-[10px] font-mono font-black border"
                   :class="getPositionColor(player.primaryPosition)"
                 >
-                  {{ player.primaryPosition }}
+                  {{ $t(`draft.positions.${player.primaryPosition}`) }}
                 </span>
                 <span class="text-[11px] font-mono text-zinc-400">
-                  {{ player.basePosition }}
+                  {{ $t(`draft.category_labels.${player.basePosition}`) }}
                 </span>
               </div>
             </div>
@@ -196,7 +199,7 @@ function getPositionColor(pos: PositionCode) {
                 name="i-lucide-map-pin"
                 class="size-3.5 text-emerald-400"
               />
-              <span>Tactical Slot Eligibility</span>
+              <span>{{ $t('draft.tactical_slot_eligibility') }}</span>
             </div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <span
@@ -205,7 +208,7 @@ function getPositionColor(pos: PositionCode) {
                 class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
                 :class="getPositionColor(pos)"
               >
-                {{ pos }}
+                {{ $t(`draft.positions.${pos}`) }}
               </span>
             </div>
           </div>
@@ -218,9 +221,9 @@ function getPositionColor(pos: PositionCode) {
                   name="i-lucide-sliders"
                   class="size-3.5 text-amber-400"
                 />
-                <span>Attribute Ratings</span>
+                <span>{{ $t('draft.attribute_ratings') }}</span>
               </span>
-              <span class="text-[10px] font-mono text-zinc-500">Scale 0–99</span>
+              <span class="text-[10px] font-mono text-zinc-500">{{ $t('draft.scale_0_99') }}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-x-4 gap-y-2.5">
@@ -269,7 +272,7 @@ function getPositionColor(pos: PositionCode) {
                 name="i-lucide-user-plus"
                 class="size-4"
               />
-              <span>Draft Player</span>
+              <span>{{ $t('draft.draft_player_btn') }}</span>
             </button>
             <button
               type="button"
@@ -277,7 +280,7 @@ function getPositionColor(pos: PositionCode) {
               :class="canDraft ? '' : 'flex-1'"
               @click="close"
             >
-              Close
+              {{ $t('draft.close') }}
             </button>
           </div>
         </div>

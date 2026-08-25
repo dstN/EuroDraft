@@ -18,6 +18,7 @@ interface SharedRun {
 
 const route = useRoute()
 const { simulateMatch } = useMatchEngine()
+const { t } = useI18n()
 
 function extractShareId(input: string): string {
   return input.trim().replace(/^https?:\/\/[^/]+\/r\//, '').replace(/\/+$/, '')
@@ -50,7 +51,7 @@ async function loadSlot(which: 'a' | 'b') {
     if (which === 'a') slotA.value = res.record
     else slotB.value = res.record
   } catch {
-    const message = 'Squad not found — check the link and try again.'
+    const message = t('compare.not_found')
     if (which === 'a') errorA.value = message
     else errorB.value = message
   } finally {
@@ -125,14 +126,15 @@ function onBroadcastCompleted() {
 const showdownLabel = computed(() => {
   if (!matchResult.value || !slotA.value || !slotB.value) return ''
   const { teamA, teamB, penalties, extraTime } = matchResult.value
-  const aetSuffix = extraTime ? ' (AET)' : ''
+  const aetSuffix = extraTime ? ` (${t('tournament.aet')})` : ''
   if (penalties) {
     const aWon = penalties.teamA > penalties.teamB
-    return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals} (${penalties.teamA}–${penalties.teamB} pens) ${slotB.value.teamName} — ${aWon ? slotA.value.teamName : slotB.value.teamName} win on penalties`
+    const winner = aWon ? slotA.value.teamName : slotB.value.teamName
+    return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals} ${t('tournament.pens', { penA: penalties.teamA, penB: penalties.teamB })} ${slotB.value.teamName} — ${t('compare.win_on_penalties', { team: winner })}`
   }
-  if (teamA.goals === teamB.goals) return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals}${aetSuffix} ${slotB.value.teamName} — Draw`
+  if (teamA.goals === teamB.goals) return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals}${aetSuffix} ${slotB.value.teamName} — ${t('compare.draw')}`
   const winner = teamA.goals > teamB.goals ? slotA.value.teamName : slotB.value.teamName
-  return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals}${aetSuffix} ${slotB.value.teamName} — ${winner} win`
+  return `${slotA.value.teamName} ${teamA.goals}–${teamB.goals}${aetSuffix} ${slotB.value.teamName} — ${t('compare.win', { team: winner })}`
 })
 
 function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string {
@@ -148,13 +150,13 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
   <div class="max-w-5xl mx-auto px-3 sm:px-6 space-y-6">
     <div class="text-center space-y-2 pt-2">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-        Head-to-Head Comparison
+        {{ $t('compare.badge') }}
       </div>
       <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Compare Two Dream XIs
+        {{ $t('compare.title') }}
       </h1>
       <p class="text-zinc-700 dark:text-zinc-300 text-sm max-w-lg mx-auto">
-        Paste two shared EuroDraft links to compare squads side-by-side and simulate a showdown between them.
+        {{ $t('compare.subtitle') }}
       </p>
     </div>
 
@@ -163,19 +165,19 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
       <div class="surface-card p-5 space-y-4">
         <template v-if="!slotA">
           <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
-            Squad A
+            {{ $t('compare.squad_a') }}
           </p>
           <div class="flex gap-2">
             <UInput
               v-model="idInputA"
-              placeholder="Paste share link or ID"
+              :placeholder="$t('compare.paste_placeholder')"
               class="flex-1 font-mono text-sm"
               @keyup.enter="loadSlot('a')"
             />
             <UButton
               color="primary"
               :loading="loadingA"
-              label="Load"
+              :label="$t('compare.load')"
               @click="loadSlot('a')"
             />
           </div>
@@ -199,7 +201,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
                   {{ slotA.teamName }}
                 </h2>
                 <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
-                  {{ slotA.formation }} · {{ slotA.teamOVR }} OVR
+                  {{ slotA.formation }} · {{ $t('tournament.ovr_value', { value: slotA.teamOVR }) }}
                 </p>
               </div>
             </div>
@@ -217,19 +219,19 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
       <div class="surface-card p-5 space-y-4">
         <template v-if="!slotB">
           <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
-            Squad B
+            {{ $t('compare.squad_b') }}
           </p>
           <div class="flex gap-2">
             <UInput
               v-model="idInputB"
-              placeholder="Paste share link or ID"
+              :placeholder="$t('compare.paste_placeholder')"
               class="flex-1 font-mono text-sm"
               @keyup.enter="loadSlot('b')"
             />
             <UButton
               color="primary"
               :loading="loadingB"
-              label="Load"
+              :label="$t('compare.load')"
               @click="loadSlot('b')"
             />
           </div>
@@ -253,7 +255,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
                   {{ slotB.teamName }}
                 </h2>
                 <p class="text-xs font-mono text-zinc-600 dark:text-zinc-400 font-bold">
-                  {{ slotB.formation }} · {{ slotB.teamOVR }} OVR
+                  {{ slotB.formation }} · {{ $t('tournament.ovr_value', { value: slotB.teamOVR }) }}
                 </p>
               </div>
             </div>
@@ -275,14 +277,14 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
       class="surface-card p-5 sm:p-6 space-y-4"
     >
       <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 text-center">
-        Squad Ratings
+        {{ $t('compare.squad_ratings') }}
       </p>
       <div
         v-for="stat in [
-          { label: 'Defense', a: slotA.lineRatings.def, b: slotB.lineRatings.def },
-          { label: 'Midfield', a: slotA.lineRatings.mid, b: slotB.lineRatings.mid },
-          { label: 'Attack', a: slotA.lineRatings.att, b: slotB.lineRatings.att },
-          { label: 'Overall', a: slotA.lineRatings.overall, b: slotB.lineRatings.overall }
+          { label: $t('compare.line_defense'), a: slotA.lineRatings.def, b: slotB.lineRatings.def },
+          { label: $t('compare.line_midfield'), a: slotA.lineRatings.mid, b: slotB.lineRatings.mid },
+          { label: $t('compare.line_attack'), a: slotA.lineRatings.att, b: slotB.lineRatings.att },
+          { label: $t('compare.line_overall'), a: slotA.lineRatings.overall, b: slotB.lineRatings.overall }
         ]"
         :key="stat.label"
         class="flex items-center gap-3"
@@ -317,7 +319,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
           size="lg"
           color="primary"
           icon="i-lucide-swords"
-          label="Simulate Head-to-Head Showdown"
+          :label="$t('compare.simulate_showdown')"
           class="rounded-full font-black px-8"
           :disabled="isBroadcasting"
           @click="simulateShowdown"
@@ -346,7 +348,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
         variant="outline"
         color="neutral"
         icon="i-lucide-rotate-ccw"
-        label="Rematch"
+        :label="$t('compare.rematch')"
         class="rounded-full font-bold"
         @click="simulateShowdown"
       />

@@ -29,16 +29,12 @@ function clearAll() {
   expandedIds.value.clear()
 }
 
-const OUTCOME_LABELS: Record<string, string> = {
-  winner: '🏆 Champions',
-  runner_up: '🥈 Runner-Up',
-  semi_final: '🥉 Semi-Final',
-  quarter_final: 'Quarter-Final',
-  group_stage: 'Group Stage'
-}
+const { t, te } = useI18n()
+const localePath = useLocalePath()
 
 function outcomeLabel(outcome: string): string {
-  return OUTCOME_LABELS[outcome] ?? outcome
+  const key = `outcomes.${outcome}`
+  return te(key) ? t(key) : outcome
 }
 
 function formatDate(iso: string): string {
@@ -54,13 +50,13 @@ function formatDate(iso: string): string {
   <div class="max-w-4xl mx-auto px-3 sm:px-6 space-y-6">
     <div class="text-center space-y-2 pt-2">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-        Draft History
+        {{ $t('history.badge') }}
       </div>
       <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Your Past Dream XIs
+        {{ $t('history.title') }}
       </h1>
       <p class="text-zinc-700 dark:text-zinc-300 text-sm max-w-lg mx-auto">
-        Saved locally in this browser only — nothing here is sent to a server.
+        {{ $t('history.subtitle') }}
       </p>
     </div>
 
@@ -73,16 +69,16 @@ function formatDate(iso: string): string {
         class="size-10 text-zinc-500 mx-auto"
       />
       <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
-        No Runs Yet
+        {{ $t('history.empty_title') }}
       </h2>
       <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        Complete a tournament run and it'll show up here automatically.
+        {{ $t('history.empty_desc') }}
       </p>
       <NuxtLink
-        to="/draft/formation"
+        :to="localePath('/draft/formation')"
         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
       >
-        <span>Start Drafting</span>
+        <span>{{ $t('landing.cta_start') }}</span>
       </NuxtLink>
     </div>
 
@@ -93,7 +89,7 @@ function formatDate(iso: string): string {
           variant="ghost"
           color="error"
           icon="i-lucide-trash-2"
-          label="Clear All History"
+          :label="$t('history.clear_all')"
           @click="clearAll"
         />
       </div>
@@ -130,7 +126,7 @@ function formatDate(iso: string): string {
               variant="ghost"
               color="error"
               icon="i-lucide-trash-2"
-              :aria-label="`Delete ${entry.teamName}`"
+              :aria-label="$t('history.delete_aria', { name: entry.teamName })"
               @click.stop="removeEntry(entry.id)"
             />
             <UIcon
@@ -146,7 +142,7 @@ function formatDate(iso: string): string {
             <div class="grid grid-cols-4 gap-2 text-center">
               <div>
                 <p class="text-[10px] uppercase font-mono font-bold text-zinc-500">
-                  Def
+                  {{ $t('compare.line_defense') }}
                 </p>
                 <p class="font-mono font-black text-emerald-700 dark:text-emerald-400">
                   {{ entry.lineRatings.def }}
@@ -154,7 +150,7 @@ function formatDate(iso: string): string {
               </div>
               <div>
                 <p class="text-[10px] uppercase font-mono font-bold text-zinc-500">
-                  Mid
+                  {{ $t('compare.line_midfield') }}
                 </p>
                 <p class="font-mono font-black text-sky-700 dark:text-sky-400">
                   {{ entry.lineRatings.mid }}
@@ -162,7 +158,7 @@ function formatDate(iso: string): string {
               </div>
               <div>
                 <p class="text-[10px] uppercase font-mono font-bold text-zinc-500">
-                  Att
+                  {{ $t('compare.line_attack') }}
                 </p>
                 <p class="font-mono font-black text-amber-700 dark:text-amber-400">
                   {{ entry.lineRatings.att }}
@@ -170,7 +166,7 @@ function formatDate(iso: string): string {
               </div>
               <div>
                 <p class="text-[10px] uppercase font-mono font-bold text-zinc-500">
-                  Overall
+                  {{ $t('compare.line_overall') }}
                 </p>
                 <p class="font-mono font-black text-zinc-900 dark:text-white">
                   {{ entry.lineRatings.overall }}

@@ -6,40 +6,33 @@ const props = defineProps<{
   error: NuxtError
 }>()
 
-const STATUS_COPY: Record<number, { eyebrow: string, title: string, message: string }> = {
-  400: {
-    eyebrow: 'Foul',
-    title: 'Bad Request',
-    message: 'That request wasn\'t a legal play. Double-check what you sent and try again.'
-  },
-  404: {
-    eyebrow: 'Offside',
-    title: 'This Page Doesn\'t Exist',
-    message: 'The page you\'re looking for was never drafted. Check the URL, or head back to the pitch.'
-  },
-  429: {
-    eyebrow: 'Time Wasting',
-    title: 'Slow Down',
-    message: 'You\'re making requests faster than a counter-attack. Wait a moment and try again.'
-  },
-  500: {
-    eyebrow: 'Var Review',
-    title: 'Something Went Wrong',
-    message: 'Our server hit a bad tackle. Try refreshing, or head back to the homepage.'
-  },
-  503: {
-    eyebrow: 'Postponed',
-    title: 'Service Unavailable',
-    message: 'We\'re temporarily off the pitch for maintenance. Please check back shortly.'
-  }
+const { t } = useI18n()
+const localePath = useLocalePath()
+
+const STATUS_KEYS: Record<number, string> = {
+  400: 'error.status_400',
+  404: 'error.status_404',
+  429: 'error.status_429',
+  500: 'error.status_500',
+  503: 'error.status_503'
 }
 
 const statusCode = computed(() => props.error.statusCode ?? 500)
 
-const copy = computed(() => STATUS_COPY[statusCode.value] ?? {
-  eyebrow: 'Full Time',
-  title: 'Unexpected Error',
-  message: props.error.statusMessage || 'Something didn\'t go to plan. Try heading back to the homepage.'
+const copy = computed(() => {
+  const key = STATUS_KEYS[statusCode.value]
+  if (key) {
+    return {
+      eyebrow: t(`${key}.eyebrow`),
+      title: t(`${key}.title`),
+      message: t(`${key}.message`)
+    }
+  }
+  return {
+    eyebrow: t('error.status_fallback.eyebrow'),
+    title: t('error.status_fallback.title'),
+    message: props.error.statusMessage || t('error.status_fallback.message')
+  }
 })
 
 useSeoMeta({
@@ -61,8 +54,8 @@ function goHome() {
 
     <main class="relative z-10 flex flex-col items-center gap-6 max-w-md text-center">
       <NuxtLink
-        to="/"
-        aria-label="EuroDraft Homepage"
+        :to="localePath('/')"
+        :aria-label="$t('error.home_aria')"
         class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
       >
         <AppLogo
@@ -90,7 +83,7 @@ function goHome() {
             class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-lg shadow-emerald-800/25 justify-center cursor-pointer font-bold w-full sm:w-auto"
             @click="goHome"
           >
-            <span>Back to Homepage</span>
+            <span>{{ $t('error.back_home') }}</span>
             <span class="btn-nested-icon bg-emerald-900 text-white">
               <UIcon
                 name="i-lucide-arrow-right"
@@ -100,10 +93,10 @@ function goHome() {
             </span>
           </button>
           <NuxtLink
-            to="/draft/formation"
+            :to="localePath('/draft/formation')"
             class="rounded-full px-5 py-2.5 border border-zinc-300 dark:border-white/10 text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center w-full sm:w-auto"
           >
-            Start Drafting
+            {{ $t('landing.cta_start') }}
           </NuxtLink>
         </div>
       </div>

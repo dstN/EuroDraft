@@ -24,16 +24,12 @@ const { data, pending } = await useFetch<{ success: boolean, configured: boolean
 const configured = computed(() => data.value?.configured ?? false)
 const entries = computed(() => data.value?.entries ?? [])
 
-const OUTCOME_LABELS: Record<string, string> = {
-  winner: '🏆 Champions',
-  runner_up: '🥈 Runner-Up',
-  semi_final: '🥉 Semi-Final',
-  quarter_final: 'Quarter-Final',
-  group_stage: 'Group Stage'
-}
+const { t, te } = useI18n()
+const localePath = useLocalePath()
 
 function outcomeLabel(outcome: string): string {
-  return OUTCOME_LABELS[outcome] ?? outcome
+  const key = `outcomes.${outcome}`
+  return te(key) ? t(key) : outcome
 }
 
 function medalFor(rank: number): string {
@@ -48,13 +44,13 @@ function medalFor(rank: number): string {
   <div class="max-w-4xl mx-auto px-3 sm:px-6 space-y-6">
     <div class="text-center space-y-2 pt-2">
       <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-        Global Leaderboard
+        {{ $t('leaderboard.badge') }}
       </div>
       <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-        Highest-Rated Dream XIs
+        {{ $t('leaderboard.title') }}
       </h1>
       <p class="text-zinc-700 dark:text-zinc-300 text-sm max-w-lg mx-auto">
-        Submit your squad's score when you share a tournament run to see it ranked here.
+        {{ $t('leaderboard.subtitle') }}
       </p>
     </div>
 
@@ -77,10 +73,10 @@ function medalFor(rank: number): string {
         class="size-10 text-zinc-500 mx-auto"
       />
       <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
-        Leaderboard Coming Soon
+        {{ $t('leaderboard.coming_soon_title') }}
       </h2>
       <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        The leaderboard isn't live on this server yet. Check back soon!
+        {{ $t('leaderboard.coming_soon_desc') }}
       </p>
     </div>
 
@@ -93,16 +89,16 @@ function medalFor(rank: number): string {
         class="size-10 text-zinc-500 mx-auto"
       />
       <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
-        No Entries Yet
+        {{ $t('leaderboard.no_entries_title') }}
       </h2>
       <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        Be the first to submit your squad's score after a tournament run!
+        {{ $t('leaderboard.no_entries_desc') }}
       </p>
       <NuxtLink
-        to="/draft/formation"
+        :to="localePath('/draft/formation')"
         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
       >
-        <span>Start Drafting</span>
+        <span>{{ $t('landing.cta_start') }}</span>
       </NuxtLink>
     </div>
 
@@ -127,7 +123,7 @@ function medalFor(rank: number): string {
         <div class="flex-1 min-w-0">
           <NuxtLink
             v-if="entry.shareId"
-            :to="`/r/${entry.shareId}`"
+            :to="localePath(`/r/${entry.shareId}`)"
             class="font-bold text-sm text-zinc-900 dark:text-white truncate block hover:underline"
           >
             {{ entry.teamName }}

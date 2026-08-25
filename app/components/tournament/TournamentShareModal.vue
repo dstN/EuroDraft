@@ -20,6 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const activeTab = ref<'text' | 'image'>('text')
+const localePath = useLocalePath()
 
 const cardData = useShareCardData(props)
 const submission = useShareSubmission(props)
@@ -75,14 +76,14 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 id="share-modal-title"
                 class="text-base sm:text-lg font-bold text-white"
               >
-                Share Your Tournament Run
+                {{ $t('share.title') }}
               </h3>
             </div>
 
             <button
               type="button"
               class="size-8 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 flex items-center justify-center cursor-pointer transition-colors"
-              aria-label="Close share modal"
+              :aria-label="$t('share.close_aria')"
               @click="emit('update:open', false)"
             >
               <UIcon
@@ -104,7 +105,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 name="i-lucide-file-text"
                 class="size-4"
               />
-              <span>Text Summary</span>
+              <span>{{ $t('share.tab_text') }}</span>
             </button>
             <button
               type="button"
@@ -116,7 +117,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 name="i-lucide-image"
                 class="size-4"
               />
-              <span>Squad Card (PNG)</span>
+              <span>{{ $t('share.tab_image') }}</span>
             </button>
           </div>
 
@@ -130,9 +131,9 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 @change="onConsentToggle"
               >
               <div class="text-xs text-zinc-300 space-y-0.5">
-                <span class="font-bold text-white">Save Result & Generate Public Link</span>
+                <span class="font-bold text-white">{{ $t('share.save_link_title') }}</span>
                 <p class="text-[11px] text-zinc-400 leading-relaxed font-mono">
-                  By checking this box, you explicitly agree that your tournament run and drafted squad will be saved in our database to generate a shareable public link on <strong>ed.rntm.de</strong>.
+                  {{ $t('share.save_link_desc', { domain: 'ed.rntm.de' }) }}
                 </p>
               </div>
             </label>
@@ -145,7 +146,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               <input
                 readonly
                 :value="shareLinkUrl"
-                aria-label="Your shareable link"
+                :aria-label="$t('share.your_link_aria')"
                 class="flex-1 px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-xs font-mono text-emerald-300 select-all focus:outline-none"
               >
               <button
@@ -153,14 +154,14 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-mono font-bold cursor-pointer transition-colors shrink-0"
                 @click="copyShareLink"
               >
-                {{ copiedLink ? '✓ Copied' : 'Copy Link' }}
+                {{ copiedLink ? $t('share.copied_link') : $t('share.copy_link') }}
               </button>
             </div>
             <div
               v-else-if="agreeToSave && isGeneratingLink"
               class="text-xs font-mono text-zinc-400 animate-pulse"
             >
-              Generating shareable URL...
+              {{ $t('share.generating_link') }}
             </div>
           </div>
 
@@ -175,9 +176,9 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 @change="onLeaderboardToggle"
               >
               <div class="text-xs text-zinc-300 space-y-0.5">
-                <span class="font-bold text-white">🏆 Submit to Public Leaderboard</span>
+                <span class="font-bold text-white">{{ $t('share.leaderboard_title') }}</span>
                 <p class="text-[11px] text-zinc-400 leading-relaxed font-mono">
-                  Separately from the link above, this publicly lists your team name and score ({{ lineRatings.overall }} OVR) on the EuroDraft leaderboard — permanently, until you request removal.
+                  {{ $t('share.leaderboard_desc', { ovr: lineRatings.overall }) }}
                 </p>
               </div>
             </label>
@@ -186,16 +187,16 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               v-if="isSubmittingLeaderboard"
               class="text-xs font-mono text-zinc-400 animate-pulse"
             >
-              Submitting to leaderboard...
+              {{ $t('share.submitting') }}
             </div>
             <div
               v-else-if="leaderboardSubmitted"
               class="text-xs font-mono text-emerald-400 font-bold"
             >
-              ✓ Submitted! <NuxtLink
-                to="/leaderboard"
+              {{ $t('share.submitted') }} <NuxtLink
+                :to="localePath('/leaderboard')"
                 class="underline"
-              >View Leaderboard</NuxtLink>
+              >{{ $t('share.view_leaderboard') }}</NuxtLink>
             </div>
             <div
               v-else-if="leaderboardError"
@@ -215,7 +216,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 readonly
                 rows="9"
                 :value="wordleShareText"
-                aria-label="Shareable text summary of your tournament run"
+                :aria-label="$t('share.text_summary_aria')"
                 class="w-full p-3.5 rounded-xl bg-black/60 border border-white/10 text-xs font-mono text-zinc-200 resize-none focus:outline-none select-all"
               />
             </div>
@@ -229,7 +230,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                 :name="copiedText ? 'i-lucide-check' : 'i-lucide-copy'"
                 class="size-4"
               />
-              <span>{{ copiedText ? '✓ Copied Text to Clipboard!' : 'Copy Text to Clipboard' }}</span>
+              <span>{{ copiedText ? $t('share.copied_text') : $t('share.copy_text') }}</span>
             </button>
           </div>
 
@@ -255,7 +256,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                   :name="copiedImage ? 'i-lucide-check' : 'i-lucide-copy'"
                   class="size-4"
                 />
-                <span>{{ copiedImage ? '✓ Copied Image!' : 'Copy Image' }}</span>
+                <span>{{ copiedImage ? $t('share.copied_image') : $t('share.copy_image') }}</span>
               </button>
 
               <button
@@ -267,7 +268,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
                   name="i-lucide-download"
                   class="size-4"
                 />
-                <span>Download PNG</span>
+                <span>{{ $t('share.download_png') }}</span>
               </button>
             </div>
           </div>

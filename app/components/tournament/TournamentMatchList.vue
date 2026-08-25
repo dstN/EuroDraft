@@ -3,6 +3,8 @@ import type { MatchResult } from '~/types'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 import LiveMatchBroadcast from '~/components/tournament/LiveMatchBroadcast.vue'
 
+const { t } = useI18n()
+
 // Shared list UI for both the group-stage and knockout match sections of
 // tournament/index.vue -- previously duplicated near-verbatim between the
 // two (same expand/collapse card, same event-timeline breakdown), differing
@@ -33,17 +35,17 @@ function toggleExpanded(matchId: string) {
 }
 
 function phaseLabel(match: MatchResult, index: number): string {
-  if (props.variant === 'group') return `MD${index + 1}`
-  if (match.phase === 'quarter-final') return 'QF'
-  if (match.phase === 'semi-final') return 'SF'
-  return 'Final'
+  if (props.variant === 'group') return t('tournament.matchday_short', { n: index + 1 })
+  if (match.phase === 'quarter-final') return t('tournament.quarter_final_short')
+  if (match.phase === 'semi-final') return t('tournament.semi_final_short')
+  return t('tournament.final')
 }
 
 function matchSubtitle(match: MatchResult): string {
   if (props.variant === 'group') {
-    return `${match.events.filter(e => e.type === 'goal').length} Goals · Click for event timeline`
+    return t('tournament.group_goals_subtitle', { count: match.events.filter(e => e.type === 'goal').length })
   }
-  return `${match.phase.toUpperCase()} · Click for event timeline`
+  return t('tournament.phase_subtitle', { phase: t(`tournament.${match.phase === 'quarter-final' ? 'quarter_final' : 'semi_final'}`).toUpperCase() })
 }
 </script>
 
@@ -91,7 +93,7 @@ function matchSubtitle(match: MatchResult): string {
             />
             <div class="min-w-0">
               <p class="font-bold text-sm text-zinc-900 dark:text-white truncate">
-                vs {{ opponentTeam(match).countryName }} '{{ opponentTeam(match).year }}
+                {{ $t('tournament.vs') }} {{ $t(`countries.${opponentTeam(match).country.toLowerCase()}`, opponentTeam(match).countryName) }} '{{ opponentTeam(match).year }}
               </p>
               <p class="text-[11px] font-mono text-zinc-700 dark:text-zinc-300 font-semibold">
                 {{ matchSubtitle(match) }}
@@ -122,7 +124,7 @@ function matchSubtitle(match: MatchResult): string {
             v-if="getNotableMatchEvents(match).length === 0"
             class="text-zinc-700 dark:text-zinc-300 italic py-1"
           >
-            No goals or disciplinary cards in this match.
+            {{ $t('tournament.no_notable_events') }}
           </div>
           <div
             v-for="(ev, eIdx) in getNotableMatchEvents(match)"
@@ -131,17 +133,17 @@ function matchSubtitle(match: MatchResult): string {
           >
             <span class="font-bold w-7 text-zinc-700 dark:text-zinc-300 shrink-0">{{ ev.minute }}'</span>
             <span v-if="ev.type === 'goal'">
-              ⚽ Goal: <strong class="text-emerald-700 dark:text-emerald-400 font-bold">{{ ev.playerName }}</strong>
+              ⚽ {{ $t('tournament.event_goal') }}: <strong class="text-emerald-700 dark:text-emerald-400 font-bold">{{ ev.playerName }}</strong>
               <span
                 v-if="ev.assistPlayerName"
                 class="text-zinc-700 dark:text-zinc-300 font-semibold"
-              > (assist by {{ ev.assistPlayerName }})</span>
+              > {{ $t('tournament.event_assist', { name: ev.assistPlayerName }) }}</span>
             </span>
             <span v-else-if="ev.type === 'yellow-card'">
-              🟨 Yellow Card: <span class="font-semibold">{{ ev.playerName }}</span>
+              🟨 {{ $t('tournament.event_yellow') }}: <span class="font-semibold">{{ ev.playerName }}</span>
             </span>
             <span v-else-if="ev.type === 'red-card'">
-              🟥 Red Card: <strong class="text-rose-600 dark:text-rose-400 font-bold">{{ ev.playerName }}</strong>
+              🟥 {{ $t('tournament.event_red') }}: <strong class="text-rose-600 dark:text-rose-400 font-bold">{{ ev.playerName }}</strong>
             </span>
             <span
               v-else-if="ev.type === 'penalty-shootout'"

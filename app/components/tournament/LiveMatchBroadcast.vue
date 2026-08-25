@@ -2,6 +2,9 @@
 import type { MatchResult } from '~/types'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
+const { t } = useI18n()
+const countryName = useCountryName()
+
 const props = defineProps<{
   match: MatchResult
   playerTeamId: string
@@ -54,6 +57,14 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
+const PHASE_LABEL_KEYS: Record<MatchResult['phase'], string> = {
+  'group': 'tournament.group_stage',
+  'quarter-final': 'tournament.quarter_final',
+  'semi-final': 'tournament.semi_final',
+  'final': 'tournament.final'
+}
+const phaseLabel = computed(() => t(PHASE_LABEL_KEYS[props.match.phase]).toUpperCase())
+
 function skipCurrentMatch() {
   revealedEventsCount.value = props.match.events.length
   isFinished.value = true
@@ -71,7 +82,7 @@ function skipCurrentMatch() {
       <div class="flex items-center gap-2">
         <span class="size-2 rounded-full bg-rose-600 animate-ping" />
         <span class="text-xs font-mono font-bold uppercase tracking-widest text-rose-800 dark:text-rose-300">
-          Live Match · {{ match.phase.toUpperCase() }}
+          {{ $t('tournament.live_match') }} · {{ phaseLabel }}
         </span>
       </div>
 
@@ -80,7 +91,7 @@ function skipCurrentMatch() {
         variant="ghost"
         color="neutral"
         trailing-icon="i-lucide-fast-forward"
-        label="Fast Forward Match"
+        :label="$t('tournament.fast_forward')"
         class="font-mono text-xs font-bold cursor-pointer"
         @click="skipCurrentMatch"
       />
@@ -98,10 +109,10 @@ function skipCurrentMatch() {
           class="text-sm sm:text-base font-black truncate max-w-full"
           :class="match.teamA.team.id === playerTeamId ? 'text-emerald-800 dark:text-emerald-300' : 'text-zinc-900 dark:text-white'"
         >
-          {{ match.teamA.team.countryName }}
+          {{ countryName(match.teamA.team.country) }}
         </h3>
         <span class="text-xs font-mono text-zinc-700 dark:text-zinc-300 font-bold">
-          OVR {{ match.teamA.team.averageOVR }}
+          {{ $t('tournament.ovr_value', { value: match.teamA.team.averageOVR }) }}
         </span>
       </div>
 
@@ -114,13 +125,13 @@ function skipCurrentMatch() {
           v-if="isFinished && match.penalties"
           class="text-xs font-mono text-amber-700 dark:text-amber-300 font-bold mt-1"
         >
-          ({{ match.penalties.teamA }}–{{ match.penalties.teamB }} pens)
+          {{ $t('tournament.pens', { penA: match.penalties.teamA, penB: match.penalties.teamB }) }}
         </p>
         <p
           v-else
           class="text-xs font-mono uppercase text-zinc-700 dark:text-zinc-300 mt-1 font-bold"
         >
-          {{ isFinished ? 'Full-Time' : 'In Progress' }}
+          {{ isFinished ? $t('tournament.full_time') : $t('tournament.in_progress') }}
         </p>
       </div>
 
@@ -134,10 +145,10 @@ function skipCurrentMatch() {
           class="text-sm sm:text-base font-black truncate max-w-full"
           :class="match.teamB.team.id === playerTeamId ? 'text-emerald-800 dark:text-emerald-300' : 'text-zinc-900 dark:text-white'"
         >
-          {{ match.teamB.team.countryName }}
+          {{ countryName(match.teamB.team.country) }}
         </h3>
         <span class="text-xs font-mono text-zinc-700 dark:text-zinc-300 font-bold">
-          OVR {{ match.teamB.team.averageOVR }}
+          {{ $t('tournament.ovr_value', { value: match.teamB.team.averageOVR }) }}
         </span>
       </div>
     </div>
@@ -147,7 +158,7 @@ function skipCurrentMatch() {
       class="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/10 max-h-48 overflow-y-auto custom-scroll pr-1"
       tabindex="0"
       role="log"
-      aria-label="Live match commentary"
+      :aria-label="$t('tournament.aria_live_commentary')"
     >
       <div
         v-for="(ev, idx) in currentEvents"

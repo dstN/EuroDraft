@@ -32,7 +32,7 @@ function positionColor(pos: string): string {
         v-if="idx === 0 || squadWithEligibility[idx - 1]?.player.basePosition !== entry.player.basePosition"
         class="pt-2.5 pb-1 px-1 flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.15em] text-zinc-700 dark:text-zinc-300 select-none"
       >
-        <span>{{ entry.player.basePosition }}s</span>
+        <span>{{ $t(`draft.category_plural.${entry.player.basePosition}`) }}</span>
         <div class="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
       </div>
 
@@ -55,7 +55,7 @@ function positionColor(pos: string): string {
           class="flex-1 flex items-center gap-3 px-2.5 py-1.5 text-left rounded-lg transition-transform focus:outline-none"
           :class="isPlayerEligible(entry.player) ? 'cursor-pointer active:scale-[0.99]' : 'cursor-not-allowed'"
           :disabled="!isPlayerEligible(entry.player)"
-          :aria-label="`Draft ${entry.player.name}, position ${entry.player.primaryPosition}, rating ${entry.player.stats.overall}`"
+          :aria-label="$t('draft.aria_draft_player', { name: entry.player.name, position: entry.player.primaryPosition, rating: entry.player.stats.overall })"
           @click="emit('selectPlayer', entry.player)"
         >
           <!-- Shirt number -->
@@ -110,8 +110,8 @@ function positionColor(pos: string): string {
         <button
           type="button"
           class="size-8 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer shrink-0 focus:outline-none"
-          title="View full player stats"
-          :aria-label="`View full attributes and stats for ${entry.player.name}`"
+          :title="$t('draft.view_stats_title')"
+          :aria-label="$t('draft.aria_view_stats', { name: entry.player.name })"
           @click="emit('inspectPlayer', entry.player)"
         >
           <UIcon
