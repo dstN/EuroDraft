@@ -70,34 +70,42 @@ export function calculateSectionRatings(squad: Player[]) {
   }
 }
 
-// ---- Goal/event templates ----
-
-const GOAL_TEMPLATES = [
-  (player: string, _assist: string | null, minute: number, teamA: string, scoreA: number, scoreB: number, teamB: string) =>
-    `${minute}' ⚽ GOAL! ${player} fires it into the net! ${teamA} ${scoreA}–${scoreB} ${teamB}`,
-  (player: string, assist: string | null) =>
-    `${assist ? `${assist} with the through ball — ` : ''}${player} rounds the keeper and slots it home!`,
-  (player: string) => `What a strike from ${player}! Top corner!`,
-  (player: string, assist: string | null) =>
-    `${player} heads it in! ${assist ? `Brilliant cross from ${assist}.` : ''}`,
-  (player: string) => `${player} breaks through the defense... GOAL!`
-]
-
-const CHANCE_TEMPLATES = [
-  (player: string) => `${player} goes close but the keeper makes a stunning save!`,
-  (player: string) => `${player} hits the post! So close!`,
-  (player: string) => `${player} fires over from a great position.`,
-  (player: string) => `Chance! ${player} curls it just wide.`
-]
-
-const CARD_TEMPLATES = {
-  yellow: (player: string) => `🟨 ${player} picks up a yellow card.`,
-  red: (player: string) => `🟥 ${player} is sent off! Down to 10 men.`
-}
-
 // ---- Match simulation ----
 
 export function useMatchEngine() {
+  const { t } = useI18n()
+  const countryName = useCountryName()
+
+  // Randomly picked for commentary variety, purely for flavor -- see
+  // _generateGoalEvents()/_generateEvents() below for the selection logic.
+  // Split into with/no-assist variants rather than conditional interpolation
+  // inside a single message, since assist-clause word order/grammar isn't
+  // safely expressible as a single template across all 10 locales.
+  function goalDescription(player: string, assist: string | null, minute: number, teamAName: string, scoreA: number, scoreB: number, teamBName: string, rng: () => number): string {
+    const variants: (() => string)[] = [
+      () => t('matchEvents.goal_variant_1', { minute, player, teamA: teamAName, scoreA, scoreB, teamB: teamBName }),
+      () => assist
+        ? t('matchEvents.goal_variant_2_with_assist', { assist, player })
+        : t('matchEvents.goal_variant_2_no_assist', { player }),
+      () => t('matchEvents.goal_variant_3', { player }),
+      () => assist
+        ? t('matchEvents.goal_variant_4_with_assist', { player, assist })
+        : t('matchEvents.goal_variant_4_no_assist', { player }),
+      () => t('matchEvents.goal_variant_5', { player })
+    ]
+    return (pickRandom(variants, rng) ?? variants[0]!)()
+  }
+
+  function chanceDescription(player: string, rng: () => number): string {
+    const variants: (() => string)[] = [
+      () => t('matchEvents.chance_variant_1', { player }),
+      () => t('matchEvents.chance_variant_2', { player }),
+      () => t('matchEvents.chance_variant_3', { player }),
+      () => t('matchEvents.chance_variant_4', { player })
+    ]
+    return (pickRandom(variants, rng) ?? variants[0]!)()
+  }
+
   function simulateMatch(
     teamA: TournamentTeam,
     teamB: TournamentTeam,
@@ -160,7 +168,7 @@ export function useMatchEngine() {
   function _getFallbackPlayer(team: TournamentTeam, role: string): Player {
     return {
       id: `${team.id}-p-${role}`,
-      name: `${team.countryName} Player`,
+      name: t('matchEvents.fallback_player_name', { country: countryName(team.country) }),
       nameNormalized: 'player',
       country: team.country,
       countryName: team.countryName,
@@ -215,15 +223,15 @@ export function useMatchEngine() {
       if (team === 'A') scoreA++
       else scoreB++
 
-      const template = pickRandom(GOAL_TEMPLATES, rng) ?? GOAL_TEMPLATES[0]!
-      const description = template(
+      const description = goalDescription(
         scorer.name,
         maybeAssist?.name ?? null,
         minute,
-        teamA.countryName,
+        countryName(teamA.country),
         scoreA,
         scoreB,
-        teamB.countryName
+        countryName(teamB.country),
+        rng
       )
 
       events.push({
@@ -257,7 +265,7 @@ export function useMatchEngine() {
     const events: MatchEvent[] = []
 
     // Kickoff
-    events.push({ minute: 1, type: 'kickoff', team: null, description: '⚽ Kick-off!', scoreA: 0, scoreB: 0 })
+    events.push({ minute: 1, type: 'kickoff', team: null, description: t('matchEvents.kickoff'), scoreA: 0, scoreB: 0 })
 
     // Regulation time goals (minutes 3-90)
     const reg = _generateGoalEvents(teamA, teamB, regGoalsA, regGoalsB, 3, 90, 0, 0, rng)
@@ -271,7 +279,7 @@ export function useMatchEngine() {
       minute: 45,
       type: 'halftime',
       team: null,
-      description: `Half-time: ${teamA.countryName} ${halfScoreA}–${halfScoreB} ${teamB.countryName}`,
+      description: t('matchEvents.halftime', { teamA: countryName(teamA.country), scoreA: halfScoreA, scoreB: halfScoreB, teamB: countryName(teamB.country) }),
       scoreA: halfScoreA,
       scoreB: halfScoreB
     })
@@ -280,17 +288,16 @@ export function useMatchEngine() {
     const numChances = randomInt(2, 4, rng)
     for (let i = 0; i < numChances; i++) {
       const team = rng() > 0.5 ? 'A' : 'B'
-      const t = team === 'A' ? teamA : teamB
-      const player = (t.squad.length > 0 ? pickRandom(t.squad, rng) : null) ?? _getFallbackPlayer(t, 'chance')
+      const chanceTeam = team === 'A' ? teamA : teamB
+      const player = (chanceTeam.squad.length > 0 ? pickRandom(chanceTeam.squad, rng) : null) ?? _getFallbackPlayer(chanceTeam, 'chance')
       const minute = randomInt(5, 89, rng)
-      const chanceTpl = pickRandom(CHANCE_TEMPLATES, rng) ?? CHANCE_TEMPLATES[0]!
       events.push({
         minute,
         type: 'chance',
         team,
         playerId: player.id,
         playerName: player.name,
-        description: chanceTpl(player.name),
+        description: chanceDescription(player.name, rng),
         scoreA: reg.scoreA,
         scoreB: reg.scoreB
       })
@@ -300,8 +307,8 @@ export function useMatchEngine() {
     const numCards = randomInt(1, 3, rng)
     for (let i = 0; i < numCards; i++) {
       const team = rng() > 0.5 ? 'A' : 'B'
-      const t = team === 'A' ? teamA : teamB
-      const player = (t.squad.length > 0 ? pickRandom(t.squad, rng) : null) ?? _getFallbackPlayer(t, 'card')
+      const cardTeam = team === 'A' ? teamA : teamB
+      const player = (cardTeam.squad.length > 0 ? pickRandom(cardTeam.squad, rng) : null) ?? _getFallbackPlayer(cardTeam, 'card')
       const minute = randomInt(10, 88, rng)
       const isRed = rng() < 0.1
       events.push({
@@ -310,7 +317,7 @@ export function useMatchEngine() {
         team,
         playerId: player.id,
         playerName: player.name,
-        description: isRed ? CARD_TEMPLATES.red(player.name) : CARD_TEMPLATES.yellow(player.name),
+        description: isRed ? t('matchEvents.card_red', { player: player.name }) : t('matchEvents.card_yellow', { player: player.name }),
         scoreA: reg.scoreA,
         scoreB: reg.scoreB
       })
@@ -322,8 +329,8 @@ export function useMatchEngine() {
       type: 'fulltime',
       team: null,
       description: extraTime
-        ? `Full-time: ${teamA.countryName} ${reg.scoreA}–${reg.scoreB} ${teamB.countryName} — scores level, the match goes to extra time!`
-        : `Full-time: ${teamA.countryName} ${reg.scoreA}–${reg.scoreB} ${teamB.countryName}`,
+        ? t('matchEvents.fulltime_to_extra_time', { teamA: countryName(teamA.country), scoreA: reg.scoreA, scoreB: reg.scoreB, teamB: countryName(teamB.country) })
+        : t('matchEvents.fulltime', { teamA: countryName(teamA.country), scoreA: reg.scoreA, scoreB: reg.scoreB, teamB: countryName(teamB.country) }),
       scoreA: reg.scoreA,
       scoreB: reg.scoreB
     })
@@ -333,7 +340,7 @@ export function useMatchEngine() {
         minute: 91,
         type: 'extra-time',
         team: null,
-        description: '⏱️ Extra time begins! Two 15-minute periods to separate these sides.',
+        description: t('matchEvents.extra_time_begins'),
         scoreA: reg.scoreA,
         scoreB: reg.scoreB
       })
@@ -348,20 +355,20 @@ export function useMatchEngine() {
         type: 'fulltime',
         team: null,
         description: decidedInExtraTime
-          ? `Full-time (AET): ${teamA.countryName} ${et.scoreA}–${et.scoreB} ${teamB.countryName}`
-          : `Full-time (AET): ${teamA.countryName} ${et.scoreA}–${et.scoreB} ${teamB.countryName} — still level, it's going to penalties!`,
+          ? t('matchEvents.fulltime_aet', { teamA: countryName(teamA.country), scoreA: et.scoreA, scoreB: et.scoreB, teamB: countryName(teamB.country) })
+          : t('matchEvents.fulltime_aet_to_penalties', { teamA: countryName(teamA.country), scoreA: et.scoreA, scoreB: et.scoreB, teamB: countryName(teamB.country) }),
         scoreA: et.scoreA,
         scoreB: et.scoreB
       })
 
       if (penalties) {
         const teamAWins = penalties.teamA > penalties.teamB
-        const winnerName = teamAWins ? teamA.countryName : teamB.countryName
+        const winnerName = teamAWins ? countryName(teamA.country) : countryName(teamB.country)
         events.push({
           minute: 121,
           type: 'penalty-shootout',
           team: teamAWins ? 'A' : 'B',
-          description: `🥅 Penalty shootout! ${winnerName} win it ${Math.max(penalties.teamA, penalties.teamB)}–${Math.min(penalties.teamA, penalties.teamB)} on penalties!`,
+          description: t('matchEvents.penalty_shootout_result', { winner: winnerName, max: Math.max(penalties.teamA, penalties.teamB), min: Math.min(penalties.teamA, penalties.teamB) }),
           scoreA: et.scoreA,
           scoreB: et.scoreB
         })
