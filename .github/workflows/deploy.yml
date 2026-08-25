@@ -131,14 +131,15 @@ jobs:
           tar cf - -C .output . \
             | sshpass -e ssh $SSH_OPTS "$REMOTE" "tar xf - -C '$REMOTE_PATH/.output.new'"
 
-          # package.json (Passenger reads it for app metadata). Tiny, so
-          # streamed in place rather than staged. No separate startup-file
-          # wrapper is uploaded: per DEPLOYMENT.md, the Application Startup
-          # File is set directly to .output/server/index.mjs in the Plesk
-          # panel — nothing extra to ship for that unless ERR_REQUIRE_ESM
-          # shows up in Passenger's error log, in which case see
-          # DEPLOYMENT.md's entry.cjs wrapper section.
+          # package.json (Passenger reads it for app metadata) and app.js
+          # (the Passenger startup shim — pointing Startup File directly at
+          # .output/server/index.mjs produced Passenger's generic "Web
+          # application could not be started" on the real first deploy, the
+          # same failure DEPLOYMENT.md predicted; app.js is the sibling
+          # GourMerge app's proven fix on this same hosting/Node version).
+          # Both tiny, so streamed in place rather than staged.
           sshpass -e ssh $SSH_OPTS "$REMOTE" "cat > '$REMOTE_PATH/package.json'" < package.json
+          sshpass -e ssh $SSH_OPTS "$REMOTE" "cat > '$REMOTE_PATH/app.js'" < app.js
 
           echo "Artifact staged in $REMOTE_PATH/.output.new"
 

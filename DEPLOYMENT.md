@@ -27,50 +27,52 @@ Application Root and Document Root as two separate fields for exactly this
 reason — as of this writing Plesk does not warn if both are left identical,
 so double-check this by hand.
 
-## Startup file: try the simple option first
+## Startup file: use app.js, not .output/server/index.mjs directly
 
 Passenger's Node.js loader has historically used `require()` internally,
 which cannot load a file Node treats as an ES module — and this repo's
 `package.json` sets `"type": "module"`, same as every other app on this
-account. In practice, across this account's own apps, the picture is mixed:
+account. In practice, across this account's own apps, the picture was
+mixed going in:
 
 - **footyguess** points its Startup File directly at
   `.output/server/index.mjs` — no wrapper — and that is documented as its
   current production configuration.
-- **GourMerge** also uses a plain `app.js` (importing the Nitro output
+- **GourMerge** uses a plain `app.js` (importing the Nitro output
   dynamically) as its documented production path.
 - **bewerby** hit `ERR_REQUIRE_ESM` with a plain `.js` startup file and had
-  to switch to a `.cjs` wrapper — verified live against a real failure, not
-  a guess.
+  to switch to a `.cjs` wrapper.
 
-That's contradictory enough within this account's own history that it's
-probably a Passenger-version or vhost difference, not a settled fact. So:
-
-**Try this first** — set Application Startup File to `.output/server/index.mjs`
-directly (footyguess's approach, and the simplest — nothing to upload
-beyond the build output itself).
-
-**If Passenger's error log shows `ERR_REQUIRE_ESM`**, add this wrapper
-instead:
+**Verified live on ed.rntm.de's first real deploy**: pointing Application
+Startup File directly at `.output/server/index.mjs` (footyguess's approach)
+failed — every route, including plain static assets once Document Root was
+correctly split, came back as Passenger's generic "Web application could
+not be started" (no `ERR_REQUIRE_ESM` specifically surfaced in the panel's
+access log, only in whatever Passenger's own deeper log holds — never
+retrieved directly, since app.js resolved it first). Switching to
+GourMerge's exact `app.js` wrapper — same account, same Netcup/Plesk
+hosting, same Node 26.7.0, same `"type": "module"` — fixed it:
 
 ```js
-// entry.cjs — place at the project root (Application Root)
-require('./.output/server/index.mjs')
+// app.js — place at the project root (Application Root)
+import('./.output/server/index.mjs')
 ```
 
-Wait — `require()` can't load ESM either, which is the whole problem.
-Use `import()` instead, which is valid inside a `.cjs` file:
+Point Application Startup File at `app.js`, and upload it alongside
+`.output/` and `package.json` (deploy.yml does this automatically). If a
+future Node/Passenger upgrade ever makes even this fail with
+`ERR_REQUIRE_ESM` in Passenger's log, bewerby's `.cjs`-wrapper fallback is
+the next thing to try:
 
 ```js
-// entry.cjs
+// entry.cjs — place at the project root (Application Root) instead of app.js
 import('./.output/server/index.mjs')
 ```
 
 The `.cjs` extension forces Node to treat this specific file as CommonJS
-regardless of the package's `"type": "module"`, so Passenger's `require()`
-can load *this* file — which then reaches the real ESM server via a dynamic
-`import()`, valid from CommonJS. Point Application Startup File at
-`entry.cjs` instead, and upload it alongside `.output/`.
+regardless of the package's `"type": "module"`, which matters if Passenger's
+`require()`-based loader stops accepting a plain `.js` file for some reason
+— `import()` inside it still reaches the real ESM server the same way.
 
 Do not add `PassengerAppType` / `PassengerStartupFile` directives to
 `.htaccess` as a fallback. On this same Netcup/Plesk setup that has caused
@@ -96,8 +98,7 @@ native bindings) and copies the real, unmangled package into
 a build, and confirmed working end-to-end against a live database (share
 create → read → process restart → read again, still resolves). Upload just:
 
-- The startup file (`.output/server/index.mjs` directly, or `entry.cjs` —
-  whichever the section above ends up using)
+- `app.js` (the startup shim — see the section above)
 - `.output/` (all of it — `public/`, `server/`)
 - `package.json` (Passenger reads this for app metadata)
 
