@@ -19,12 +19,31 @@ const navLinks = computed(() => [
 // more links exist off-screen -- in practice, on a phone-width viewport
 // only Draft/Tournament fit before the language/audio/theme controls eat
 // the rest of the header, so Compare/Leaderboard/Legal were reachable only
-// by a swipe nobody discovers. This panel replaces that with an explicit,
-// always-visible toggle.
+// by a swipe nobody discovers. This is replaced by a full off-canvas menu
+// (slide-in panel + backdrop) below sm, rather than a small inline dropdown.
 const isMobileMenuOpen = ref(false)
 const route = useRoute()
 watch(() => route.fullPath, () => {
   isMobileMenuOpen.value = false
+})
+
+// Lock body scroll while the off-canvas menu is open, and let Escape close it.
+// The Escape listener has to be global (not bound on the panel itself) --
+// focus isn't guaranteed to be inside the panel (e.g. it stays on the
+// hamburger button that opened it), so a keydown handler scoped to the
+// panel would never see the event bubble through it.
+watch(isMobileMenuOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && isMobileMenuOpen.value) isMobileMenuOpen.value = false
+}
+onMounted(() => {
+  window.addEventListener('keydown', onGlobalKeydown)
+})
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+  window.removeEventListener('keydown', onGlobalKeydown)
 })
 
 const isDark = computed({
@@ -135,17 +154,17 @@ const currentLocaleName = computed(() => {
 
         <!-- Right side: Mobile menu toggle + Language + Theme Toggle -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <!-- Mobile navigation toggle (below sm, replaces the nav above) -->
+          <!-- Mobile navigation toggle (below sm, opens the off-canvas menu) -->
           <UButton
             size="xs"
             variant="ghost"
             color="neutral"
-            :icon="isMobileMenuOpen ? 'i-lucide-x' : 'i-lucide-menu'"
+            icon="i-lucide-menu"
             class="sm:hidden rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
             aria-controls="mobile-nav-panel"
             :aria-expanded="isMobileMenuOpen"
-            :aria-label="isMobileMenuOpen ? $t('nav.close_menu_aria') : $t('nav.open_menu_aria')"
-            @click="isMobileMenuOpen = !isMobileMenuOpen"
+            :aria-label="$t('nav.open_menu_aria')"
+            @click="isMobileMenuOpen = true"
           />
 
           <!-- Language selector dropdown with flag -->
@@ -186,47 +205,80 @@ const currentLocaleName = computed(() => {
           />
         </div>
       </div>
+    </header>
 
-      <!-- Mobile navigation panel (below sm only) -->
+    <!-- Mobile off-canvas navigation menu (below sm only): full-height slide-in
+         panel + backdrop, teleported to <body> so it isn't clipped by the
+         header's own stacking context and truly covers the viewport. -->
+    <Teleport to="body">
       <Transition
-        enter-active-class="transition-all duration-150 ease-out"
-        enter-from-class="opacity-0 -translate-y-1"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-100 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-1"
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="isMobileMenuOpen"
+          class="sm:hidden fixed inset-0 z-[100] bg-black/50"
+          @click="isMobileMenuOpen = false"
+        />
+      </Transition>
+      <Transition
+        enter-active-class="transition-transform duration-200 ease-out"
+        enter-from-class="translate-x-full"
+        enter-to-class="translate-x-0"
+        leave-active-class="transition-transform duration-150 ease-in"
+        leave-from-class="translate-x-0"
+        leave-to-class="translate-x-full"
       >
         <nav
           v-if="isMobileMenuOpen"
           id="mobile-nav-panel"
-          class="sm:hidden border-t border-black/[0.04] dark:border-white/[0.04] bg-white/70 dark:bg-[#060b10]/70 backdrop-blur-md px-2.5 py-2 flex flex-col gap-1"
+          class="sm:hidden fixed inset-y-0 right-0 z-[101] w-[80%] max-w-xs h-dvh bg-white dark:bg-[#0a0f16] shadow-2xl flex flex-col"
           :aria-label="$t('nav.main_navigation_aria')"
         >
-          <UButton
-            v-for="link in navLinks"
-            :key="link.to"
-            :to="link.to"
-            variant="ghost"
-            color="neutral"
-            size="lg"
-            :label="link.label"
-            class="justify-start font-semibold text-sm text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-3 py-2 w-full"
-          />
-
-          <NuxtLink
-            v-if="draft.filledSlots.length > 0 && !draft.isComplete"
-            :to="localePath('/draft')"
-            class="inline-flex items-center gap-1.5 mx-3 mt-1 mb-1 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold self-start"
-          >
-            <span
-              class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
-              aria-hidden="true"
+          <div class="flex items-center justify-between h-16 px-4 border-b border-black/[0.06] dark:border-white/[0.06] shrink-0">
+            <AppLogo variant="horizontal" />
+            <UButton
+              size="sm"
+              variant="ghost"
+              color="neutral"
+              icon="i-lucide-x"
+              :aria-label="$t('nav.close_menu_aria')"
+              class="rounded-lg text-zinc-900 dark:text-zinc-100"
+              @click="isMobileMenuOpen = false"
             />
-            <span>{{ $t('nav.draft_progress_badge', { count: draft.filledSlots.length }) }}</span>
-          </NuxtLink>
+          </div>
+
+          <div class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1">
+            <UButton
+              v-for="link in navLinks"
+              :key="link.to"
+              :to="link.to"
+              variant="ghost"
+              color="neutral"
+              size="lg"
+              :label="link.label"
+              class="justify-start font-semibold text-base text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-3 py-3 w-full"
+            />
+
+            <NuxtLink
+              v-if="draft.filledSlots.length > 0 && !draft.isComplete"
+              :to="localePath('/draft')"
+              class="inline-flex items-center gap-1.5 mx-3 mt-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold self-start"
+            >
+              <span
+                class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
+                aria-hidden="true"
+              />
+              <span>{{ $t('nav.draft_progress_badge', { count: draft.filledSlots.length }) }}</span>
+            </NuxtLink>
+          </div>
         </nav>
       </Transition>
-    </header>
+    </Teleport>
 
     <!-- Page content with consistent container spacing -->
     <main
