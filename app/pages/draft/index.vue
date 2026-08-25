@@ -121,19 +121,28 @@ onBeforeUnmount(() => {
 // below) takes 250ms to reach full opacity. Swapping the roulette store's
 // data immediately meant the new country/year was already visible through
 // the still-fading-in overlay -- a brief flash of the result before the
-// loading animation had actually covered it. Deferring the data swap until
-// just after the overlay is fully opaque removes that flash entirely.
+// loading animation had actually covered it.
+//
+// Deferring just the store mutation isn't enough on its own, though:
+// RouletteWheelReel starts its own "slot machine" cycling animation the
+// instant isSpinningReel flips true, showing a rapid sequence of *random*
+// sample countries independent of the store (see that component's
+// displayCountry) -- if that starts immediately too, the same fading-in
+// overlay window shows random country flashes instead of the old,
+// unchanged, correct one. Deferring isSpinningReel by the same amount keeps
+// the reel showing the old (still valid) country until the overlay is
+// already opaque, so nothing changes on screen until it's fully hidden.
 const OVERLAY_OPAQUE_DELAY_MS = 260
 
 function spinWithAnimation() {
   if (isCardTransitioning.value) return
   currentSpinType.value = 'all'
   isCardTransitioning.value = true
-  isSpinningReel.value = true
   audio.playSpinTick()
 
   const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isSpinningReel.value = true
     roulette.spin()
   }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {
@@ -146,11 +155,11 @@ function rerollYearWithAnimation() {
   if (draft.rerollsRemaining <= 0 || isSpinningReel.value || isCardTransitioning.value) return
   currentSpinType.value = 'year'
   isCardTransitioning.value = true
-  isSpinningReel.value = true
   audio.playReroll()
 
   const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isSpinningReel.value = true
     roulette.rerollYear()
   }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {
@@ -163,11 +172,11 @@ function rerollNationWithAnimation() {
   if (draft.rerollsRemaining <= 0 || isSpinningReel.value || isCardTransitioning.value) return
   currentSpinType.value = 'nation'
   isCardTransitioning.value = true
-  isSpinningReel.value = true
   audio.playReroll()
 
   const duration = getRandomAnimationDuration(1050)
   setTimeout(() => {
+    isSpinningReel.value = true
     roulette.rerollNation()
   }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {

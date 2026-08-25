@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { useMatchEngine, calculateFormationShape, calculateChemistryBonus } from '../../app/composables/useMatchEngine'
+import { useMatchEngine, calculateFormationShape, calculateChemistryBonus, calculateOverallRatingBonus } from '../../app/composables/useMatchEngine'
 import type { Player, TournamentTeam } from '../../app/types'
 
 function makePlayer(id: string, position: Player['primaryPosition'], overall = 75, opts: { country?: string, year?: number } = {}): Player {
@@ -247,5 +247,49 @@ describe('formation shape and chemistry influence match outcomes', () => {
     }
 
     expect(linkedGoalsTotal).toBeGreaterThan(unlinkedGoalsTotal)
+  })
+})
+
+describe('calculateOverallRatingBonus', () => {
+  it('is 0 for equal overall ratings', () => {
+    expect(calculateOverallRatingBonus(80, 80)).toBe(0)
+  })
+
+  it('is positive when own OVR exceeds the opponent\'s, negative the other way round', () => {
+    expect(calculateOverallRatingBonus(85, 80)).toBeGreaterThan(0)
+    expect(calculateOverallRatingBonus(80, 85)).toBeLessThan(0)
+  })
+
+  it('is symmetric: both sides\' bonuses are exact opposites', () => {
+    expect(calculateOverallRatingBonus(88, 76)).toBeCloseTo(-calculateOverallRatingBonus(76, 88))
+  })
+
+  it('is capped at +/-30% even for a huge OVR gap', () => {
+    expect(calculateOverallRatingBonus(99, 40)).toBe(0.3)
+    expect(calculateOverallRatingBonus(40, 99)).toBe(-0.3)
+  })
+})
+
+describe('overall rating gap influences match outcomes', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('a higher-OVR team outscores an otherwise-identical lower-OVR team on average', () => {
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const strongSquad = positions.map((pos, i) => makePlayer(`strong-${i}`, pos, 89, { country: `c${i}`, year: 1980 + i }))
+    const weakSquad = positions.map((pos, i) => makePlayer(`weak-${i}`, pos, 70, { country: `d${i}`, year: 1980 + i }))
+
+    const teamStrong: TournamentTeam = { ...makeTeam('strong', 'Strong'), squad: strongSquad, averageOVR: 89 }
+    const teamWeak: TournamentTeam = { ...makeTeam('weak', 'Weak'), squad: weakSquad, averageOVR: 70 }
+
+    let strongGoalsTotal = 0
+    let weakGoalsTotal = 0
+    const runs = 400
+    for (let seed = 1; seed <= runs; seed++) {
+      const match = simulateMatch(teamStrong, teamWeak, 'group', seed)
+      strongGoalsTotal += match.teamA.goals
+      weakGoalsTotal += match.teamB.goals
+    }
+
+    expect(strongGoalsTotal).toBeGreaterThan(weakGoalsTotal)
   })
 })
