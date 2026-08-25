@@ -110,12 +110,18 @@ function spinPreview() {
 
 // 4 Eras Bento Grid Data — year range and star names are proper nouns/dates,
 // left untranslated; title/subtitle/tag are pulled from i18n by era index below.
+//
+// Boundaries follow the real EURO team-count expansions, not just a rough
+// "look how the years feel grouped" split -- 24 teams only started at EURO
+// 2016; 2008 and 2012 were still 16-team tournaments, so they belong with
+// the 1996-2012 era, not the 2016-2024 one (was previously mislabeled as
+// part of a "2008 — 2024 / 24 Teams Era" span).
 const { t } = useI18n()
 const tournamentEraMeta = [
-  { era: '1960 — 1980', stars: ['Lev Yashin \'60', 'Gerd Müller \'72', 'Franz Beckenbauer \'72', 'Antonín Panenka \'76'] },
-  { era: '1984 — 1992', stars: ['Michel Platini \'84', 'Marco van Basten \'88', 'Ruud Gullit \'88', 'Peter Schmeichel \'92'] },
-  { era: '1996 — 2004', stars: ['Zinedine Zidane \'00', 'Pavel Nedved \'04', 'Thierry Henry \'00', 'Wayne Rooney \'04'] },
-  { era: '2008 — 2024', stars: ['Andres Iniesta \'12', 'Cristiano Ronaldo \'16', 'Toni Kroos \'24', 'Lamine Yamal \'24'] }
+  { era: '1960 — 1976', stars: ['Lev Yashin \'60', 'Gerd Müller \'72', 'Franz Beckenbauer \'72', 'Antonín Panenka \'76'] },
+  { era: '1980 — 1992', stars: ['Michel Platini \'84', 'Marco van Basten \'88', 'Ruud Gullit \'88', 'Peter Schmeichel \'92'] },
+  { era: '1996 — 2012', stars: ['Zinedine Zidane \'00', 'Thierry Henry \'00', 'Fernando Torres \'08', 'Andres Iniesta \'12'] },
+  { era: '2016 — 2024', stars: ['Cristiano Ronaldo \'16', 'Gianluigi Donnarumma \'21', 'Toni Kroos \'24', 'Lamine Yamal \'24'] }
 ]
 const tournamentEras = computed(() => tournamentEraMeta.map((meta, i) => ({
   ...meta,

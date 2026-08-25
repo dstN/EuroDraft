@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  switchToContactTab: []
+}>()
+</script>
+
 <template>
   <div class="space-y-6">
     <div class="surface-card p-6 sm:p-8 space-y-6 text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed">
@@ -35,10 +41,13 @@
           >info@rntm.de</a>
         </p>
         <p class="text-zinc-700 dark:text-zinc-300 mt-1">
-          Website: <a
-            href="https://ed.rntm.de"
-            class="text-emerald-900 dark:text-emerald-300 font-bold hover:underline"
-          >https://ed.rntm.de</a>
+          <button
+            type="button"
+            class="text-emerald-900 dark:text-emerald-300 font-bold hover:underline cursor-pointer"
+            @click="emit('switchToContactTab')"
+          >
+            {{ $t('legal.imprint_contact_form_link') }}
+          </button>
         </p>
       </div>
 
