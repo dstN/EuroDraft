@@ -54,3 +54,15 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      # This artifact IS the release — deploy.yml downloads it and ships it to
+      # the host, so anything missing here is missing in production. Only
+      # built on master (the production branch); development merges don't
+      # need it.
+      - name: Upload build artifact
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: eurodraft-output-${{ github.sha }}
+          path: .output/
+          retention-days: 7

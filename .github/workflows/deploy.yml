@@ -1,0 +1,277 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [ci]
+    branches: [master]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    name: Deploy to Netcup
+    runs-on: ubuntu-latest
+    # apt-get against the runner's mirror has been observed to stall for
+    # 15-30 minutes instead of failing cleanly on sibling repos (same
+    # account/hosting). This is the only thing that reliably recovers from
+    # that, since it tears down the whole runner VM.
+    timeout-minutes: 15
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # The environment must exist in repo Settings → Environments for its
+    # protection rules (and its branch policy restricting it to `master`) to
+    # apply. If it does not, GitHub silently auto-creates an unprotected one
+    # on first run. Keep the DEPLOY_* secrets as ENVIRONMENT secrets on this
+    # environment, not repository secrets: repo secrets are readable by any
+    # workflow on any branch, which would bypass the branch restriction
+    # entirely.
+    environment:
+      name: master
+
+    env:
+      # Netcup's SSH is a chrooted /bin/bash whose root IS the subscription
+      # root (same hosting as this account's other apps — see EuroDraft's own
+      # DEPLOYMENT.md), so this is what `pwd` shows over SSH, not a
+      # /var/www/vhosts/... path.
+      REMOTE_PATH: ${{ secrets.DEPLOY_PATH }}
+      REMOTE: ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}
+
+    steps:
+      - name: Preflight — required secrets are configured
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PASSWORD: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_DOMAIN: ${{ secrets.DEPLOY_DOMAIN }}
+        run: |
+          missing=''
+          for name in DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_PASSWORD DEPLOY_PATH DEPLOY_DOMAIN; do
+            # Indirect expansion, so multi-line values stay intact.
+            if [ -z "${!name:-}" ]; then
+              missing="$missing $name"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Deploy aborted — unset secrets:$missing"
+            echo "Add them as ENVIRONMENT secrets under Settings → Environments → master."
+            exit 1
+          fi
+          echo "All required deploy secrets are present."
+
+      # Check out the exact commit CI built, not master's tip — otherwise a
+      # push landing mid-deploy would ship source that doesn't match the
+      # artifact.
+      - name: Checkout the built commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: eurodraft-output-${{ github.event.workflow_run.head_sha }}
+          path: .output/
+          # artifact is uploaded by ci.yml for the same commit
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # Everything remote is done with plain ssh + sshpass rather than a
+      # marketplace action: the webspace login is a password (Netcup exposes
+      # no key auth in the panel), so it must not be handed to a third-party
+      # action behind a mutable tag like @v1.
+      - name: Set up SSH (password auth + host key)
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_HOSTKEY: ${{ secrets.DEPLOY_SSH_HOSTKEY }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+          mkdir -p ~/.ssh
+          if [ -n "${DEPLOY_SSH_HOSTKEY:-}" ]; then
+            printf '%s\n' "$DEPLOY_SSH_HOSTKEY" > ~/.ssh/known_hosts_deploy
+            echo "Host key pinned from DEPLOY_SSH_HOSTKEY."
+          else
+            ssh-keyscan -t ed25519,rsa "$DEPLOY_SSH_HOST" > ~/.ssh/known_hosts_deploy 2>/dev/null
+            echo "::warning::DEPLOY_SSH_HOSTKEY is not set, so the deploy trusts whatever"
+            echo "::warning::key ssh-keyscan just fetched. With password auth an attacker in"
+            echo "::warning::the path would receive the account password in cleartext. Pin it:"
+            echo "::warning::  ssh-keyscan -t ed25519 ${DEPLOY_SSH_HOST}"
+            echo "::warning::and store the output line as the DEPLOY_SSH_HOSTKEY secret."
+          fi
+          chmod 600 ~/.ssh/known_hosts_deploy
+
+      # rsync/gzip are not assumed to exist in the chroot (sibling repos on
+      # the same hosting confirm only tar/sh/mv/touch/mkdir there) — the
+      # artifact is streamed as an uncompressed tar over ssh
+      # (Compression=yes handles it in the SSH transport instead) into a
+      # staging directory, so the live `.output` is never a half-written
+      # tree.
+      - name: Upload release to staging directory
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # Deliberately unquoted below: these are separate ssh arguments.
+          SSH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts_deploy -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no -o Compression=yes"
+
+          # `sshpass -e` takes the password from $SSHPASS; `-p` would expose
+          # it in the process list.
+          sshpass -e ssh $SSH_OPTS "$REMOTE" sh -s "$REMOTE_PATH" <<'REMOTE'
+          set -eu
+          rm -rf "$1/.output.new"
+          mkdir -p "$1/.output.new"
+          REMOTE
+
+          # pipefail matters here: without it a failing tar would be masked
+          # by a successful ssh and we would activate an incomplete release.
+          tar cf - -C .output . \
+            | sshpass -e ssh $SSH_OPTS "$REMOTE" "tar xf - -C '$REMOTE_PATH/.output.new'"
+
+          # package.json (Passenger reads it for app metadata). Tiny, so
+          # streamed in place rather than staged. No separate startup-file
+          # wrapper is uploaded: per DEPLOYMENT.md, the Application Startup
+          # File is set directly to .output/server/index.mjs in the Plesk
+          # panel — nothing extra to ship for that unless ERR_REQUIRE_ESM
+          # shows up in Passenger's error log, in which case see
+          # DEPLOYMENT.md's entry.cjs wrapper section.
+          sshpass -e ssh $SSH_OPTS "$REMOTE" "cat > '$REMOTE_PATH/package.json'" < package.json
+
+          echo "Artifact staged in $REMOTE_PATH/.output.new"
+
+      # Directory renames are near-instant, so the window where .output is
+      # absent is far smaller than a full upload. The outgoing release is
+      # kept as .output.prev — that is what the rollback repoints to.
+      - name: Activate release and restart Passenger
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts_deploy -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no"
+
+          sshpass -e ssh $SSH_OPTS "$REMOTE" sh -s "$REMOTE_PATH" <<'REMOTE'
+          set -eu
+          cd "$1"
+
+          test -d .output.new || { echo "staged release missing"; exit 1; }
+          test -f .output.new/server/index.mjs || { echo "staged release looks incomplete"; exit 1; }
+          test -d .output.new/public || { echo "staged release missing public/"; exit 1; }
+
+          rm -rf .output.prev
+          if [ -d .output ]; then
+            mv .output .output.prev
+          fi
+          mv .output.new .output
+
+          mkdir -p tmp
+          touch tmp/restart.txt
+
+          echo "Release activated (previous kept in .output.prev)."
+          REMOTE
+
+      - name: Smoke test
+        id: smoke
+        run: |
+          # Generous budget, not a quick check: Passenger spawns on the
+          # first request after a restart, and a too-eager health check
+          # rejecting a release that is merely still starting has caused a
+          # real outage on a sibling app (a working build got swapped for an
+          # older one by the "rescue"). There is no signal that
+          # distinguishes "still spawning" from "will never start" except
+          # elapsed time.
+          for i in $(seq 1 16); do
+            sleep 15
+            STATUS=$(curl -s -m 20 -o /dev/null -w "%{http_code}" "https://${{ secrets.DEPLOY_DOMAIN }}/api/health" || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $STATUS) after $((i * 15))s"
+              exit 0
+            fi
+            echo "Attempt $i/16 ($((i * 15))s): health check returned $STATUS"
+          done
+
+          ROOT=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.DEPLOY_DOMAIN }}/" || true)
+          echo "Health check never returned 200 in 4 minutes. Last: /api/health → $STATUS, / → $ROOT"
+          case "$STATUS" in
+            404 | 403)
+              echo "::error::Apache answered, not the app: Passenger is not handling requests."
+              echo "::error::Check that DEPLOY_PATH equals Plesk's Node.js *Application Root*"
+              echo "::error::and that the Application Startup File is set correctly — see"
+              echo "::error::DEPLOYMENT.md's 'Startup file' section."
+              ;;
+            500 | 502 | 503)
+              echo "::error::Passenger booted the app and it failed, or /api/health reported"
+              echo "::error::unhealthy (playerDatabase unreachable = incomplete upload)."
+              ;;
+            000) echo "::error::No HTTP response at all — DNS, TLS or firewall." ;;
+          esac
+          exit 1
+
+      # Document Root must be .output/public, not the Application Root — see
+      # DEPLOYMENT.md's "two roots, not one" section, which calls this out as
+      # a real, easy-to-hit Plesk misconfiguration (the panel does not warn
+      # if both fields are left identical). Checked from outside, after the
+      # release is live, because that is the only place the answer is real.
+      - name: Verify the Application Root is not web-readable
+        if: steps.smoke.outcome == 'success'
+        run: |
+          set -uo pipefail
+          fail=0
+          for path in /package.json /.output/server/index.mjs /.env; do
+            code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' "https://${{ secrets.DEPLOY_DOMAIN }}$path" || true)
+            if [ "$code" = "200" ]; then
+              echo "::error::$path is web-readable (HTTP 200) — Document Root may be pointing at"
+              echo "::error::the Application Root instead of .output/public. See DEPLOYMENT.md."
+              fail=1
+            else
+              echo "ok   $path → $code"
+            fi
+          done
+          [ "$fail" = 0 ] || exit 1
+
+      # The retained release only earns its keep if a bad deploy is actually
+      # reverted. Runs only when the smoke test failed.
+      - name: Roll back to previous release
+        if: failure() && steps.smoke.outcome == 'failure'
+        env:
+          SSHPASS: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SSH_OPTS="-o UserKnownHostsFile=$HOME/.ssh/known_hosts_deploy -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no"
+
+          sshpass -e ssh $SSH_OPTS "$REMOTE" sh -s "$REMOTE_PATH" <<'REMOTE'
+          set -eu
+          cd "$1"
+
+          if [ ! -d .output.prev ]; then
+            echo "No .output.prev to roll back to (first deploy?) — leaving as-is."
+            exit 1
+          fi
+
+          rm -rf .output.failed
+          mv .output .output.failed
+          mv .output.prev .output
+
+          mkdir -p tmp
+          touch tmp/restart.txt
+
+          echo "Rolled back to the previous release (bad build kept in .output.failed)."
+          REMOTE
+
+          # A rollback that is never checked is a guess. .output.prev only
+          # means "what was there before", not "what worked" — on the very
+          # first deploy it won't exist at all, so restoring it can leave
+          # the site more broken than the release that just failed. Say
+          # which of the two happened, in the log, at the time.
+          sleep 15
+          BACK=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.DEPLOY_DOMAIN }}/api/health" || true)
+          if [ "$BACK" = "200" ]; then
+            echo "Rollback verified: the site is serving again (HTTP $BACK)."
+          else
+            echo "::error::Rollback did NOT restore a working site (/api/health → $BACK)."
+            echo "::error::The site is down. .output.failed holds the release that was just"
+            echo "::error::rejected and .output the one restored — neither answers. Fix on the"
+            echo "::error::host; do not re-run this workflow expecting it to recover."
+          fi
