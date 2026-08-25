@@ -10,6 +10,7 @@ interface LeaderboardRow {
   midRating: number
   attRating: number
   outcome: string
+  score: number
   shareId: string | null
   submittedAt: string
 }
@@ -27,6 +28,11 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const limit = Math.min(100, Math.max(1, Number(query.limit) || 50))
 
+  // score (see migrations/004) ranks by tournament outcome first -- a
+  // winner always outranks a non-winner regardless of OVR -- and only
+  // within the same outcome tier does a lower OVR rank higher, rewarding
+  // going far with a weaker squad. Plain "ORDER BY ovr" used to let a
+  // group-stage exit outrank an outright win on equal OVR.
   const [rows] = await db.query(
     `SELECT
        id,
@@ -38,10 +44,11 @@ export default defineEventHandler(async (event) => {
        mid_rating AS midRating,
        att_rating AS attRating,
        outcome,
+       score,
        share_id AS shareId,
        submitted_at AS submittedAt
      FROM leaderboard
-     ORDER BY ovr DESC, submitted_at ASC
+     ORDER BY score DESC, submitted_at ASC
      LIMIT ?`,
     [limit]
   )
