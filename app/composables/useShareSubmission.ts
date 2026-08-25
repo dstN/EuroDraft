@@ -17,7 +17,7 @@ export function useShareSubmission(props: {
   runStats: TournamentRunStats | null
   squad: Player[]
   matches: MatchResult[]
-}) {
+}, uploadOgImage?: (shareId: string, shareToken: string) => Promise<boolean>) {
   const agreeToSave = ref(false)
   const shareId = ref<string | null>(null)
   const isGeneratingLink = ref(false)
@@ -75,6 +75,10 @@ export function useShareSubmission(props: {
               // Ignore storage parse error
             }
           }
+
+          // Best-effort: the share link and page work fine without this --
+          // it only affects how the link previews in Discord/social embeds.
+          void uploadOgImage?.(res.id, res.deleteToken)
         }
       } catch {
         // Local fallback ID

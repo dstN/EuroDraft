@@ -174,12 +174,20 @@ vanish on restart and don't resolve on a sibling Passenger worker.
 
 1. **Plesk → Databases → Add Database.** Create a MySQL/MariaDB database
    (e.g. `eurodraft`) and a user scoped to it.
-2. **Run both migrations once**, from any machine that can reach the DB:
+2. **Run all three migrations once**, from any machine that can reach the DB:
    ```sh
    mysql -u <user> -p <dbname> < server/db/migrations/001_create_leaderboard.sql
    mysql -u <user> -p <dbname> < server/db/migrations/002_create_shared_runs.sql
+   mysql -u <user> -p <dbname> < server/db/migrations/003_add_og_image_to_shared_runs.sql
    ```
-   Each is a single `CREATE TABLE IF NOT EXISTS`, safe to re-run.
+   001 and 002 are `CREATE TABLE IF NOT EXISTS`, safe to re-run. 003 is a
+   plain `ALTER TABLE ADD COLUMN` (no portable `IF NOT EXISTS` for a column
+   across MySQL/MariaDB versions) -- running it twice errors clearly
+   ("Duplicate column name") rather than doing anything unexpected, but
+   don't run it twice on purpose. Without it, share links still work; they
+   just fall back to the old SVG-based OG image (which most social-embed
+   crawlers, including Discord's, don't render) instead of the real
+   result-card PNG -- see `server/utils/shareStorage.ts`.
 3. **Set `DATABASE_URL`** under Node.js → Custom environment variables, in
    the `mysql://user:pass@host:3306/dbname` form, then restart Passenger.
 4. **Verify**: `curl -s https://<domain>/api/health` should report

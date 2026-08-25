@@ -43,6 +43,7 @@ interface SharedRunRow extends RowDataPacket {
 // In-memory fallback, used only when DATABASE_URL is unset.
 const memoryStore = new Map<string, SharedRunRecord>()
 const memoryTokenHashes = new Map<string, string>()
+const memoryOgImages = new Map<string, Buffer>()
 
 // Deletion/export ownership is proven by a bearer token, generated once at
 // creation time and returned to the caller only in that response -- never
@@ -154,6 +155,42 @@ export async function verifyDeleteToken(id: string, token: string): Promise<bool
   return timingSafeEqual(expected, actual)
 }
 
+// Stores the rendered result-card PNG (see POST /api/share/:id/og-image)
+// used as the /r/:id page's OpenGraph image. Fails closed, not open: if the
+// `og_image` column doesn't exist yet (migration 003 not yet run in this
+// environment), the upload is silently skipped rather than 500ing the whole
+// share flow -- the OG route just keeps falling back to the SVG renderer.
+export async function saveOgImage(id: string, image: Buffer): Promise<boolean> {
+  const db = isDbConfigured() ? getDbPool() : null
+  if (db) {
+    try {
+      const [result] = await db.query<ResultSetHeader>('UPDATE shared_runs SET og_image = ? WHERE id = ?', [image, id])
+      return result.affectedRows > 0
+    } catch (err) {
+      console.error('[shareStorage] Failed to save OG image (has migration 003 been run?):', err)
+      return false
+    }
+  }
+  if (!memoryStore.has(id)) return false
+  memoryOgImages.set(id, image)
+  return true
+}
+
+export async function getOgImage(id: string): Promise<Buffer | undefined> {
+  const db = isDbConfigured() ? getDbPool() : null
+  if (db) {
+    try {
+      const [rows] = await db.query<RowDataPacket[]>('SELECT og_image FROM shared_runs WHERE id = ?', [id])
+      const raw = rows[0]?.['og_image']
+      return raw ? Buffer.from(raw) : undefined
+    } catch (err) {
+      console.error('[shareStorage] Failed to read OG image (has migration 003 been run?):', err)
+      return undefined
+    }
+  }
+  return memoryOgImages.get(id)
+}
+
 export async function deleteSharedRun(id: string): Promise<boolean> {
   const db = isDbConfigured() ? getDbPool() : null
   if (db) {
@@ -161,5 +198,6 @@ export async function deleteSharedRun(id: string): Promise<boolean> {
     return result.affectedRows > 0
   }
   memoryTokenHashes.delete(id)
+  memoryOgImages.delete(id)
   return memoryStore.delete(id)
 }
