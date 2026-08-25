@@ -14,6 +14,7 @@ const roulette = useRouletteStore()
 const appLoading = useAppLoading()
 const audio = useAudioStore()
 const { t, te } = useI18n()
+const localePath = useLocalePath()
 
 // Player stat inspection modal state
 const inspectedPlayer = ref<Player | null>(null)
@@ -99,11 +100,11 @@ function handlePopState(_event: PopStateEvent) {
 // Redirect if no formation selected or if draft already complete
 onMounted(() => {
   if (!draft.formation) {
-    navigateTo('/draft/formation')
+    navigateTo(localePath('/draft/formation'))
     return
   }
   if (draft.isComplete) {
-    navigateTo('/tournament')
+    navigateTo(localePath('/tournament'))
     return
   }
   if (!roulette.currentCountry) {
@@ -275,7 +276,7 @@ function confirmDraft(player: Player, slot: DraftSlot) {
 
       if (draft.isComplete) {
         appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
-        navigateTo('/tournament')
+        navigateTo(localePath('/tournament'))
         return
       }
 
@@ -299,7 +300,7 @@ function confirmDraft(player: Player, slot: DraftSlot) {
 
     if (draft.isComplete) {
       appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
-      navigateTo('/tournament')
+      navigateTo(localePath('/tournament'))
       return
     }
 
@@ -364,11 +365,11 @@ const formationShortName = computed(() => {
             <h1 class="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
               <span class="truncate">{{ draft.teamName || 'Dream XI' }}</span>
               <span class="text-xs font-mono font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-300 border border-emerald-500/40 shadow-xs shrink-0">
-                {{ draft.teamOVR }} OVR
+                {{ $t('tournament.ovr_value', { value: draft.teamOVR }) }}
               </span>
             </h1>
             <p class="text-xs text-zinc-700 dark:text-zinc-300 font-mono font-bold">
-              Drafted {{ draft.filledSlots.length }} / 11 Players
+              {{ $t('draft.progress', { filled: draft.filledSlots.length }) }}
             </p>
           </div>
         </div>
@@ -468,7 +469,7 @@ const formationShortName = computed(() => {
               color="primary"
               label="Choose a Different Formation"
               class="rounded-full font-bold"
-              @click="navigateTo('/draft/formation')"
+              @click="navigateTo(localePath('/draft/formation'))"
             />
           </div>
 

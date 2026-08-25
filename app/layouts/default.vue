@@ -5,13 +5,14 @@ const { t, locale, locales, setLocale } = useI18n()
 const colorMode = useColorMode()
 const draft = useDraftStore()
 const audio = useAudioStore()
+const localePath = useLocalePath()
 
 const navLinks = computed(() => [
-  { label: t('nav.draft'), to: '/draft/formation' },
-  { label: t('nav.tournament'), to: '/tournament' },
-  { label: t('nav.compare'), to: '/compare' },
-  { label: t('nav.leaderboard'), to: '/leaderboard' },
-  { label: t('nav.legal'), to: '/legal' }
+  { label: t('nav.draft'), to: localePath('/draft/formation') },
+  { label: t('nav.tournament'), to: localePath('/tournament') },
+  { label: t('nav.compare'), to: localePath('/compare') },
+  { label: t('nav.leaderboard'), to: localePath('/leaderboard') },
+  { label: t('nav.legal'), to: localePath('/legal') }
 ])
 
 const isDark = computed({
@@ -84,9 +85,9 @@ const currentLocaleName = computed(() => {
       <div class="max-w-5xl mx-auto px-2.5 sm:px-6 h-16 flex items-center justify-between gap-1 sm:gap-4 w-full">
         <!-- Official App Logo -->
         <NuxtLink
-          to="/"
+          :to="localePath('/')"
           class="flex items-center gap-1.5 shrink-0 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg p-0.5"
-          aria-label="EuroDraft Homepage"
+          :aria-label="$t('nav.homepage_aria')"
         >
           <AppLogo variant="horizontal" />
         </NuxtLink>
@@ -96,7 +97,7 @@ const currentLocaleName = computed(() => {
              narrow viewport can show at once) -->
         <nav
           class="nav-scroll flex items-center gap-1 sm:gap-2 min-w-0 overflow-x-auto"
-          aria-label="Main navigation"
+          :aria-label="$t('nav.main_navigation_aria')"
         >
           <UButton
             v-for="link in navLinks"
@@ -111,14 +112,14 @@ const currentLocaleName = computed(() => {
 
           <NuxtLink
             v-if="draft.filledSlots.length > 0 && !draft.isComplete"
-            to="/draft"
+            :to="localePath('/draft')"
             class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold shrink-0"
           >
             <span
               class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
               aria-hidden="true"
             />
-            <span>Draft ({{ draft.filledSlots.length }}/11)</span>
+            <span>{{ $t('nav.draft_progress_badge', { count: draft.filledSlots.length }) }}</span>
           </NuxtLink>
         </nav>
 
@@ -131,7 +132,7 @@ const currentLocaleName = computed(() => {
               variant="outline"
               color="neutral"
               :leading-icon="`i-circle-flags-${currentLocaleFlag}`"
-              aria-label="Change language"
+              :aria-label="$t('nav.change_language_aria')"
               class="font-mono font-bold text-xs rounded-lg px-1.5 sm:px-2.5 py-1 text-zinc-900 dark:text-zinc-100"
             >
               <span class="hidden sm:inline">{{ currentLocaleName }}</span>
@@ -145,7 +146,7 @@ const currentLocaleName = computed(() => {
             variant="ghost"
             color="neutral"
             :icon="audio.isMuted ? 'i-lucide-volume-x' : 'i-lucide-volume-2'"
-            :aria-label="audio.isMuted ? 'Unmute sound effects' : 'Mute sound effects'"
+            :aria-label="audio.isMuted ? $t('nav.unmute_aria') : $t('nav.mute_aria')"
             class="rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
             @click="audio.toggleMute()"
           />
@@ -156,7 +157,7 @@ const currentLocaleName = computed(() => {
             variant="ghost"
             color="neutral"
             :icon="isDark ? 'i-lucide-moon' : 'i-lucide-sun'"
-            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="isDark ? $t('nav.light_mode_aria') : $t('nav.dark_mode_aria')"
             class="rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
             @click="isDark = !isDark"
           />
@@ -176,16 +177,16 @@ const currentLocaleName = computed(() => {
     <!-- Minimal footer with aligned max-w-5xl container -->
     <footer class="relative z-10 border-t border-black/[0.04] dark:border-white/[0.04] py-6 mt-12 bg-transparent">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-        <span>EuroDraft — Historical Continental Tournament Simulator</span>
+        <span>{{ $t('nav.footer_tagline') }}</span>
         <div class="flex items-center gap-6">
           <NuxtLink
-            to="/legal"
+            :to="localePath('/legal')"
             class="text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors underline-offset-4 hover:underline font-bold"
           >
             {{ $t('nav.legal') }}
           </NuxtLink>
           <NuxtLink
-            to="/legal?tab=contact"
+            :to="localePath('/legal?tab=contact')"
             class="text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors underline-offset-4 hover:underline font-bold"
           >
             {{ $t('legal.tab_contact') }}

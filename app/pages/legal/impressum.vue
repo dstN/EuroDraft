@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: [
-    () => navigateTo('/legal', { redirectCode: 301 })
+    () => navigateTo(useLocalePath()('/legal'), { redirectCode: 301 })
   ]
 })
 </script>

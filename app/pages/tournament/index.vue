@@ -13,6 +13,7 @@ definePageMeta({ layout: 'default', middleware: ['ensure-database'] })
 
 const tournament = useTournamentStore()
 const draft = useDraftStore()
+const localePath = useLocalePath()
 const appLoading = useAppLoading()
 
 const {
@@ -49,7 +50,7 @@ const isGroupTableOpen = ref(false)
 // Auto-init tournament on mount if draft is complete
 onMounted(() => {
   if (!draft.isComplete) {
-    navigateTo('/draft/formation')
+    navigateTo(localePath('/draft/formation'))
     return
   }
   if (tournament.groups.length === 0) {
@@ -107,7 +108,7 @@ function skipAllToResults() {
 function restartDraft() {
   tournament.reset()
   draft.resetDraft()
-  navigateTo('/draft/formation')
+  navigateTo(localePath('/draft/formation'))
 }
 </script>
 
@@ -117,7 +118,7 @@ function restartDraft() {
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1 text-left">
         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-          Continental Tournament Simulation
+          {{ $t('tournament.continental_simulation_badge') }}
         </div>
         <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
           <CountryFlag
@@ -127,7 +128,7 @@ function restartDraft() {
           <span>{{ draft.teamName || 'Dream XI' }}</span>
         </h1>
         <p class="text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold">
-          {{ draft.formation?.label }} Formation · Squad Rating: <strong class="font-mono text-emerald-700 dark:text-emerald-400 font-black">{{ draft.teamOVR }} OVR</strong>
+          {{ $t('tournament.formation_squad_rating', { formation: draft.formation?.label, ovr: draft.teamOVR }) }}
         </p>
       </div>
 
@@ -143,7 +144,7 @@ function restartDraft() {
             class="size-4 text-white"
             aria-hidden="true"
           />
-          <span>Skip to Final Results</span>
+          <span>{{ $t('tournament.skip_to_results') }}</span>
         </button>
       </div>
     </div>
@@ -165,10 +166,10 @@ function restartDraft() {
             name="i-lucide-calendar-days"
             class="size-5 text-emerald-600 dark:text-emerald-400"
           />
-          <span>Group Stage Matches</span>
+          <span>{{ $t('tournament.group_stage_matches') }}</span>
         </h2>
         <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-          Matchday {{ Math.min(3, tournament.simulationStep + (activePlayerMatch?.phase === 'group' ? 1 : 0)) }} of 3
+          {{ $t('tournament.matchday_of_3', { n: Math.min(3, tournament.simulationStep + (activePlayerMatch?.phase === 'group' ? 1 : 0)) }) }}
         </span>
       </div>
 
@@ -197,7 +198,7 @@ function restartDraft() {
             name="i-lucide-swords"
             class="size-5 text-amber-500"
           />
-          <span>Knockout Stage Matches</span>
+          <span>{{ $t('tournament.knockout_stage_matches') }}</span>
         </h2>
       </div>
 

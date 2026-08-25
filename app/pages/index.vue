@@ -6,6 +6,8 @@ import AppLogo from '~/components/shared/AppLogo.vue'
 
 definePageMeta({ layout: 'default' })
 
+const localePath = useLocalePath()
+
 // Featured legendary showcase players for the hero card fan
 const showcaseLegends: Player[] = [
   {
@@ -171,7 +173,7 @@ const tournamentEras = [
           <!-- CTAs with Button-in-Button Architecture -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
             <NuxtLink
-              to="/draft/formation"
+              :to="localePath('/draft/formation')"
               class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-lg shadow-emerald-800/25 justify-between sm:justify-start cursor-pointer font-bold w-full sm:w-auto"
             >
               <span>{{ $t('landing.cta_start') }}</span>
@@ -230,10 +232,10 @@ const tournamentEras = [
             <div class="surface-card p-5 space-y-4 shadow-[0_10px_35px_-5px_rgba(0,0,0,0.5)]">
               <div class="flex items-center justify-between">
                 <span class="text-xs uppercase font-mono font-bold tracking-[0.2em] text-emerald-800 dark:text-emerald-300">
-                  Featured Legend
+                  {{ $t('landing.featured_legend') }}
                 </span>
                 <span class="px-2.5 py-1 rounded-md border border-zinc-300 dark:border-white/10 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800">
-                  Historical Prime OVR
+                  {{ $t('landing.historical_prime_ovr') }}
                 </span>
               </div>
 
@@ -386,7 +388,7 @@ const tournamentEras = [
         </p>
         <div class="pt-2">
           <NuxtLink
-            to="/draft/formation"
+            :to="localePath('/draft/formation')"
             class="btn-nested bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 text-white shadow-xl shadow-emerald-800/25 mx-auto inline-flex font-bold"
           >
             <span>{{ $t('landing.cta_start') }}</span>

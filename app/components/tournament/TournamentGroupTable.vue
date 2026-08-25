@@ -2,6 +2,8 @@
 import type { Group } from '~/types'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
+const countryName = useCountryName()
+
 defineProps<{
   group: Group
   playerTeamId: string | undefined
@@ -28,24 +30,24 @@ const isOpen = defineModel<boolean>('open', { default: false })
         </div>
         <div class="min-w-0">
           <h2 class="text-sm sm:text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2 truncate">
-            <span>Group {{ group.id }} Standings</span>
+            <span>{{ $t('tournament.group_standings', { id: group.id }) }}</span>
             <span
               v-if="standing"
               class="text-xs font-mono px-2 py-0.5 rounded-md font-bold"
               :class="standing.rank <= 2 ? 'bg-emerald-500/20 text-emerald-950 dark:text-emerald-200' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'"
             >
-              {{ standing.rank }}. Place · {{ standing.standing.points }} Pts
+              {{ $t('tournament.rank_points', { rank: standing.rank, points: standing.standing.points }) }}
             </span>
           </h2>
           <p class="text-xs text-zinc-600 dark:text-zinc-400 font-mono">
-            {{ isOpen ? 'Top 2 teams advance to the knockout stage' : 'Click to expand group table' }}
+            {{ isOpen ? $t('tournament.advance_hint') : $t('tournament.expand_hint') }}
           </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
         <span class="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 hidden sm:inline">
-          {{ isOpen ? 'Collapse' : 'Expand' }}
+          {{ isOpen ? $t('tournament.collapse') : $t('tournament.expand') }}
         </span>
         <UIcon
           :name="isOpen ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
@@ -63,11 +65,11 @@ const isOpen = defineModel<boolean>('open', { default: false })
       <div class="flex items-center gap-2.5 px-3 py-1.5 text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 border-b border-zinc-200/60 dark:border-white/5 select-none">
         <span class="w-4 text-center shrink-0">#</span>
         <span class="w-5 shrink-0" />
-        <span class="flex-1 min-w-0">Team</span>
+        <span class="flex-1 min-w-0">{{ $t('tournament.table_team') }}</span>
         <div class="flex gap-2 sm:gap-4 shrink-0 text-right font-bold">
-          <span class="w-4 text-center">P</span>
-          <span class="w-6 text-center">PTS</span>
-          <span class="w-8 text-right">DIFF</span>
+          <span class="w-4 text-center">{{ $t('tournament.table_played') }}</span>
+          <span class="w-6 text-center">{{ $t('tournament.table_points') }}</span>
+          <span class="w-8 text-right">{{ $t('tournament.table_gd') }}</span>
         </div>
       </div>
 
@@ -97,13 +99,13 @@ const isOpen = defineModel<boolean>('open', { default: false })
           <!-- Team Name + Tag (untruncated on mobile) -->
           <div class="flex-1 min-w-0 flex items-center gap-1.5 overflow-hidden">
             <span class="font-bold text-zinc-900 dark:text-white truncate">
-              {{ rowStanding.team.countryName }}
+              {{ countryName(rowStanding.team.country) }}
             </span>
             <span
               v-if="rowStanding.team.id === playerTeamId"
               class="text-[10px] font-mono px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-950 dark:text-emerald-200 font-black tracking-wide shrink-0"
             >
-              YOU
+              {{ $t('tournament.you_badge') }}
             </span>
             <span
               v-else

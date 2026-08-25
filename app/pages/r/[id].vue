@@ -7,6 +7,8 @@ definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const shareId = route.params.id as string
+const { t } = useI18n()
+const localePath = useLocalePath()
 
 interface SharedRun {
   teamName: string
@@ -51,38 +53,43 @@ onMounted(() => {
 })
 
 // Outcome Title
-const OUTCOME_TITLES: Record<string, string> = {
-  winner: '🏆 Continental Champions',
-  runner_up: '🥈 Tournament Runner-Up (Finalist)',
-  semi_final: '🥉 Semi-Finalist (Top 4)',
-  quarter_final: 'Quarter-Finalist (Top 8)'
+const OUTCOME_TITLE_KEYS: Record<string, string> = {
+  winner: 'sharedRun.outcome_winner',
+  runner_up: 'sharedRun.outcome_runner_up',
+  semi_final: 'sharedRun.outcome_semi_final',
+  quarter_final: 'sharedRun.outcome_quarter_final'
 }
 const outcomeTitle = computed(() => {
   if (!sharedRun.value) return ''
-  return OUTCOME_TITLES[sharedRun.value.outcome] ?? 'Group Stage Exit'
+  const key = OUTCOME_TITLE_KEYS[sharedRun.value.outcome]
+  return key ? t(key) : t('sharedRun.outcome_group_stage')
 })
 
 // Dynamic per-share Open Graph / Twitter card meta
 const requestUrl = useRequestURL()
+const seoTitle = () => sharedRun.value
+  ? t('sharedRun.seo_title', { teamName: sharedRun.value.teamName, outcome: outcomeTitle.value.replace(/^[^\w]+/, '') })
+  : t('sharedRun.seo_title_fallback')
+const seoDescription = () => sharedRun.value
+  ? t('sharedRun.seo_description', { formation: sharedRun.value.formation, ovr: sharedRun.value.teamOVR })
+  : t('sharedRun.seo_description_fallback')
+const seoOgTitle = () => sharedRun.value
+  ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}`
+  : t('sharedRun.seo_title_fallback')
+
 useSeoMeta({
-  title: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')} | EuroDraft` : 'Shared Tournament Run | EuroDraft',
-  description: () => sharedRun.value
-    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
-    : 'View a shared EuroDraft tournament run.',
-  ogTitle: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}` : 'Shared Tournament Run | EuroDraft',
-  ogDescription: () => sharedRun.value
-    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
-    : 'View a shared EuroDraft tournament run.',
+  title: seoTitle,
+  description: seoDescription,
+  ogTitle: seoOgTitle,
+  ogDescription: seoDescription,
   ogImage: `${requestUrl.origin}/og/${shareId}`,
   ogImageWidth: 1200,
   ogImageHeight: 630,
   ogType: 'website',
   ogUrl: requestUrl.href,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => sharedRun.value ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}` : 'Shared Tournament Run | EuroDraft',
-  twitterDescription: () => sharedRun.value
-    ? `${sharedRun.value.formation} formation · ${sharedRun.value.teamOVR} OVR squad. See the full lineup and tournament results on EuroDraft.`
-    : 'View a shared EuroDraft tournament run.',
+  twitterTitle: seoOgTitle,
+  twitterDescription: seoDescription,
   twitterImage: `${requestUrl.origin}/og/${shareId}`
 })
 </script>
@@ -99,7 +106,7 @@ useSeoMeta({
         class="size-8 text-emerald-500 animate-spin mx-auto"
       />
       <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
-        Loading Shared Tournament Run...
+        {{ $t('sharedRun.loading') }}
       </p>
     </div>
 
@@ -113,16 +120,16 @@ useSeoMeta({
         class="size-12 text-zinc-500 mx-auto"
       />
       <h2 class="text-xl font-bold text-white">
-        Tournament Run Not Found
+        {{ $t('sharedRun.not_found_title') }}
       </h2>
       <p class="text-xs text-zinc-400">
-        The shared link may have expired or is invalid. Draft your own squad to enter the tournament!
+        {{ $t('sharedRun.not_found_desc') }}
       </p>
       <NuxtLink
-        to="/draft/formation"
+        :to="localePath('/draft/formation')"
         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
       >
-        <span>Start New Draft</span>
+        <span>{{ $t('sharedRun.start_new_draft') }}</span>
         <UIcon
           name="i-lucide-arrow-right"
           class="size-4"
@@ -139,7 +146,7 @@ useSeoMeta({
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="space-y-1">
           <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
-            Shared Tournament Run
+            {{ $t('sharedRun.badge') }}
           </div>
           <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3">
             <CountryFlag
@@ -149,26 +156,26 @@ useSeoMeta({
             <span>{{ sharedRun.teamName }}</span>
           </h1>
           <p class="text-zinc-300 text-xs sm:text-sm font-semibold">
-            Formation: {{ sharedRun.formation }} · Overall Rating: <strong class="font-mono text-emerald-400 font-black">{{ sharedRun.teamOVR }} GES</strong>
+            {{ $t('sharedRun.formation_overall', { formation: sharedRun.formation, ovr: sharedRun.teamOVR }) }}
           </p>
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
           <NuxtLink
-            :to="`/compare?a=${shareId}`"
+            :to="localePath(`/compare?a=${shareId}`)"
             class="rounded-full px-5 py-3 text-sm font-black bg-zinc-800 hover:bg-zinc-700 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99] border border-white/10"
           >
             <UIcon
               name="i-lucide-swords"
               class="size-4"
             />
-            <span>Compare</span>
+            <span>{{ $t('sharedRun.compare_btn') }}</span>
           </NuxtLink>
           <NuxtLink
-            to="/draft/formation"
+            :to="localePath('/draft/formation')"
             class="rounded-full px-6 py-3 text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
           >
-            <span>Draft Your Own Dream XI →</span>
+            <span>{{ $t('sharedRun.draft_your_own') }}</span>
           </NuxtLink>
         </div>
       </div>
@@ -198,34 +205,34 @@ useSeoMeta({
           {{ outcomeTitle }}
         </h2>
         <p class="text-xs sm:text-sm text-zinc-300 font-mono">
-          Final Tournament Run Result
+          {{ $t('sharedRun.final_result') }}
         </p>
       </div>
 
       <!-- Line Ratings -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">DEF (GK+Def)</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_def') }}</span>
           <p class="text-2xl font-black font-mono text-emerald-400">
-            {{ sharedRun.lineRatings.def }} <span class="text-xs text-zinc-500 font-bold">GES</span>
+            {{ sharedRun.lineRatings.def }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">MID Avg</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_mid') }}</span>
           <p class="text-2xl font-black font-mono text-sky-400">
-            {{ sharedRun.lineRatings.mid }} <span class="text-xs text-zinc-500 font-bold">GES</span>
+            {{ sharedRun.lineRatings.mid }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">ATT Avg</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_att') }}</span>
           <p class="text-2xl font-black font-mono text-amber-400">
-            {{ sharedRun.lineRatings.att }} <span class="text-xs text-zinc-500 font-bold">GES</span>
+            {{ sharedRun.lineRatings.att }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">Overall GES</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_overall') }} {{ $t('draft.stats.overall') }}</span>
           <p class="text-2xl font-black font-mono text-white">
-            {{ sharedRun.lineRatings.overall }} <span class="text-xs text-zinc-500 font-bold">GES</span>
+            {{ sharedRun.lineRatings.overall }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
       </div>
@@ -234,7 +241,7 @@ useSeoMeta({
       <div class="surface-card p-5 space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-white/5">
           <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
-            Drafted XI Tactical Lineup
+            {{ $t('sharedRun.tactical_lineup') }}
           </span>
           <span class="text-xs font-mono font-bold text-emerald-400">
             {{ sharedRun.formation }}
@@ -253,16 +260,16 @@ useSeoMeta({
       <!-- Bottom CTA Banner -->
       <div class="surface-card p-6 sm:p-8 text-center space-y-4 bg-gradient-to-r from-emerald-950/60 to-zinc-900 border-emerald-500/30">
         <h3 class="text-xl sm:text-2xl font-black text-white">
-          Think you can draft a better Euro XI?
+          {{ $t('sharedRun.cta_title') }}
         </h3>
         <p class="text-xs sm:text-sm text-zinc-300 max-w-md mx-auto">
-          Spin legendary players from European tournament history, build your formation, and simulate the championship tournament.
+          {{ $t('sharedRun.cta_desc') }}
         </p>
         <NuxtLink
-          to="/draft/formation"
+          :to="localePath('/draft/formation')"
           class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all shadow-xl active:scale-[0.99]"
         >
-          <span>Start Your EuroDraft →</span>
+          <span>{{ $t('sharedRun.cta_button') }}</span>
         </NuxtLink>
       </div>
     </div>
