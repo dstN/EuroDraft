@@ -13,13 +13,14 @@ type LegalTab = 'imprint' | 'privacy' | 'terms' | 'contact'
 
 const activeTab = ref<LegalTab>('imprint')
 
-// Read tab from query if provided (e.g. /legal?tab=contact or /legal?tab=privacy)
-onMounted(() => {
-  const queryTab = route.query.tab as LegalTab
-  if (queryTab && ['imprint', 'privacy', 'terms', 'contact'].includes(queryTab)) {
-    activeTab.value = queryTab
+// Sync tab from query (e.g. /legal?tab=contact or /legal?tab=privacy) -- watched,
+// not just read on mount, so links into an already-open /legal page (e.g. the
+// footer's Contact link) actually switch the tab instead of no-opping.
+watch(() => route.query.tab, (queryTab) => {
+  if (queryTab && ['imprint', 'privacy', 'terms', 'contact'].includes(queryTab as string)) {
+    activeTab.value = queryTab as LegalTab
   }
-})
+}, { immediate: true })
 
 function setTab(tab: LegalTab) {
   activeTab.value = tab
@@ -46,11 +47,12 @@ function setTab(tab: LegalTab) {
       </p>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="flex items-center gap-1.5 sm:gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-x-auto custom-scroll select-none">
+    <!-- Navigation Tabs (2x2 grid on mobile so long translated labels never force
+         horizontal scrolling; single row from sm up) -->
+    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl select-none">
       <button
         type="button"
-        class="flex-1 min-w-[120px] sm:min-w-0 py-2.5 px-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
         :class="activeTab === 'imprint'
           ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
           : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
@@ -58,14 +60,14 @@ function setTab(tab: LegalTab) {
       >
         <UIcon
           name="i-lucide-file-text"
-          class="size-4 text-emerald-500"
+          class="size-4 text-emerald-500 shrink-0"
         />
-        <span>{{ $t('legal.tab_imprint') }}</span>
+        <span class="truncate">{{ $t('legal.tab_imprint') }}</span>
       </button>
 
       <button
         type="button"
-        class="flex-1 min-w-[120px] sm:min-w-0 py-2.5 px-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
         :class="activeTab === 'privacy'
           ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
           : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
@@ -73,14 +75,14 @@ function setTab(tab: LegalTab) {
       >
         <UIcon
           name="i-lucide-lock"
-          class="size-4 text-emerald-500"
+          class="size-4 text-emerald-500 shrink-0"
         />
-        <span>{{ $t('legal.tab_privacy') }}</span>
+        <span class="truncate">{{ $t('legal.tab_privacy') }}</span>
       </button>
 
       <button
         type="button"
-        class="flex-1 min-w-[120px] sm:min-w-0 py-2.5 px-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
         :class="activeTab === 'terms'
           ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
           : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
@@ -88,14 +90,14 @@ function setTab(tab: LegalTab) {
       >
         <UIcon
           name="i-lucide-scale"
-          class="size-4 text-emerald-500"
+          class="size-4 text-emerald-500 shrink-0"
         />
-        <span>{{ $t('legal.tab_terms') }}</span>
+        <span class="truncate">{{ $t('legal.tab_terms') }}</span>
       </button>
 
       <button
         type="button"
-        class="flex-1 min-w-[120px] sm:min-w-0 py-2.5 px-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+        class="sm:flex-1 py-2.5 px-2 sm:px-3.5 rounded-xl font-mono text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer text-center"
         :class="activeTab === 'contact'
           ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/80 dark:border-white/10'
           : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-white/5'"
@@ -103,9 +105,9 @@ function setTab(tab: LegalTab) {
       >
         <UIcon
           name="i-lucide-mail"
-          class="size-4 text-emerald-500"
+          class="size-4 text-emerald-500 shrink-0"
         />
-        <span>{{ $t('legal.tab_contact') }}</span>
+        <span class="truncate">{{ $t('legal.tab_contact') }}</span>
       </button>
     </div>
 

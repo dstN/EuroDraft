@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { pickRandomFormations } from '~/composables/useFormations'
-import type { Formation, PositionCode } from '~/types'
+import type { Formation } from '~/types'
 import MiniFormationPitch from '~/components/draft/MiniFormationPitch.vue'
 import CountryFlag from '~/components/shared/CountryFlag.vue'
 
@@ -19,10 +19,11 @@ const formations = useState<Formation[]>('draft-formations', () => pickRandomFor
 const teamNameInput = ref(draft.teamName || 'Dream XI')
 const selectedEmblem = ref(draft.teamEmblem || 'eu')
 
-// Formation source: pick from 3 (classic), randomly assigned (challenge), or hand-built (custom).
-// Mutually exclusive -- Challenge Mode's whole point is "you don't choose", which conflicts
-// with Custom's "you hand-picked it". Legend Mode below is a separate, combinable toggle.
-const formationMode = ref<'classic' | 'challenge' | 'custom'>('classic')
+// Formation source: pick from 3 (classic) or randomly assigned (challenge).
+// Custom (hand-built position counts) is temporarily removed -- unfinished/rough
+// UI -- pending a proper pass before it comes back. Legend Mode below is a
+// separate, combinable toggle.
+const formationMode = ref<'classic' | 'challenge'>('classic')
 
 // Challenge Mode: formation is assigned at random, no formation choice and no rerolls
 const challengeFormation = ref<Formation>(pickRandomFormations(1)[0]!)
@@ -35,41 +36,23 @@ function reassignChallengeFormation() {
   challengeFormation.value = pickRandomFormations(1)[0]!
 }
 
-// Custom Formation Builder: pick exact position counts. GK is always 1 (fixed).
-// Labels come from the shared draft.position_labels i18n key (not a local list)
-// so this stays in sync with every other position label in the app.
-const CUSTOM_POSITIONS: Exclude<PositionCode, 'GK'>[] = ['CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LM', 'RM', 'LW', 'RW', 'ST', 'CF']
-const CUSTOM_MAX_PER_POSITION = 6
-
-type CustomPositionCounts = Record<Exclude<PositionCode, 'GK'>, number>
-
-// Defaults to a 4-4-2 (2 CB, 1 LB, 1 RB, 1 LM, 2 CM, 1 RM, 2 ST = 10 outfield)
-const customCounts = ref<CustomPositionCounts>({
-  CB: 2, LB: 1, RB: 1, CDM: 0, CM: 2, CAM: 0, LM: 1, RM: 1, LW: 0, RW: 0, ST: 2, CF: 0
-})
-
-function adjustCustomCount(code: Exclude<PositionCode, 'GK'>, delta: number) {
-  const next = customCounts.value[code] + delta
-  customCounts.value[code] = Math.min(CUSTOM_MAX_PER_POSITION, Math.max(0, next))
+// Custom Formation Builder (hand-picked position counts) exists but its UI is
+// still rough, so it's parked behind a "Coming Soon" toast rather than reachable.
+// The full implementation (position counters, live pitch preview, start handler)
+// last lived here before this toggle -- see git history on this file to restore
+// it once it's had a proper polish pass. Needs `PositionCode` re-added to the
+// type import above, and `formationMode` widened back to include 'custom'.
+const toast = useToast()
+function showComingSoon() {
+  toast.add({
+    title: t('formation.custom_coming_soon_title'),
+    description: t('formation.custom_coming_soon_description'),
+    icon: 'i-lucide-hammer',
+    color: 'neutral'
+  })
 }
 
-const customOutfieldTotal = computed(() =>
-  Object.values(customCounts.value).reduce((sum, n) => sum + n, 0)
-)
-const customTotal = computed(() => customOutfieldTotal.value + 1) // +1 for the fixed GK
-
-const customDefenseCount = computed(() => customCounts.value.CB + customCounts.value.LB + customCounts.value.RB)
-const customMidfieldCount = computed(() => customCounts.value.CDM + customCounts.value.CM + customCounts.value.CAM + customCounts.value.LM + customCounts.value.RM)
-const customAttackCount = computed(() => customCounts.value.LW + customCounts.value.RW + customCounts.value.ST + customCounts.value.CF)
-const customFormationLabel = computed(() => `${customDefenseCount.value}-${customMidfieldCount.value}-${customAttackCount.value}`)
-
-const customFormation = computed<Formation>(() => ({
-  id: 'custom',
-  label: t('formation.custom_label', { formation: customFormationLabel.value }),
-  slots: { GK: 1, ...customCounts.value }
-}))
-
-// Legend Mode: only 90+ rated players are draftable. Independent of formation source -- combinable with any of the three above.
+// Legend Mode: only 90+ rated players are draftable. Independent of formation source -- combinable with either of the two above.
 const legendModeToggle = ref(false)
 
 // Top Picked Popular Nationalities
@@ -114,16 +97,6 @@ function startChallenge() {
   draft.selectFormation(challengeFormation.value)
   draft.isChallengeMode = true
   draft.rerollsRemaining = 0
-  draft.isLegendMode = legendModeToggle.value
-}
-
-function startCustom() {
-  if (customTotal.value !== 11) return
-  audio.playTick()
-  draft.teamName = teamNameInput.value.trim() || 'Dream XI'
-  draft.teamEmblem = selectedEmblem.value
-  roulette.reset()
-  draft.selectFormation(customFormation.value)
   draft.isLegendMode = legendModeToggle.value
 }
 </script>
@@ -278,7 +251,7 @@ function startCustom() {
           :class="formationMode === opt.value
             ? 'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-sm'
             : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'"
-          @click="formationMode = opt.value"
+          @click="opt.value === 'custom' ? showComingSoon() : formationMode = opt.value"
         >
           {{ opt.label }}
         </button>
@@ -291,12 +264,26 @@ function startCustom() {
           <span class="text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100">
             {{ $t('formation.legend_mode') }}
           </span>
-          <UTooltip :text="$t('formation.legend_mode_tooltip')">
-            <UIcon
-              name="i-lucide-info"
-              class="size-3.5 text-zinc-500"
-            />
-          </UTooltip>
+          <UPopover
+            mode="click"
+            :content="{ side: 'top' }"
+          >
+            <button
+              type="button"
+              class="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-full"
+              :aria-label="$t('formation.legend_mode_tooltip')"
+            >
+              <UIcon
+                name="i-lucide-info"
+                class="size-3.5 text-zinc-500"
+              />
+            </button>
+            <template #content>
+              <p class="text-xs text-zinc-700 dark:text-zinc-300 p-2.5 max-w-[220px]">
+                {{ $t('formation.legend_mode_tooltip') }}
+              </p>
+            </template>
+          </UPopover>
         </label>
       </div>
     </div>
@@ -343,99 +330,6 @@ function startCustom() {
             class="rounded-full px-5 font-bold text-zinc-900 dark:text-zinc-100"
             @click="reassignChallengeFormation"
           />
-        </div>
-      </div>
-    </template>
-
-    <!-- Custom Formation Builder: pick exact position counts -->
-    <template v-else-if="formationMode === 'custom'">
-      <div class="max-w-3xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Position counters -->
-        <div class="surface-card p-5 space-y-3">
-          <div class="flex items-center justify-between pb-1">
-            <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
-              {{ $t('formation.position_counts') }}
-            </span>
-            <span
-              class="text-xs font-mono font-black px-2.5 py-1 rounded-full"
-              :class="customTotal === 11
-                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
-                : 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'"
-            >
-              {{ $t('formation.players_count', { count: customTotal }) }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between py-1.5 px-2 rounded-lg bg-zinc-100/60 dark:bg-zinc-800/40">
-            <span class="text-xs font-bold text-zinc-500">{{ $t('formation.gk_fixed') }}</span>
-            <span class="text-xs font-mono font-black text-zinc-500">1</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            <div
-              v-for="pos in CUSTOM_POSITIONS"
-              :key="pos"
-              class="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40"
-            >
-              <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ $t(`draft.position_labels.${pos}`) }}</span>
-              <div class="flex items-center gap-2">
-                <UButton
-                  size="xs"
-                  variant="outline"
-                  color="neutral"
-                  icon="i-lucide-minus"
-                  square
-                  :disabled="customCounts[pos] <= 0"
-                  @click="adjustCustomCount(pos, -1)"
-                />
-                <span class="w-4 text-center font-mono font-black text-sm text-zinc-900 dark:text-white">{{ customCounts[pos] }}</span>
-                <UButton
-                  size="xs"
-                  variant="outline"
-                  color="neutral"
-                  icon="i-lucide-plus"
-                  square
-                  :disabled="customCounts[pos] >= CUSTOM_MAX_PER_POSITION"
-                  @click="adjustCustomCount(pos, 1)"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live preview -->
-        <div class="surface-card p-5 space-y-4 flex flex-col">
-          <div
-            class="relative rounded-xl overflow-hidden shadow-inner border border-white/10 flex-1"
-            style="min-height: 220px"
-          >
-            <MiniFormationPitch :formation="customFormation" />
-          </div>
-          <div>
-            <p class="text-zinc-900 dark:text-white font-black text-lg tracking-tight text-center font-mono">
-              {{ customFormationLabel }}
-            </p>
-            <p class="text-xs text-center text-emerald-700 dark:text-emerald-400 font-bold font-mono uppercase tracking-wider mt-1">
-              {{ $t('formation.your_custom_formation') }}
-            </p>
-          </div>
-          <UTooltip :text="customTotal !== 11 ? $t('formation.adjust_positions_hint', { count: customTotal }) : ''">
-            <NuxtLink
-              :to="customTotal === 11 ? '/draft' : undefined"
-              class="w-full py-2.5 px-4 rounded-xl text-white font-bold text-xs font-mono uppercase tracking-wider flex items-center justify-between transition-all shadow-sm no-underline"
-              :class="customTotal === 11
-                ? 'bg-emerald-800 hover:bg-emerald-700 active:bg-emerald-900 cursor-pointer'
-                : 'bg-zinc-400 dark:bg-zinc-700 cursor-not-allowed opacity-60'"
-              @click="customTotal === 11 && startCustom()"
-            >
-              <span>{{ $t('formation.confirm_and_draft') }}</span>
-              <UIcon
-                name="i-lucide-arrow-right"
-                class="size-4"
-                aria-hidden="true"
-              />
-            </NuxtLink>
-          </UTooltip>
         </div>
       </div>
     </template>

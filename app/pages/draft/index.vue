@@ -547,6 +547,7 @@ const formationShortName = computed(() => {
           <DraftSquadList
             v-if="!roulette.noValidSquadsRemaining"
             :squad-with-eligibility="roulette.squadWithEligibility"
+            :squad-key="`${roulette.currentCountry}-${roulette.currentYear}`"
             :selected-player-id="selectedPlayer?.id"
             :is-player-eligible="isPlayerEligibleForSelectedSlot"
             @select-player="onPlayerClick"

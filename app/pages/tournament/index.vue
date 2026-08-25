@@ -97,6 +97,18 @@ function onLiveMatchCompleted() {
   tournament.advanceSimulationStep()
 }
 
+// Auto-scroll down to the results section the moment the run finishes (skip-to-results
+// or the final live match completing), whether by watching it complete live or by
+// jumping via "Skip to Results" -- but not on mount when revisiting an already-completed
+// tournament, since `watch` (non-immediate) only fires on the completed transition.
+const resultsSectionEl = ref<HTMLElement | null>(null)
+watch(isSimulationCompleted, (completed) => {
+  if (!completed) return
+  nextTick(() => {
+    resultsSectionEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+})
+
 function skipAllToResults() {
   appLoading.show(undefined, 500)
   setTimeout(() => {
@@ -219,6 +231,7 @@ function restartDraft() {
     <!-- 4-6. Results & Outcome, Squad Overview, Player Stats -->
     <div
       v-if="isSimulationCompleted"
+      ref="resultsSectionEl"
       class="space-y-8 animate-fade-in"
     >
       <TournamentOutcomeBanner

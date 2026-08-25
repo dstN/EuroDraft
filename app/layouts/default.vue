@@ -15,6 +15,18 @@ const navLinks = computed(() => [
   { label: t('nav.legal'), to: localePath('/legal') }
 ])
 
+// Below sm, the horizontally-scrolling nav below has no visual hint that
+// more links exist off-screen -- in practice, on a phone-width viewport
+// only Draft/Tournament fit before the language/audio/theme controls eat
+// the rest of the header, so Compare/Leaderboard/Legal were reachable only
+// by a swipe nobody discovers. This panel replaces that with an explicit,
+// always-visible toggle.
+const isMobileMenuOpen = ref(false)
+const route = useRoute()
+watch(() => route.fullPath, () => {
+  isMobileMenuOpen.value = false
+})
+
 const isDark = computed({
   get() {
     return colorMode.value === 'dark'
@@ -92,11 +104,9 @@ const currentLocaleName = computed(() => {
           <AppLogo variant="horizontal" />
         </NuxtLink>
 
-        <!-- Nav links + Active Draft Pill (horizontally scrollable so it never pushes
-             the language/theme controls off-screen once it has more links than a
-             narrow viewport can show at once) -->
+        <!-- Nav links (sm and up) + Active Draft Pill -->
         <nav
-          class="nav-scroll flex items-center gap-1 sm:gap-2 min-w-0 overflow-x-auto"
+          class="hidden sm:flex items-center gap-1 sm:gap-2 min-w-0"
           :aria-label="$t('nav.main_navigation_aria')"
         >
           <UButton
@@ -123,8 +133,21 @@ const currentLocaleName = computed(() => {
           </NuxtLink>
         </nav>
 
-        <!-- Right side: Language + Theme Toggle -->
+        <!-- Right side: Mobile menu toggle + Language + Theme Toggle -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+          <!-- Mobile navigation toggle (below sm, replaces the nav above) -->
+          <UButton
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            :icon="isMobileMenuOpen ? 'i-lucide-x' : 'i-lucide-menu'"
+            class="sm:hidden rounded-lg text-zinc-900 dark:text-zinc-100 p-1"
+            aria-controls="mobile-nav-panel"
+            :aria-expanded="isMobileMenuOpen"
+            :aria-label="isMobileMenuOpen ? $t('nav.close_menu_aria') : $t('nav.open_menu_aria')"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
+          />
+
           <!-- Language selector dropdown with flag -->
           <UDropdownMenu :items="languageItems">
             <UButton
@@ -163,6 +186,46 @@ const currentLocaleName = computed(() => {
           />
         </div>
       </div>
+
+      <!-- Mobile navigation panel (below sm only) -->
+      <Transition
+        enter-active-class="transition-all duration-150 ease-out"
+        enter-from-class="opacity-0 -translate-y-1"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-100 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-1"
+      >
+        <nav
+          v-if="isMobileMenuOpen"
+          id="mobile-nav-panel"
+          class="sm:hidden border-t border-black/[0.04] dark:border-white/[0.04] bg-white/70 dark:bg-[#060b10]/70 backdrop-blur-md px-2.5 py-2 flex flex-col gap-1"
+          :aria-label="$t('nav.main_navigation_aria')"
+        >
+          <UButton
+            v-for="link in navLinks"
+            :key="link.to"
+            :to="link.to"
+            variant="ghost"
+            color="neutral"
+            size="lg"
+            :label="link.label"
+            class="justify-start font-semibold text-sm text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg px-3 py-2 w-full"
+          />
+
+          <NuxtLink
+            v-if="draft.filledSlots.length > 0 && !draft.isComplete"
+            :to="localePath('/draft')"
+            class="inline-flex items-center gap-1.5 mx-3 mt-1 mb-1 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold self-start"
+          >
+            <span
+              class="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"
+              aria-hidden="true"
+            />
+            <span>{{ $t('nav.draft_progress_badge', { count: draft.filledSlots.length }) }}</span>
+          </NuxtLink>
+        </nav>
+      </Transition>
     </header>
 
     <!-- Page content with consistent container spacing -->

@@ -250,7 +250,7 @@ useSeoMeta({
 
         <div class="w-full max-w-xl mx-auto h-[440px] py-1">
           <FormationPitch
-            :slots="sharedRun.squad.map((p, idx) => ({ id: `${p.primaryPosition}-${idx}`, position: p.primaryPosition, player: p }))"
+            :slots="sharedRun.squad.map((p, idx) => ({ id: `${p.primaryPosition}-${idx}`, position: p.draftedPosition || p.primaryPosition, player: p }))"
             :interactive="false"
             class="h-full"
           />

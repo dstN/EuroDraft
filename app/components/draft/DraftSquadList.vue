@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { DraftSlot, Player } from '~/types'
 
-defineProps<{
+const props = defineProps<{
   squadWithEligibility: { player: Player, canDraft: boolean, compatibleSlots: DraftSlot[] }[]
   selectedPlayerId: string | undefined
   isPlayerEligible: (player: Player) => boolean
+  squadKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -12,6 +13,16 @@ const emit = defineEmits<{
   inspectPlayer: [player: Player]
   hoverPlayer: [player: Player | null]
 }>()
+
+const scrollContainer = ref<HTMLElement | null>(null)
+
+// Reset scroll position whenever a genuinely new squad is loaded (spin/reroll),
+// not just when eligibility flags update within the same squad -- otherwise a
+// freshly-drafted squad opens at the same scroll offset the previous squad was
+// left at, which reads as broken/unfinished rather than a fresh list.
+watch(() => props.squadKey, () => {
+  scrollContainer.value?.scrollTo({ top: 0 })
+})
 
 function positionColor(pos: string): string {
   if (pos === 'GK') return 'bg-yellow-500/15 text-yellow-950 dark:text-yellow-300 border-yellow-500/30'
@@ -22,7 +33,10 @@ function positionColor(pos: string): string {
 </script>
 
 <template>
-  <div class="space-y-2 max-h-[60vh] lg:max-h-[62vh] overflow-y-auto custom-scroll p-1.5 flex-1">
+  <div
+    ref="scrollContainer"
+    class="space-y-2 max-h-[60vh] lg:max-h-[62vh] overflow-y-auto custom-scroll p-1.5 flex-1"
+  >
     <template
       v-for="(entry, idx) in squadWithEligibility"
       :key="entry.player.id"
@@ -72,7 +86,7 @@ function positionColor(pos: string): string {
           </span>
 
           <!-- Name -->
-          <span class="flex-1 text-sm font-bold text-zinc-900 dark:text-white truncate">
+          <span class="flex-1 min-w-0 text-sm font-bold text-zinc-900 dark:text-white truncate">
             {{ entry.player.name }}
           </span>
 

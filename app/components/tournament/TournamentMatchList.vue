@@ -26,6 +26,18 @@ const emit = defineEmits<{
 
 const expandedIds = ref<Set<string>>(new Set())
 
+const activeMatchEl = ref<HTMLElement | null>(null)
+
+// Auto-scroll to the live match whenever a new one starts (group and knockout
+// share this component, but only one list has a non-null activeMatch at a
+// time, so this never fights with the other instance).
+watch(() => props.activeMatch?.id, (id) => {
+  if (!id) return
+  nextTick(() => {
+    activeMatchEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
+})
+
 function toggleExpanded(matchId: string) {
   if (expandedIds.value.has(matchId)) {
     expandedIds.value.delete(matchId)
@@ -54,6 +66,7 @@ function matchSubtitle(match: MatchResult): string {
     <!-- Active Live Match -->
     <div
       v-if="activeMatch"
+      ref="activeMatchEl"
       class="space-y-3"
     >
       <LiveMatchBroadcast

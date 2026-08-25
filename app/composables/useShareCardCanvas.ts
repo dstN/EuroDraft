@@ -27,6 +27,26 @@ export function useShareCardCanvas(props: {
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   const copiedImage = ref(false)
 
+  // Truncates `text` with an ellipsis only if it would actually overflow
+  // `maxWidth` under the ctx's *currently set* font -- replaces the old fixed
+  // character-count cutoffs, which chopped names like "Christian Wilhelmsson"
+  // down to "Christian Wilhel…" even when there was plenty of room before the
+  // next element (e.g. the GES rating badge) on that row.
+  function truncateToWidth(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+    if (ctx.measureText(text).width <= maxWidth) return text
+    let low = 0
+    let high = text.length
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2)
+      if (ctx.measureText(`${text.slice(0, mid)}…`).width <= maxWidth) {
+        low = mid
+      } else {
+        high = mid - 1
+      }
+    }
+    return low > 0 ? `${text.slice(0, low)}…` : '…'
+  }
+
   function loadAppLogoImage(): Promise<HTMLImageElement | null> {
     if (typeof window === 'undefined') return Promise.resolve(null)
     return new Promise((resolve) => {
@@ -266,17 +286,23 @@ export function useShareCardCanvas(props: {
           ctx.stroke()
         }
 
+        // G/A Stat Pill (measured first so the name only truncates if it
+        // would actually reach this badge)
+        ctx.font = 'bold 11px monospace'
+        const gaBadge = p.assists > 0 ? `${p.goals} ⚽ · ${p.assists} 🎯 (${p.goals + p.assists} G/A)` : `${p.goals} ⚽ (${p.goals} G/A)`
+        const gaWidth = ctx.measureText(gaBadge).width
+
         // Name
         ctx.fillStyle = '#ffffff'
         ctx.font = 'bold 12px sans-serif'
-        const displayName = p.player.name.length > 18 ? `${p.player.name.slice(0, 16)}…` : p.player.name
-        ctx.fillText(`${pIdx + 1}. ${displayName}`, 90, py)
+        const namePrefix = `${pIdx + 1}. `
+        const prefixWidth = ctx.measureText(namePrefix).width
+        const performerNameMaxWidth = (492 - gaWidth - 12) - 90 - prefixWidth
+        ctx.fillText(`${namePrefix}${truncateToWidth(ctx, p.player.name, performerNameMaxWidth)}`, 90, py)
 
-        // G/A Stat Pill
         ctx.fillStyle = '#fbbf24'
         ctx.font = 'bold 11px monospace'
         ctx.textAlign = 'right'
-        const gaBadge = p.assists > 0 ? `${p.goals} ⚽ · ${p.assists} 🎯 (${p.goals + p.assists} G/A)` : `${p.goals} ⚽ (${p.goals} G/A)`
         ctx.fillText(gaBadge, 492, py)
         ctx.textAlign = 'left'
       })
@@ -352,11 +378,10 @@ export function useShareCardCanvas(props: {
         ctx.restore()
       }
 
-      // Opponent Name
+      // Opponent Name (result pill starts at x=410, drawn as a rect not text)
       ctx.fillStyle = '#e2e8f0'
       ctx.font = 'bold 11px sans-serif'
-      const oppDisplayName = oppTeam.countryName.length > 13 ? `${oppTeam.countryName.slice(0, 11)}…` : oppTeam.countryName
-      ctx.fillText(oppDisplayName, 168, my + 21)
+      ctx.fillText(truncateToWidth(ctx, oppTeam.countryName, 410 - 168 - 12), 168, my + 21)
 
       // Score & Outcome Result Pill
       const myGoals = isTeamAUser ? m.teamA.goals : m.teamB.goals
@@ -447,17 +472,22 @@ export function useShareCardCanvas(props: {
         ctx.stroke()
       }
 
+      // 4. GES Rating Badge (measured first so the name only truncates if it
+      // would actually reach this badge, not at some arbitrary character count)
+      const gesLabel = `${p.stats.overall} GES`
+      ctx.font = 'bold 14px monospace'
+      const gesWidth = ctx.measureText(gesLabel).width
+
       // 3. Player Name
       ctx.fillStyle = '#ffffff'
       ctx.font = 'bold 14px sans-serif'
-      const displayName = p.name.length > 20 ? `${p.name.slice(0, 18)}…` : p.name
-      ctx.fillText(displayName, 626, y + 19)
+      const nameMaxWidth = (1015 - gesWidth - 16) - 626
+      ctx.fillText(truncateToWidth(ctx, p.name, nameMaxWidth), 626, y + 19)
 
-      // 4. GES Rating Badge
       ctx.fillStyle = p.stats.overall >= 90 ? '#fbbf24' : '#cbd5e1'
       ctx.font = 'bold 14px monospace'
       ctx.textAlign = 'right'
-      ctx.fillText(`${p.stats.overall} GES`, 1015, y + 19)
+      ctx.fillText(gesLabel, 1015, y + 19)
       ctx.textAlign = 'left'
     })
 
