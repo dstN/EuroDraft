@@ -140,8 +140,8 @@ const showdownLabel = computed(() => {
 function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string {
   const mine = side === 'a' ? valueA : valueB
   const other = side === 'a' ? valueB : valueA
-  if (mine > other) return 'text-emerald-500 dark:text-emerald-400'
-  if (mine < other) return 'text-zinc-500 dark:text-zinc-500'
+  if (mine > other) return 'text-emerald-900 dark:text-emerald-400'
+  if (mine < other) return 'text-zinc-700 dark:text-zinc-300'
   return 'text-zinc-700 dark:text-zinc-300'
 }
 </script>
@@ -149,7 +149,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
 <template>
   <div class="max-w-5xl mx-auto px-3 sm:px-6 space-y-6">
     <div class="text-center space-y-2 pt-2">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
         {{ $t('compare.badge') }}
       </div>
       <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
@@ -164,7 +164,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
       <div class="surface-card p-5 space-y-4">
         <template v-if="!slotA">
-          <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
+          <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
             {{ $t('compare.squad_a') }}
           </p>
           <div class="flex gap-2">
@@ -176,6 +176,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
             />
             <UButton
               color="primary"
+              class="bg-emerald-800 hover:bg-emerald-700"
               :loading="loadingA"
               :label="$t('compare.load')"
               @click="loadSlot('a')"
@@ -218,7 +219,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
 
       <div class="surface-card p-5 space-y-4">
         <template v-if="!slotB">
-          <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500">
+          <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
             {{ $t('compare.squad_b') }}
           </p>
           <div class="flex gap-2">
@@ -230,6 +231,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
             />
             <UButton
               color="primary"
+              class="bg-emerald-800 hover:bg-emerald-700"
               :loading="loadingB"
               :label="$t('compare.load')"
               @click="loadSlot('b')"
@@ -276,7 +278,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
       v-if="bothLoaded && slotA && slotB"
       class="surface-card p-5 sm:p-6 space-y-4"
     >
-      <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-500 text-center">
+      <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 text-center">
         {{ $t('compare.squad_ratings') }}
       </p>
       <div
@@ -300,7 +302,7 @@ function advantageClass(valueA: number, valueB: number, side: 'a' | 'b'): string
               :style="{ width: `${Math.min(100, (stat.a / Math.max(stat.a, stat.b, 1)) * 100)}%` }"
             />
           </div>
-          <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 w-16 text-center shrink-0">{{ stat.label }}</span>
+          <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300 w-16 text-center shrink-0">{{ stat.label }}</span>
           <div class="flex-1 h-1.5 rounded-full bg-zinc-200 dark:bg-white/10 overflow-hidden">
             <div
               class="h-full bg-sky-500 rounded-full ml-auto"

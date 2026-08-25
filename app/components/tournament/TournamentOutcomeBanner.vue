@@ -105,7 +105,7 @@ const localePath = useLocalePath()
     <div class="pt-3 flex flex-wrap items-center justify-center gap-3">
       <button
         type="button"
-        class="rounded-full px-6 py-2.5 font-bold text-sm bg-emerald-700 hover:bg-emerald-600 text-white cursor-pointer shadow-lg inline-flex items-center gap-2 transition-all active:scale-[0.99]"
+        class="rounded-full px-6 py-2.5 font-bold text-sm bg-emerald-900 hover:bg-emerald-800 text-white cursor-pointer shadow-lg inline-flex items-center gap-2 transition-all active:scale-[0.99]"
         @click="emit('playAgain')"
       >
         <UIcon
@@ -151,7 +151,7 @@ const localePath = useLocalePath()
     </div>
 
     <!-- Scroll Notice -->
-    <p class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-400 pt-2 animate-pulse">
+    <p class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-400 pt-2">
       {{ $t('results.scroll_notice') }}
     </p>
   </div>

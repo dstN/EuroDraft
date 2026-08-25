@@ -26,7 +26,7 @@ const emit = defineEmits<{
       </h2>
       <span class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider shrink-0 whitespace-nowrap self-start sm:self-auto px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-white/10">
         <span>{{ $t('tournament.formation_label') }}</span>
-        <strong class="text-emerald-700 dark:text-emerald-400 font-black font-mono">{{ formationId }}</strong>
+        <strong class="text-emerald-900 dark:text-emerald-400 font-black font-mono">{{ formationId }}</strong>
       </span>
     </div>
 
@@ -36,7 +36,7 @@ const emit = defineEmits<{
       <div class="surface-card p-4 space-y-1 text-center">
         <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_def') }}</span>
         <p class="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400">
-          {{ lineRatings.def }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          {{ lineRatings.def }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
         </p>
       </div>
 
@@ -44,7 +44,7 @@ const emit = defineEmits<{
       <div class="surface-card p-4 space-y-1 text-center">
         <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_mid') }}</span>
         <p class="text-2xl font-black font-mono text-sky-700 dark:text-sky-400">
-          {{ lineRatings.mid }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          {{ lineRatings.mid }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
         </p>
       </div>
 
@@ -52,7 +52,7 @@ const emit = defineEmits<{
       <div class="surface-card p-4 space-y-1 text-center">
         <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_att') }}</span>
         <p class="text-2xl font-black font-mono text-amber-700 dark:text-amber-400">
-          {{ lineRatings.att }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          {{ lineRatings.att }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
         </p>
       </div>
 
@@ -60,7 +60,7 @@ const emit = defineEmits<{
       <div class="surface-card p-4 space-y-1 text-center">
         <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_overall') }} {{ $t('draft.stats.overall') }}</span>
         <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
-          {{ lineRatings.overall }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          {{ lineRatings.overall }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
         </p>
       </div>
     </div>

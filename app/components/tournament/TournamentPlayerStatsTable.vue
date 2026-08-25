@@ -264,7 +264,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               </th>
               <th
                 scope="col"
-                class="py-2.5 px-2 text-center text-emerald-700 dark:text-emerald-400 font-black"
+                class="py-2.5 px-2 text-center text-emerald-900 dark:text-emerald-400 font-black"
                 :aria-sort="ariaSortFor('goals')"
               >
                 <button
@@ -290,7 +290,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               </th>
               <th
                 scope="col"
-                class="py-2.5 px-2 text-center font-black text-amber-700 dark:text-amber-400"
+                class="py-2.5 px-2 text-center font-black text-amber-900 dark:text-amber-400"
                 :aria-sort="ariaSortFor('ga')"
               >
                 <button
@@ -303,7 +303,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               </th>
               <th
                 scope="col"
-                class="py-2.5 px-2 text-center text-amber-700 dark:text-amber-300"
+                class="py-2.5 px-2 text-center text-amber-900 dark:text-amber-300"
               >
                 🟨
               </th>
@@ -315,7 +315,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               </th>
               <th
                 scope="col"
-                class="py-2.5 px-2 text-right text-emerald-700 dark:text-emerald-400 font-black"
+                class="py-2.5 px-2 text-right text-emerald-900 dark:text-emerald-400 font-black"
                 :aria-sort="ariaSortFor('rating')"
               >
                 <button
@@ -357,7 +357,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               </td>
               <td
                 class="py-2.5 px-2 font-black"
-                :class="p.player.stats.overall >= 90 ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-200'"
+                :class="p.player.stats.overall >= 90 ? 'text-amber-900 dark:text-amber-400' : 'text-zinc-800 dark:text-zinc-200'"
               >
                 {{ p.player.stats.overall }}
               </td>
@@ -367,13 +367,13 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               <td class="py-2.5 px-2 text-center text-zinc-600 dark:text-zinc-400">
                 {{ p.minutes }}'
               </td>
-              <td class="py-2.5 px-2 text-center font-black text-emerald-700 dark:text-emerald-400">
+              <td class="py-2.5 px-2 text-center font-black text-emerald-900 dark:text-emerald-400">
                 {{ p.goals }}
               </td>
               <td class="py-2.5 px-2 text-center font-bold text-sky-700 dark:text-sky-400">
                 {{ p.assists }}
               </td>
-              <td class="py-2.5 px-2 text-center font-black text-amber-700 dark:text-amber-400">
+              <td class="py-2.5 px-2 text-center font-black text-amber-900 dark:text-amber-400">
                 {{ p.ga }}
               </td>
               <td class="py-2.5 px-2 text-center text-zinc-600 dark:text-zinc-400">
@@ -382,7 +382,7 @@ function ariaSortFor(field: SortField): 'ascending' | 'descending' | 'none' {
               <td class="py-2.5 px-2 text-center text-zinc-600 dark:text-zinc-400">
                 {{ p.redCards }}
               </td>
-              <td class="py-2.5 px-2 text-right font-black text-emerald-700 dark:text-emerald-400">
+              <td class="py-2.5 px-2 text-right font-black text-emerald-900 dark:text-emerald-400">
                 {{ p.rating }}
               </td>
             </tr>

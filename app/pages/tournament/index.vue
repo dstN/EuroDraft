@@ -117,7 +117,7 @@ function restartDraft() {
     <!-- Top Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1 text-left">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
           {{ $t('tournament.continental_simulation_badge') }}
         </div>
         <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
