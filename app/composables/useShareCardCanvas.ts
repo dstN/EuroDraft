@@ -534,11 +534,40 @@ export function useShareCardCanvas(props: {
     link.click()
   }
 
+  // Uploads this same canvas render as the /r/:shareId page's OpenGraph
+  // image (POST /api/share/:id/og-image), so a shared link's Discord/social
+  // embed shows the actual result card instead of the old static SVG (which
+  // most embed crawlers don't render at all). Re-renders immediately before
+  // capturing so it reflects the current data even if this is called before
+  // the modal's own open/tab watcher has drawn a first frame.
+  async function uploadOgImage(shareId: string, shareToken: string): Promise<boolean> {
+    await renderCanvas()
+    const canvas = canvasRef.value
+    if (!canvas) return false
+    return new Promise((resolve) => {
+      canvas.toBlob(async (blob) => {
+        if (!blob) return resolve(false)
+        try {
+          await $fetch(`/api/share/${shareId}/og-image`, {
+            method: 'POST',
+            body: blob,
+            headers: { 'x-share-token': shareToken }
+          })
+          resolve(true)
+        } catch (err) {
+          console.error('Failed to upload OG image', err)
+          resolve(false)
+        }
+      }, 'image/png')
+    })
+  }
+
   return {
     canvasRef,
     copiedImage,
     renderCanvas,
     copyCanvasImage,
-    downloadCanvasImage
+    downloadCanvasImage,
+    uploadOgImage
   }
 }

@@ -233,8 +233,37 @@ function generateSearchVariants(name: string): string[] {
   return [...variants]
 }
 
+// Nationality names as they appear in Transfermarkt's search-result flag
+// titles/alt text don't always match our internal countryName 1:1 (e.g.
+// "Czechia" vs "Czech Republic"), so common historical/alternate spellings
+// are mapped to the same comparison key.
+const NATIONALITY_ALIASES: Record<string, string[]> = {
+  'czech republic': ['czechia', 'czechoslovakia'],
+  'czechia': ['czech republic', 'czechoslovakia'],
+  'united kingdom': ['england', 'scotland', 'wales', 'northern ireland'],
+  'russia': ['soviet union', 'ussr'],
+  'serbia': ['yugoslavia', 'serbia and montenegro'],
+  'north macedonia': ['macedonia']
+}
+
+function nationalityMatches(candidateNat: string, countryHint: string): boolean {
+  const a = candidateNat.trim().toLowerCase()
+  const b = countryHint.trim().toLowerCase()
+  if (!a || !b) return false
+  if (a === b || a.includes(b) || b.includes(a)) return true
+  const aliases = NATIONALITY_ALIASES[b] ?? []
+  return aliases.some(alias => a.includes(alias))
+}
+
 // ---- Step 1: Find profile URL ----
-async function findProfileUrl(playerName: string): Promise<string | null> {
+// `countryHint` is the player's known nationality from OUR source data (the
+// Wikipedia squad list, e.g. "Poland") -- without it, a common name like
+// "Robert Lewandowski" or "Pepe" can silently resolve to a completely
+// different, unrelated real person on Transfermarkt (see issue with Robert
+// Lewandowski being enriched as an obscure goalkeeper). Nationality match
+// is checked first; the previous age>=35 heuristic is only a fallback among
+// candidates that either match or where nationality couldn't be determined.
+async function findProfileUrl(playerName: string, countryHint?: string): Promise<string | null> {
   const searchVariants = generateSearchVariants(playerName)
   console.error(`🔍 Searching for: ${playerName} (variants: ${searchVariants.join(' | ')})`)
 
@@ -251,7 +280,7 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
       }
 
       const $ = cheerio.load(res.data)
-      interface Candidate { url: string, age: number }
+      interface Candidate { url: string, age: number, nationality: string }
       const candidates: Candidate[] = []
 
       $('table.items tbody tr').each((_, row) => {
@@ -267,15 +296,30 @@ async function findProfileUrl(playerName: string): Promise<string | null> {
             return false
           }
         })
+        const nationality = $(row).find('img.flaggenrahmen').first().attr('title')
+          ?? $(row).find('img.flaggenrahmen').first().attr('alt')
+          ?? ''
         const fullUrl = href.startsWith('http') ? href : `${SOURCE_BASE_URL}${href.startsWith('/') ? '' : '/'}${href}`
-        candidates.push({ url: fullUrl, age })
+        candidates.push({ url: fullUrl, age, nationality })
       })
 
       if (candidates.length > 0) {
-        // Disambiguation: prefer retired / historical players (age >= 35)
-        const historical = candidates.filter(c => c.age >= 35)
-        const chosen = historical.length > 0 ? historical[0]! : candidates[0]!
-        console.error(`  ✓ Found via API (${variant}, age ${chosen.age}): ${chosen.url}`)
+        // Disambiguation, in priority order:
+        //  1. Nationality match against our known country (strongest signal)
+        //  2. Among those, prefer retired/historical players (age >= 35)
+        //  3. If nothing matched nationality, fall back to the old
+        //     age-based heuristic across all candidates
+        const nationalityMatched = countryHint
+          ? candidates.filter(c => c.nationality && nationalityMatches(c.nationality, countryHint))
+          : []
+        const pool = nationalityMatched.length > 0 ? nationalityMatched : candidates
+        const historical = pool.filter(c => c.age >= 35)
+        const chosen = historical.length > 0 ? historical[0]! : pool[0]!
+
+        if (countryHint && nationalityMatched.length === 0) {
+          console.error(`  ⚠ No candidate's nationality matched "${countryHint}" -- falling back to age heuristic (risk of a wrong same-name match)`)
+        }
+        console.error(`  ✓ Found via API (${variant}, age ${chosen.age}, nat "${chosen.nationality || '?'}"): ${chosen.url}`)
         return chosen.url
       }
     } catch {
@@ -488,7 +532,7 @@ function normalizeRegistryKey(str: string): string {
     .trim()
 }
 
-async function enrichPlayer(playerName: string): Promise<EnrichedPosition | null> {
+async function enrichPlayer(playerName: string, countryHint?: string): Promise<EnrichedPosition | null> {
   await mkdir(CACHE_DIR, { recursive: true })
   const cacheKey = normalizeRegistryKey(playerName).replace(/\s+/g, '-')
   const cacheFile = join(CACHE_DIR, `${cacheKey}.json`)
@@ -499,7 +543,7 @@ async function enrichPlayer(playerName: string): Promise<EnrichedPosition | null
     return cached
   }
 
-  const profileUrl = await findProfileUrl(playerName)
+  const profileUrl = await findProfileUrl(playerName, countryHint)
   if (!profileUrl) return null
 
   const html = await fetchProfileHtml(profileUrl)
@@ -528,6 +572,7 @@ async function enrichPlayer(playerName: string): Promise<EnrichedPosition | null
 async function main() {
   const args = process.argv.slice(2)
   let playerNames: string[] = []
+  const nameCountryHints = new Map<string, string>()
 
   const nameIdx = args.indexOf('--name')
   const fileIdx = args.indexOf('--file')
@@ -573,30 +618,36 @@ async function main() {
     const content = await readFile(args[fileIdx + 1]!, 'utf8')
     playerNames = content.split('\n').map(l => l.trim()).filter(Boolean)
   } else if (dbMode || retryFailed) {
-    // Load ALL unique player names from the database
+    // Load ALL unique player names from the database, along with each name's
+    // known nationality (first one seen) so enrichment can disambiguate
+    // same-name collisions on the source site instead of trusting whichever
+    // search result comes back first.
     const dbPath = join(__dirname, '..', 'public', 'eurodraft_db.json')
     if (!existsSync(dbPath)) {
       console.error('❌ Database not found. Run `npm run build:db` first.')
       process.exit(1)
     }
     const db = JSON.parse(await readFile(dbPath, 'utf8'))
-    const nameSet = new Set<string>()
 
     // DB structure: { tournaments: [ { squads: [ { players: [...] } ] } ] }
     for (const tournament of db.tournaments ?? []) {
       for (const squad of tournament.squads ?? []) {
         for (const player of squad.players ?? []) {
-          if (player.name) nameSet.add(player.name as string)
+          if (player.name && !nameCountryHints.has(player.name as string)) {
+            nameCountryHints.set(player.name as string, (player.countryName as string) ?? '')
+          }
         }
       }
     }
 
     // Also handle flat { players: [...] } structure
     for (const player of db.players ?? []) {
-      if (player.name) nameSet.add(player.name as string)
+      if (player.name && !nameCountryHints.has(player.name as string)) {
+        nameCountryHints.set(player.name as string, (player.countryName as string) ?? '')
+      }
     }
 
-    const allNames = [...nameSet].sort()
+    const allNames = [...nameCountryHints.keys()].sort()
 
     if (retryFailed) {
       await mkdir(CACHE_DIR, { recursive: true })
@@ -636,7 +687,7 @@ async function main() {
     process.stderr.write(`\r[${i + 1}/${playerNames.length}] `)
     console.error(`──── ${name} ────`)
 
-    const res = await enrichPlayer(name)
+    const res = await enrichPlayer(name, nameCountryHints.get(name))
     if (res) {
       console.error(`  ✓ ${res.primary} [${res.positions.join(', ')}] (${res.base})`)
       results.push(res)

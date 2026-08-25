@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { useMatchEngine } from '../../app/composables/useMatchEngine'
+import { useMatchEngine, calculateFormationShape, calculateChemistryBonus } from '../../app/composables/useMatchEngine'
 import type { Player, TournamentTeam } from '../../app/types'
 
-function makePlayer(id: string, position: Player['primaryPosition'], overall = 75): Player {
+function makePlayer(id: string, position: Player['primaryPosition'], overall = 75, opts: { country?: string, year?: number } = {}): Player {
   return {
     id,
     name: `Player ${id}`,
     nameNormalized: `player ${id}`,
-    country: 'eu',
+    country: opts.country ?? 'eu',
     countryName: 'Europe',
-    year: 2000,
+    year: opts.year ?? 2000,
     shirtNumber: 1,
     basePosition: 'Midfielder',
     positions: [position],
@@ -27,21 +27,8 @@ function makePlayer(id: string, position: Player['primaryPosition'], overall = 7
   }
 }
 
-function makeTeam(id: string, countryName: string): TournamentTeam {
-  const squad: Player[] = [
-    makePlayer(`${id}-gk`, 'GK'),
-    makePlayer(`${id}-cb1`, 'CB'),
-    makePlayer(`${id}-cb2`, 'CB'),
-    makePlayer(`${id}-lb`, 'LB'),
-    makePlayer(`${id}-rb`, 'RB'),
-    makePlayer(`${id}-cdm`, 'CDM'),
-    makePlayer(`${id}-cm1`, 'CM'),
-    makePlayer(`${id}-cm2`, 'CM'),
-    makePlayer(`${id}-cam`, 'CAM'),
-    makePlayer(`${id}-lw`, 'LW'),
-    makePlayer(`${id}-rw`, 'RW'),
-    makePlayer(`${id}-st`, 'ST')
-  ]
+function makeTeam(id: string, countryName: string, positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']): TournamentTeam {
+  const squad: Player[] = positions.map((pos, i) => makePlayer(`${id}-${pos}-${i}`, pos))
 
   return {
     id,
@@ -148,5 +135,117 @@ describe('useMatchEngine', () => {
         }
       }
     }
+  })
+})
+
+describe('calculateFormationShape', () => {
+  const withBackLine = (n: number) => [
+    ...Array(n).fill('CB'),
+    ...Array(11 - n).fill('ST')
+  ].map((pos, i) => makePlayer(`p${i}`, pos as Player['primaryPosition']))
+
+  it('back-5 (or more) gets a defensive bonus and an attacking penalty', () => {
+    const shape = calculateFormationShape(withBackLine(5))
+    expect(shape.backLineSize).toBe(5)
+    expect(shape.defenseMult).toBeGreaterThan(1)
+    expect(shape.attackMult).toBeLessThan(1)
+  })
+
+  it('back-3 (or fewer) gets an attacking bonus and a defensive penalty', () => {
+    const shape = calculateFormationShape(withBackLine(3))
+    expect(shape.backLineSize).toBe(3)
+    expect(shape.attackMult).toBeGreaterThan(1)
+    expect(shape.defenseMult).toBeLessThan(1)
+  })
+
+  it('back-4 is the balanced baseline (no modifier)', () => {
+    const shape = calculateFormationShape(withBackLine(4))
+    expect(shape.backLineSize).toBe(4)
+    expect(shape.attackMult).toBe(1)
+    expect(shape.defenseMult).toBe(1)
+  })
+
+  it('prefers draftedPosition over primaryPosition when both are set', () => {
+    const squad = withBackLine(4).map(p => ({ ...p, primaryPosition: 'ST' as const, draftedPosition: p.primaryPosition }))
+    // primaryPosition now says everyone is a striker, but draftedPosition still reflects the real back-4
+    expect(calculateFormationShape(squad).backLineSize).toBe(4)
+  })
+})
+
+describe('calculateChemistryBonus', () => {
+  it('is 0 when no two players share a country or a year', () => {
+    const squad = Array.from({ length: 11 }, (_, i) => makePlayer(`p${i}`, 'CM', 75, { country: `c${i}`, year: 1990 + i }))
+    expect(calculateChemistryBonus(squad)).toBe(0)
+  })
+
+  it('is capped at 11% even if every player is linked', () => {
+    const squad = Array.from({ length: 11 }, (_, i) => makePlayer(`p${i}`, 'CM', 75, { country: 'nl', year: 2008 }))
+    expect(calculateChemistryBonus(squad)).toBe(0.11)
+  })
+
+  it('counts only players who actually share a link with a teammate', () => {
+    // 3 players share NL/2008, the other 8 are all unique -- only the 3 linked ones count
+    const squad = [
+      ...Array.from({ length: 3 }, (_, i) => makePlayer(`nl${i}`, 'CM', 75, { country: 'nl', year: 2008 })),
+      ...Array.from({ length: 8 }, (_, i) => makePlayer(`u${i}`, 'CM', 75, { country: `c${i}`, year: 1980 + i }))
+    ]
+    expect(calculateChemistryBonus(squad)).toBeCloseTo(0.03)
+  })
+})
+
+describe('formation shape and chemistry influence match outcomes', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('against the same neutral opponent, a back-3 team scores more and a back-5 team concedes less than a back-4 baseline', () => {
+    // Isolate the shape effect on one side by holding the opponent (back-4,
+    // neutral) fixed -- pitting two differently-shaped teams directly against
+    // each other instead would partly cancel the effect out, since each
+    // side's attack boost/penalty is then also tested against a defense
+    // that's boosted/penalized in the same direction.
+    const backline = (n: number): Player['primaryPosition'][] => ['GK', ...Array(n).fill('CB'), ...Array(10 - n).fill('ST')] as Player['primaryPosition'][]
+    const neutralOpponent = makeTeam('opp', 'Opponent', backline(4))
+    const back3Team = makeTeam('b3', 'Back-3', backline(3))
+    const back4Team = makeTeam('b4', 'Back-4', backline(4))
+    const back5Team = makeTeam('b5', 'Back-5', backline(5))
+
+    function totalsAgainstOpponent(team: TournamentTeam, runs = 400) {
+      let scored = 0
+      let conceded = 0
+      for (let seed = 1; seed <= runs; seed++) {
+        const match = simulateMatch(team, neutralOpponent, 'group', seed)
+        scored += match.teamA.goals
+        conceded += match.teamB.goals
+      }
+      return { scored, conceded }
+    }
+
+    const back3 = totalsAgainstOpponent(back3Team)
+    const back4 = totalsAgainstOpponent(back4Team)
+    const back5 = totalsAgainstOpponent(back5Team)
+
+    expect(back3.scored).toBeGreaterThan(back4.scored)
+    expect(back4.scored).toBeGreaterThan(back5.scored)
+    expect(back5.conceded).toBeLessThan(back4.conceded)
+    expect(back4.conceded).toBeLessThan(back3.conceded)
+  })
+
+  it('a squad with full chemistry outscores an otherwise-identical squad with none, on average', () => {
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const linkedSquad = positions.map((pos, i) => makePlayer(`linked-${i}`, pos, 75, { country: 'nl', year: 2008 }))
+    const unlinkedSquad = positions.map((pos, i) => makePlayer(`unlinked-${i}`, pos, 75, { country: `c${i}`, year: 1980 + i }))
+
+    const teamLinked: TournamentTeam = { ...makeTeam('linked', 'Linked'), squad: linkedSquad }
+    const teamUnlinked: TournamentTeam = { ...makeTeam('unlinked', 'Unlinked'), squad: unlinkedSquad }
+
+    let linkedGoalsTotal = 0
+    let unlinkedGoalsTotal = 0
+    const runs = 400
+    for (let seed = 1; seed <= runs; seed++) {
+      const match = simulateMatch(teamLinked, teamUnlinked, 'group', seed)
+      linkedGoalsTotal += match.teamA.goals
+      unlinkedGoalsTotal += match.teamB.goals
+    }
+
+    expect(linkedGoalsTotal).toBeGreaterThan(unlinkedGoalsTotal)
   })
 })

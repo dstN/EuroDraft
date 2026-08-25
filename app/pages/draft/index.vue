@@ -117,15 +117,25 @@ onBeforeUnmount(() => {
   window.removeEventListener('popstate', handlePopState)
 })
 
+// The overlay's own fade-in (.card-splash-enter-active, 0.25s -- see <style>
+// below) takes 250ms to reach full opacity. Swapping the roulette store's
+// data immediately meant the new country/year was already visible through
+// the still-fading-in overlay -- a brief flash of the result before the
+// loading animation had actually covered it. Deferring the data swap until
+// just after the overlay is fully opaque removes that flash entirely.
+const OVERLAY_OPAQUE_DELAY_MS = 260
+
 function spinWithAnimation() {
   if (isCardTransitioning.value) return
   currentSpinType.value = 'all'
   isCardTransitioning.value = true
   isSpinningReel.value = true
   audio.playSpinTick()
-  roulette.spin()
 
   const duration = getRandomAnimationDuration(1050)
+  setTimeout(() => {
+    roulette.spin()
+  }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {
     isCardTransitioning.value = false
     isSpinningReel.value = false
@@ -138,9 +148,11 @@ function rerollYearWithAnimation() {
   isCardTransitioning.value = true
   isSpinningReel.value = true
   audio.playReroll()
-  roulette.rerollYear()
 
   const duration = getRandomAnimationDuration(1050)
+  setTimeout(() => {
+    roulette.rerollYear()
+  }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {
     isCardTransitioning.value = false
     isSpinningReel.value = false
@@ -153,9 +165,11 @@ function rerollNationWithAnimation() {
   isCardTransitioning.value = true
   isSpinningReel.value = true
   audio.playReroll()
-  roulette.rerollNation()
 
   const duration = getRandomAnimationDuration(1050)
+  setTimeout(() => {
+    roulette.rerollNation()
+  }, OVERLAY_OPAQUE_DELAY_MS)
   setTimeout(() => {
     isCardTransitioning.value = false
     isSpinningReel.value = false

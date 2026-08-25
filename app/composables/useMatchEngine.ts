@@ -70,6 +70,43 @@ export function calculateSectionRatings(squad: Player[]) {
   }
 }
 
+// ---- Formation shape & squad chemistry ----
+//
+// Two small, deliberately capped modifiers on top of the section-rating
+// dominance model below, added because a squad's raw ratings alone made the
+// simulation feel too close to a coin flip regardless of how the team was
+// built -- neither the back-line shape you draft into nor the fact that
+// several picks happened to share a nation/year (unusual, since each
+// roulette spin normally lands on an unrelated squad) had any effect.
+//
+// Uses `draftedPosition` when present (the exact slot a player was drafted
+// into) and falls back to `primaryPosition` otherwise -- this makes the same
+// logic work unmodified for both the player's drafted team (shape reflects
+// the formation they picked) and AI historical squads (shape reflects
+// whatever back-line size that real squad actually had).
+const BACK_LINE_POSITIONS: Player['primaryPosition'][] = ['CB', 'LB', 'RB']
+
+export function calculateFormationShape(squad: Player[]): { attackMult: number, defenseMult: number, backLineSize: number } {
+  const backLineSize = squad.filter(p => BACK_LINE_POSITIONS.includes(p.draftedPosition ?? p.primaryPosition)).length
+  // Back-5: sturdier defensively, blunter going forward.
+  if (backLineSize >= 5) return { attackMult: 0.95, defenseMult: 1.08, backLineSize }
+  // Back-3 (or fewer): more attacking width and numbers up top, thinner cover at the back.
+  if (backLineSize <= 3) return { attackMult: 1.08, defenseMult: 0.93, backLineSize }
+  // Back-4: the balanced baseline, no modifier.
+  return { attackMult: 1, defenseMult: 1, backLineSize }
+}
+
+// 1% expected-goals boost per squad member who shares a nation or a
+// tournament year with at least one teammate, capped at 11% (one per
+// starting XI slot) -- a squad that happens to click on paper plays a
+// little better together than 11 unconnected picks.
+export function calculateChemistryBonus(squad: Player[]): number {
+  const linkedCount = squad.filter(p =>
+    squad.some(other => other.id !== p.id && (other.country === p.country || other.year === p.year))
+  ).length
+  return Math.min(11, linkedCount) * 0.01
+}
+
 // ---- Match simulation ----
 
 export function useMatchEngine() {
@@ -114,15 +151,36 @@ export function useMatchEngine() {
   ): MatchResult {
     const rng = mulberry32(seed)
 
-    // Section comparison determines expected goals
-    const attackDomA = (teamA.attackRating * 0.6 + teamA.midfieldRating * 0.4)
-      - (teamB.defenseRating * 0.6 + teamB.goalkeepingRating * 0.4) * 0.8
-    const attackDomB = (teamB.attackRating * 0.6 + teamB.midfieldRating * 0.4)
-      - (teamA.defenseRating * 0.6 + teamA.goalkeepingRating * 0.4) * 0.8
+    // Formation shape modifies each team's own attack/defense output; squad
+    // chemistry then boosts (or leaves untouched) the resulting lambda --
+    // see calculateFormationShape/calculateChemistryBonus above.
+    const shapeA = calculateFormationShape(teamA.squad)
+    const shapeB = calculateFormationShape(teamB.squad)
+    const chemistryA = calculateChemistryBonus(teamA.squad)
+    const chemistryB = calculateChemistryBonus(teamB.squad)
 
-    // Lambda: base 1.15 goals per game, adjusted by dominance
-    const lambdaA = Math.max(0.25, 1.15 + attackDomA * 0.03)
-    const lambdaB = Math.max(0.25, 1.15 + attackDomB * 0.03)
+    const effAttackA = teamA.attackRating * shapeA.attackMult
+    const effDefenseA = teamA.defenseRating * shapeA.defenseMult
+    const effAttackB = teamB.attackRating * shapeB.attackMult
+    const effDefenseB = teamB.defenseRating * shapeB.defenseMult
+
+    // Midfield differential gets its own small kicker on top of already
+    // being 40% of the attack blend below -- winning the midfield battle
+    // means creating more chances, not just contributing to attack output.
+    const midfieldDomA = teamA.midfieldRating - teamB.midfieldRating
+
+    // Section comparison determines expected goals
+    const attackDomA = (effAttackA * 0.6 + teamA.midfieldRating * 0.4)
+      - (effDefenseB * 0.6 + teamB.goalkeepingRating * 0.4) * 0.8
+      + midfieldDomA * 0.15
+    const attackDomB = (effAttackB * 0.6 + teamB.midfieldRating * 0.4)
+      - (effDefenseA * 0.6 + teamA.goalkeepingRating * 0.4) * 0.8
+      - midfieldDomA * 0.15
+
+    // Lambda: base 1.15 goals per game, adjusted by dominance, then scaled
+    // by squad chemistry (0-11% more expected goals)
+    const lambdaA = Math.max(0.25, (1.15 + attackDomA * 0.03) * (1 + chemistryA))
+    const lambdaB = Math.max(0.25, (1.15 + attackDomB * 0.03) * (1 + chemistryB))
 
     const regGoalsA = poissonRandom(lambdaA, rng)
     const regGoalsB = poissonRandom(lambdaB, rng)
