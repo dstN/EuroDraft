@@ -38,6 +38,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Temporary diagnostic: a previous CI run reported .output/ as fully
+      # populated (13.1MB) in Build's own log, then the very next step
+      # (upload-artifact, running immediately after with no steps in
+      # between) reported "No files were found with the provided path" —
+      # less than a second later. This step exists purely to see the real
+      # filesystem state at that exact point before guessing further.
+      - name: Debug — inspect .output before upload
+        run: |
+          echo "PWD: $(pwd)"
+          echo "--- ls -la .output ---"
+          ls -la .output/ || echo ".output MISSING"
+          echo "--- ls -la .output/server ---"
+          ls -la .output/server/ || echo ".output/server MISSING"
+          echo "--- find .output -type l (symlinks) ---"
+          find .output -type l 2>&1 | head -20 || true
+          echo "--- du -sh .output ---"
+          du -sh .output/ 2>&1 || true
+          echo "--- stat .output ---"
+          stat .output/ 2>&1 || true
+
       # This artifact IS the release — deploy.yml downloads it and ships it to
       # the host, so anything missing here is missing in production. Only
       # built on master (the production branch); development merges don't
