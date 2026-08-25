@@ -105,7 +105,7 @@ useSeoMeta({
         name="i-lucide-loader-2"
         class="size-8 text-emerald-500 animate-spin mx-auto"
       />
-      <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+      <p class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
         {{ $t('sharedRun.loading') }}
       </p>
     </div>
@@ -119,15 +119,15 @@ useSeoMeta({
         name="i-lucide-search-x"
         class="size-12 text-zinc-500 mx-auto"
       />
-      <h2 class="text-xl font-bold text-white">
+      <h2 class="text-xl font-bold text-zinc-900 dark:text-white">
         {{ $t('sharedRun.not_found_title') }}
       </h2>
-      <p class="text-xs text-zinc-400">
+      <p class="text-xs text-zinc-600 dark:text-zinc-400">
         {{ $t('sharedRun.not_found_desc') }}
       </p>
       <NuxtLink
         :to="localePath('/draft/formation')"
-        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
+        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm transition-colors"
       >
         <span>{{ $t('sharedRun.start_new_draft') }}</span>
         <UIcon
@@ -145,17 +145,17 @@ useSeoMeta({
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="space-y-1">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-600/30 bg-emerald-500/10 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-xs uppercase font-mono tracking-[0.2em] font-bold">
             {{ $t('sharedRun.badge') }}
           </div>
-          <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3">
+          <h1 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3">
             <CountryFlag
               :country="sharedRun.teamEmblem || 'eu'"
               size="md"
             />
             <span>{{ sharedRun.teamName }}</span>
           </h1>
-          <p class="text-zinc-300 text-xs sm:text-sm font-semibold">
+          <p class="text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm font-semibold">
             {{ $t('sharedRun.formation_overall', { formation: sharedRun.formation, ovr: sharedRun.teamOVR }) }}
           </p>
         </div>
@@ -173,7 +173,7 @@ useSeoMeta({
           </NuxtLink>
           <NuxtLink
             :to="localePath('/draft/formation')"
-            class="rounded-full px-6 py-3 text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            class="rounded-full px-6 py-3 text-sm font-black bg-emerald-800 hover:bg-emerald-700 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
           >
             <span>{{ $t('sharedRun.draft_your_own') }}</span>
           </NuxtLink>
@@ -201,10 +201,10 @@ useSeoMeta({
           class="size-12 mx-auto mb-1 text-zinc-400"
         />
 
-        <h2 class="text-2xl sm:text-4xl font-black text-white">
+        <h2 class="text-2xl sm:text-4xl font-black text-zinc-900 dark:text-white">
           {{ outcomeTitle }}
         </h2>
-        <p class="text-xs sm:text-sm text-zinc-300 font-mono">
+        <p class="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 font-mono">
           {{ $t('sharedRun.final_result') }}
         </p>
       </div>
@@ -212,27 +212,27 @@ useSeoMeta({
       <!-- Line Ratings -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_def') }}</span>
-          <p class="text-2xl font-black font-mono text-emerald-400">
-            {{ sharedRun.lineRatings.def }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_def') }}</span>
+          <p class="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400">
+            {{ sharedRun.lineRatings.def }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_mid') }}</span>
-          <p class="text-2xl font-black font-mono text-sky-400">
-            {{ sharedRun.lineRatings.mid }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_mid') }}</span>
+          <p class="text-2xl font-black font-mono text-sky-700 dark:text-sky-400">
+            {{ sharedRun.lineRatings.mid }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_att') }}</span>
-          <p class="text-2xl font-black font-mono text-amber-400">
-            {{ sharedRun.lineRatings.att }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_att') }}</span>
+          <p class="text-2xl font-black font-mono text-amber-700 dark:text-amber-400">
+            {{ sharedRun.lineRatings.att }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
         <div class="surface-card p-4 space-y-1 text-center">
-          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-400">{{ $t('tournament.line_overall') }} {{ $t('draft.stats.overall') }}</span>
-          <p class="text-2xl font-black font-mono text-white">
-            {{ sharedRun.lineRatings.overall }} <span class="text-xs text-zinc-500 font-bold">{{ $t('draft.stats.overall') }}</span>
+          <span class="text-[11px] uppercase font-mono font-bold tracking-widest text-zinc-700 dark:text-zinc-300">{{ $t('tournament.line_overall') }} {{ $t('draft.stats.overall') }}</span>
+          <p class="text-2xl font-black font-mono text-zinc-900 dark:text-white">
+            {{ sharedRun.lineRatings.overall }} <span class="text-xs text-zinc-700 dark:text-zinc-300 font-bold">{{ $t('draft.stats.overall') }}</span>
           </p>
         </div>
       </div>
@@ -240,10 +240,10 @@ useSeoMeta({
       <!-- Tactical Pitch -->
       <div class="surface-card p-5 space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-white/5">
-          <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
             {{ $t('sharedRun.tactical_lineup') }}
           </span>
-          <span class="text-xs font-mono font-bold text-emerald-400">
+          <span class="text-xs font-mono font-bold text-emerald-900 dark:text-emerald-400">
             {{ sharedRun.formation }}
           </span>
         </div>
@@ -259,15 +259,15 @@ useSeoMeta({
 
       <!-- Bottom CTA Banner -->
       <div class="surface-card p-6 sm:p-8 text-center space-y-4 bg-gradient-to-r from-emerald-950/60 to-zinc-900 border-emerald-500/30">
-        <h3 class="text-xl sm:text-2xl font-black text-white">
+        <h3 class="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white">
           {{ $t('sharedRun.cta_title') }}
         </h3>
-        <p class="text-xs sm:text-sm text-zinc-300 max-w-md mx-auto">
+        <p class="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 max-w-md mx-auto">
           {{ $t('sharedRun.cta_desc') }}
         </p>
         <NuxtLink
           :to="localePath('/draft/formation')"
-          class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm transition-all shadow-xl active:scale-[0.99]"
+          class="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-black text-sm transition-all shadow-xl active:scale-[0.99]"
         >
           <span>{{ $t('sharedRun.cta_button') }}</span>
         </NuxtLink>

@@ -83,7 +83,7 @@ function matchSubtitle(match: MatchResult): string {
           <div class="flex items-center gap-3 min-w-0">
             <span
               class="text-xs font-mono font-bold uppercase shrink-0"
-              :class="variant === 'group' ? 'text-zinc-700 dark:text-zinc-300' : 'text-amber-600 dark:text-amber-400'"
+              :class="variant === 'group' ? 'text-zinc-700 dark:text-zinc-300' : 'text-amber-900 dark:text-amber-400'"
             >
               {{ phaseLabel(match, mIdx) }}
             </span>

@@ -138,17 +138,6 @@ async function completeFullDraft(page: Page) {
   await expect(page).toHaveURL(/\/tournament$/, { timeout: 20000 })
 }
 
-// contrastDebt: this page is newly covered here but fails on pre-existing
-// color-contrast violations, not anything this test file's own changes
-// introduced. Investigating which pairs fail (see PR/issue history) found
-// the same handful of shades -- emerald-700 as button/badge color, zinc-500
-// as muted text, several amber shades -- repeated across pages, the header,
-// and both new modal tests below, not isolated to any one component. That's
-// a sitewide design-token question (do these need to change everywhere, or
-// only where WCAG AAA applies), not something to guess-and-check page by
-// page here. Tracked in #46 with the specific failing pairs already
-// captured; test.fixme keeps the gap visible in CI output instead of
-// silently dropping coverage.
 const staticPages = [
   { name: 'Home (Dark)', path: '/', theme: 'dark' as const },
   { name: 'Home (Light)', path: '/', theme: 'light' as const },
@@ -163,17 +152,16 @@ const staticPages = [
   { name: 'Legal Hub · Privacy + GDPR self-service (Light)', path: '/legal?tab=privacy', theme: 'light' as const },
   { name: 'Legal Hub · Contact form (Dark)', path: '/legal?tab=contact', theme: 'dark' as const },
   { name: 'Legal Hub · Contact form (Light)', path: '/legal?tab=contact', theme: 'light' as const },
-  { name: 'Compare (Dark)', path: '/compare', theme: 'dark' as const, contrastDebt: true },
-  { name: 'Compare (Light)', path: '/compare', theme: 'light' as const, contrastDebt: true },
-  { name: 'Leaderboard (Dark)', path: '/leaderboard', theme: 'dark' as const, contrastDebt: true },
-  { name: 'Leaderboard (Light)', path: '/leaderboard', theme: 'light' as const, contrastDebt: true },
-  { name: 'History (Dark)', path: '/history', theme: 'dark' as const, contrastDebt: true },
-  { name: 'History (Light)', path: '/history', theme: 'light' as const, contrastDebt: true }
+  { name: 'Compare (Dark)', path: '/compare', theme: 'dark' as const },
+  { name: 'Compare (Light)', path: '/compare', theme: 'light' as const },
+  { name: 'Leaderboard (Dark)', path: '/leaderboard', theme: 'dark' as const },
+  { name: 'Leaderboard (Light)', path: '/leaderboard', theme: 'light' as const },
+  { name: 'History (Dark)', path: '/history', theme: 'dark' as const },
+  { name: 'History (Light)', path: '/history', theme: 'light' as const }
 ]
 
-for (const { name, path, theme, contrastDebt } of staticPages) {
-  const run = contrastDebt ? test.fixme : test
-  run(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
+for (const { name, path, theme } of staticPages) {
+  test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await page.goto(path)
     await waitLoadingGone(page)
     await page.waitForSelector('main', { state: 'visible' })
@@ -217,6 +205,19 @@ for (const { name, theme } of interactivePages) {
 // draft to completion first, and asserting the final URL before running
 // axe, means a future redirect regression fails loudly here instead of
 // passing quietly against the wrong page again.
+//
+// Landing on /tournament straight after completeFullDraft() also isn't
+// enough on its own: simulationStep starts at 0 (group stage, matchday 1
+// live), so TournamentOutcomeBanner / TournamentSquadOverview /
+// TournamentPlayerStatsTable -- the actual "results" content, and the
+// reason this page exists -- are never mounted (v-if="isSimulationCompleted").
+// Confirmed live: without the skipAllSimulation() step below, this suite
+// passed 24/24 while never once rendering those three components, silently
+// auditing the pre-results group-stage view instead. Driving the store
+// straight to a completed run the same way completeFullDraft() drives the
+// draft, and asserting the "Play Again" button is visible before running
+// axe, closes that gap the same way the URL assertion above closes the
+// redirect one.
 const tournamentPages = [
   { name: 'Tournament Results (Dark)', theme: 'dark' as const },
   { name: 'Tournament Results (Light)', theme: 'light' as const }
@@ -226,6 +227,15 @@ for (const { name, theme } of tournamentPages) {
   test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page }) => {
     await completeFullDraft(page)
     await expect(page).toHaveURL(/\/tournament$/)
+
+    await page.evaluate(() => {
+      const app = (window as unknown as {
+        useNuxtApp: () => { $pinia: { _s: Map<string, { skipAllSimulation: () => void }> } }
+      }).useNuxtApp()
+      app.$pinia._s.get('tournament')!.skipAllSimulation()
+    })
+    await expect(page.getByRole('button', { name: /Play Again/i })).toBeVisible({ timeout: 10000 })
+
     await setTheme(page, theme)
     await page.waitForTimeout(400)
 
@@ -238,15 +248,13 @@ for (const { name, theme } of tournamentPages) {
 // /r/<id> renders real content only for a share ID that actually exists
 // (see server/utils/shareStorage.ts) -- create one via the same API the
 // share modal itself calls, rather than auditing only the not-found state.
-// contrastDebt: see the note above staticPages -- same pre-existing,
-// sitewide color-contrast gap, tracked in #46.
 const sharePages = [
   { name: 'Shared Result Page (Dark)', theme: 'dark' as const },
   { name: 'Shared Result Page (Light)', theme: 'light' as const }
 ]
 
 for (const { name, theme } of sharePages) {
-  test.fixme(`a11y audit (AAA + Best Practice): ${name}`, async ({ page, request }) => {
+  test(`a11y audit (AAA + Best Practice): ${name}`, async ({ page, request }) => {
     const res = await request.post('/api/share', {
       data: {
         teamName: 'A11y Test XI',
@@ -280,10 +288,8 @@ for (const { name, theme } of sharePages) {
 // trapping, aria-modal and dialog labelling had zero coverage. Both fixed
 // now (role="dialog", aria-modal, aria-labelledby on the panel; aria-label
 // on the icon-only close button and the readonly link/text fields) --
-// verified those specific findings are gone. What's left on both is the
-// same pre-existing, sitewide color-contrast gap as the pages above,
-// tracked in #46 rather than fixed blind here.
-test.fixme('a11y audit (AAA + Best Practice): Player Stat Card Modal', async ({ page }) => {
+// verified those specific findings are gone.
+test('a11y audit (AAA + Best Practice): Player Stat Card Modal', async ({ page }) => {
   await completeFullDraft(page)
   await expect(page).toHaveURL(/\/tournament$/)
 
@@ -296,7 +302,7 @@ test.fixme('a11y audit (AAA + Best Practice): Player Stat Card Modal', async ({ 
   expect(results.violations).toEqual([])
 })
 
-test.fixme('a11y audit (AAA + Best Practice): Share Result Modal', async ({ page }) => {
+test('a11y audit (AAA + Best Practice): Share Result Modal', async ({ page }) => {
   await completeFullDraft(page)
   await expect(page).toHaveURL(/\/tournament$/)
 

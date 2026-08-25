@@ -96,7 +96,7 @@ function medalFor(rank: number): string {
       </p>
       <NuxtLink
         :to="localePath('/draft/formation')"
-        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
+        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm transition-colors"
       >
         <span>{{ $t('landing.cta_start') }}</span>
       </NuxtLink>

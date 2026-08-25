@@ -299,7 +299,7 @@ function handleWipeLocalStorage() {
         <button
           type="button"
           :disabled="isExporting"
-          class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+          class="w-full py-2 px-3 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
           @click="handleExportData"
         >
           <UIcon

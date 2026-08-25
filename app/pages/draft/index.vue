@@ -468,7 +468,7 @@ const formationShortName = computed(() => {
             <UButton
               color="primary"
               label="Choose a Different Formation"
-              class="rounded-full font-bold"
+              class="rounded-full font-bold bg-emerald-800 hover:bg-emerald-700"
               @click="navigateTo(localePath('/draft/formation'))"
             />
           </div>

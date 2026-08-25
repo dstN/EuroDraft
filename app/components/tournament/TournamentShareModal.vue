@@ -98,7 +98,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
             <button
               type="button"
               class="flex-1 py-2 text-xs font-bold font-mono rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-              :class="activeTab === 'text' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'"
+              :class="activeTab === 'text' ? 'bg-emerald-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'"
               @click="activeTab = 'text'"
             >
               <UIcon
@@ -110,7 +110,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
             <button
               type="button"
               class="flex-1 py-2 text-xs font-bold font-mono rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-              :class="activeTab === 'image' ? 'bg-emerald-600 text-white shadow-md' : 'text-zinc-400 hover:text-white'"
+              :class="activeTab === 'image' ? 'bg-emerald-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'"
               @click="activeTab = 'image'"
             >
               <UIcon
@@ -132,7 +132,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               >
               <div class="text-xs text-zinc-300 space-y-0.5">
                 <span class="font-bold text-white">{{ $t('share.save_link_title') }}</span>
-                <p class="text-[11px] text-zinc-400 leading-relaxed font-mono">
+                <p class="text-[11px] text-zinc-300 leading-relaxed font-mono">
                   {{ $t('share.save_link_desc', { domain: 'ed.rntm.de' }) }}
                 </p>
               </div>
@@ -151,7 +151,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               >
               <button
                 type="button"
-                class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-mono font-bold cursor-pointer transition-colors shrink-0"
+                class="px-3 py-1.5 rounded-lg bg-emerald-900 hover:bg-emerald-800 text-white text-xs font-mono font-bold cursor-pointer transition-colors shrink-0"
                 @click="copyShareLink"
               >
                 {{ copiedLink ? $t('share.copied_link') : $t('share.copy_link') }}
@@ -177,7 +177,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
               >
               <div class="text-xs text-zinc-300 space-y-0.5">
                 <span class="font-bold text-white">{{ $t('share.leaderboard_title') }}</span>
-                <p class="text-[11px] text-zinc-400 leading-relaxed font-mono">
+                <p class="text-[11px] text-zinc-300 leading-relaxed font-mono">
                   {{ $t('share.leaderboard_desc', { ovr: lineRatings.overall }) }}
                 </p>
               </div>
@@ -223,7 +223,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
 
             <button
               type="button"
-              class="w-full py-3 rounded-xl font-black text-sm bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+              class="w-full py-3 rounded-xl font-black text-sm bg-emerald-800 hover:bg-emerald-700 text-white cursor-pointer shadow-lg inline-flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
               @click="copyShareText"
             >
               <UIcon
@@ -249,7 +249,7 @@ watch([() => props.open, activeTab], ([isOpen]) => {
             <div class="w-full grid grid-cols-2 gap-3">
               <button
                 type="button"
-                class="py-2.5 px-4 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer inline-flex items-center justify-center gap-2 transition-colors"
+                class="py-2.5 px-4 rounded-xl font-bold text-xs bg-emerald-800 hover:bg-emerald-700 text-white cursor-pointer inline-flex items-center justify-center gap-2 transition-colors"
                 @click="copyCanvasImage"
               >
                 <UIcon
