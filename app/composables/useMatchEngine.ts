@@ -107,6 +107,20 @@ export function calculateChemistryBonus(squad: Player[]): number {
   return Math.min(11, linkedCount) * 0.01
 }
 
+// A simpler, cruder lever alongside the per-line dominance model below: a
+// team with a meaningfully higher average overall rating should just feel
+// stronger, on its own, independent of exactly how that rating breaks down
+// per line. 3% more expected goals per point of OVR gap (within the
+// suggested 2-5% range), capped so a large gap can't swamp every other
+// factor on its own.
+const OVR_BONUS_PER_POINT = 0.03
+const OVR_BONUS_CAP = 0.3
+
+export function calculateOverallRatingBonus(ownOvr: number, opponentOvr: number): number {
+  const bonus = (ownOvr - opponentOvr) * OVR_BONUS_PER_POINT
+  return Math.max(-OVR_BONUS_CAP, Math.min(OVR_BONUS_CAP, bonus))
+}
+
 // ---- Match simulation ----
 
 export function useMatchEngine() {
@@ -158,6 +172,8 @@ export function useMatchEngine() {
     const shapeB = calculateFormationShape(teamB.squad)
     const chemistryA = calculateChemistryBonus(teamA.squad)
     const chemistryB = calculateChemistryBonus(teamB.squad)
+    const ovrBonusA = calculateOverallRatingBonus(teamA.averageOVR, teamB.averageOVR)
+    const ovrBonusB = calculateOverallRatingBonus(teamB.averageOVR, teamA.averageOVR)
 
     const effAttackA = teamA.attackRating * shapeA.attackMult
     const effDefenseA = teamA.defenseRating * shapeA.defenseMult
@@ -178,9 +194,10 @@ export function useMatchEngine() {
       - midfieldDomA * 0.15
 
     // Lambda: base 1.15 goals per game, adjusted by dominance, then scaled
-    // by squad chemistry (0-11% more expected goals)
-    const lambdaA = Math.max(0.25, (1.15 + attackDomA * 0.03) * (1 + chemistryA))
-    const lambdaB = Math.max(0.25, (1.15 + attackDomB * 0.03) * (1 + chemistryB))
+    // by squad chemistry (0-11% more expected goals) and the flat overall-
+    // rating gap bonus (+/-30% cap) on top.
+    const lambdaA = Math.max(0.25, (1.15 + attackDomA * 0.03) * (1 + chemistryA) * (1 + ovrBonusA))
+    const lambdaB = Math.max(0.25, (1.15 + attackDomB * 0.03) * (1 + chemistryB) * (1 + ovrBonusB))
 
     const regGoalsA = poissonRandom(lambdaA, rng)
     const regGoalsB = poissonRandom(lambdaB, rng)
