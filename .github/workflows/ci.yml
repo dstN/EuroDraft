@@ -38,38 +38,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Temporary diagnostic: a previous CI run reported .output/ as fully
-      # populated (13.1MB) in Build's own log, then the very next step
-      # (upload-artifact, running immediately after with no steps in
-      # between) reported "No files were found with the provided path" —
-      # less than a second later. This step exists purely to see the real
-      # filesystem state at that exact point before guessing further.
-      - name: Debug — inspect .output before upload
-        run: |
-          echo "PWD: $(pwd)"
-          echo "--- ls -la .output ---"
-          ls -la .output/ || echo ".output MISSING"
-          echo "--- ls -la .output/server ---"
-          ls -la .output/server/ || echo ".output/server MISSING"
-          echo "--- find .output -type l (symlinks) ---"
-          find .output -type l 2>&1 | head -20 || true
-          echo "--- du -sh .output ---"
-          du -sh .output/ 2>&1 || true
-          echo "--- stat .output ---"
-          stat .output/ 2>&1 || true
-
       # This artifact IS the release — deploy.yml downloads it and ships it to
       # the host, so anything missing here is missing in production. Only
       # built on master (the production branch); development merges don't
-      # need it. Uploaded immediately after Build, before the E2E/A11y steps
-      # below: those spin up a `nuxt dev` webServer, and — root cause not yet
-      # pinned down, but empirically confirmed on a real CI run — `.output/`
-      # was reliably empty by the time a later upload step reached it, purely
-      # from running those tests, not from anything in this workflow ever
-      # touching that directory. Deploy safety doesn't depend on step order
-      # here: deploy.yml's workflow_run trigger only fires on the overall
-      # job's conclusion, which still requires every step below (including
-      # E2E and A11y) to pass, artifact already uploaded or not.
+      # need it.
+      #
+      # include-hidden-files is not optional: upload-artifact@v4.4+ excludes
+      # dotfiles/dot-directories by default, and .output/ IS one (confirmed
+      # via a diagnostic step that ls/du/stat'd the directory immediately
+      # before upload on a real CI run: fully populated, 21MB, no symlinks —
+      # yet "No files were found with the provided path" every time without
+      # this flag). The sibling GourMerge repo hit the same thing for a
+      # nested .output/server/node_modules/.nitro/ dot-dir; here the
+      # top-level path itself is the dot-dir, so it's not optional at all.
       - name: Upload build artifact
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
@@ -77,6 +58,7 @@ jobs:
           name: eurodraft-output-${{ github.sha }}
           path: .output/
           retention-days: 7
+          include-hidden-files: true
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
