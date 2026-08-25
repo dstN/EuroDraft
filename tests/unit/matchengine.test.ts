@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { useMatchEngine, calculateFormationShape, calculateChemistryBonus, calculateOverallRatingBonus } from '../../app/composables/useMatchEngine'
+import { useMatchEngine, calculateFormationShape, calculateChemistryBonus, calculateOverallRatingBonus, calculateRowLegendBonuses } from '../../app/composables/useMatchEngine'
 import type { Player, TournamentTeam } from '../../app/types'
 
 function makePlayer(id: string, position: Player['primaryPosition'], overall = 75, opts: { country?: string, year?: number } = {}): Player {
@@ -229,13 +229,15 @@ describe('formation shape and chemistry influence match outcomes', () => {
     expect(back4.conceded).toBeLessThan(back3.conceded)
   })
 
-  it('a squad with full chemistry outscores an otherwise-identical squad with none, on average', () => {
+  it('a player squad with full chemistry outscores an otherwise-identical one with none, on average', () => {
     const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
     const linkedSquad = positions.map((pos, i) => makePlayer(`linked-${i}`, pos, 75, { country: 'nl', year: 2008 }))
     const unlinkedSquad = positions.map((pos, i) => makePlayer(`unlinked-${i}`, pos, 75, { country: `c${i}`, year: 1980 + i }))
 
-    const teamLinked: TournamentTeam = { ...makeTeam('linked', 'Linked'), squad: linkedSquad }
-    const teamUnlinked: TournamentTeam = { ...makeTeam('unlinked', 'Unlinked'), squad: unlinkedSquad }
+    // Both marked isPlayerTeam -- chemistry is gated to the player's own
+    // team (see the next test), so this isolates the bonus itself.
+    const teamLinked: TournamentTeam = { ...makeTeam('linked', 'Linked'), squad: linkedSquad, isPlayerTeam: true }
+    const teamUnlinked: TournamentTeam = { ...makeTeam('unlinked', 'Unlinked'), squad: unlinkedSquad, isPlayerTeam: true }
 
     let linkedGoalsTotal = 0
     let unlinkedGoalsTotal = 0
@@ -247,6 +249,36 @@ describe('formation shape and chemistry influence match outcomes', () => {
     }
 
     expect(linkedGoalsTotal).toBeGreaterThan(unlinkedGoalsTotal)
+  })
+
+  it('chemistry does NOT apply to AI opponents, even though every real historical squad is 100% linked by construction', () => {
+    // Every AI team in this game is one real nation's squad from one real
+    // year (see buildTournamentTeam() in stores/tournament.ts) -- so every
+    // AI player always shares country AND year with all 10 teammates.
+    // Without gating on isPlayerTeam, calculateChemistryBonus would hand
+    // every single AI opponent the full +11%, always -- not a meaningful
+    // signal, just an artifact of how the data happens to be structured.
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const nationalSquad = positions.map((pos, i) => makePlayer(`nat-${i}`, pos, 75, { country: 'nl', year: 2008 }))
+    expect(calculateChemistryBonus(nationalSquad)).toBe(0.11) // the formula itself is correctly maxed...
+
+    const aiTeam: TournamentTeam = { ...makeTeam('nl2008', 'Netherlands'), squad: nationalSquad, isPlayerTeam: false }
+    const neutralOpponent = makeTeam('opp', 'Opponent')
+
+    let aiGoalsTotal = 0
+    let neutralGoalsTotal = 0
+    const runs = 400
+    for (let seed = 1; seed <= runs; seed++) {
+      const match = simulateMatch(aiTeam, neutralOpponent, 'group', seed)
+      aiGoalsTotal += match.teamA.goals
+      neutralGoalsTotal += match.teamB.goals
+    }
+
+    // ...but since aiTeam.isPlayerTeam is false, it should score the same
+    // as an equally-rated opponent on average, not benefit from it.
+    const ratio = aiGoalsTotal / neutralGoalsTotal
+    expect(ratio).toBeGreaterThan(0.85)
+    expect(ratio).toBeLessThan(1.15)
   })
 })
 
@@ -291,5 +323,168 @@ describe('overall rating gap influences match outcomes', () => {
     }
 
     expect(strongGoalsTotal).toBeGreaterThan(weakGoalsTotal)
+  })
+})
+
+describe('calculateRowLegendBonuses', () => {
+  it('is all 0 with no 90+ rated players', () => {
+    const squad = Array.from({ length: 11 }, (_, i) => makePlayer(`p${i}`, 'CM', 85))
+    expect(calculateRowLegendBonuses(squad)).toEqual({ attack: 0, midfield: 0, defense: 0 })
+  })
+
+  it('gives the legend\'s own row 2% and the other two rows 1% each', () => {
+    const squad = [
+      makePlayer('legend-st', 'ST', 92),
+      ...Array.from({ length: 10 }, (_, i) => makePlayer(`p${i}`, 'CM', 80))
+    ]
+    const bonuses = calculateRowLegendBonuses(squad)
+    expect(bonuses.attack).toBeCloseTo(0.02)
+    expect(bonuses.midfield).toBeCloseTo(0.01)
+    expect(bonuses.defense).toBeCloseTo(0.01)
+  })
+
+  it('stacks across multiple legends in different rows', () => {
+    const squad = [
+      makePlayer('legend-st', 'ST', 92),
+      makePlayer('legend-cb', 'CB', 91),
+      ...Array.from({ length: 9 }, (_, i) => makePlayer(`p${i}`, 'CM', 80))
+    ]
+    const bonuses = calculateRowLegendBonuses(squad)
+    expect(bonuses.attack).toBeCloseTo(0.02 + 0.01) // own row (ST) + other legend's spillover (CB)
+    expect(bonuses.defense).toBeCloseTo(0.02 + 0.01) // own row (CB) + other legend's spillover (ST)
+    expect(bonuses.midfield).toBeCloseTo(0.01 + 0.01) // spillover from both
+  })
+
+  it('excludes goalkeepers -- a legend GK contributes to no row', () => {
+    const squad = [
+      makePlayer('legend-gk', 'GK', 93),
+      ...Array.from({ length: 10 }, (_, i) => makePlayer(`p${i}`, 'CM', 80))
+    ]
+    expect(calculateRowLegendBonuses(squad)).toEqual({ attack: 0, midfield: 0, defense: 0 })
+  })
+
+  it('is capped at 15% per row even with many legends', () => {
+    const squad = Array.from({ length: 11 }, (_, i) => makePlayer(`legend-${i}`, 'ST', 92))
+    expect(calculateRowLegendBonuses(squad).attack).toBe(0.15)
+  })
+})
+
+describe('row legend bonuses influence match outcomes symmetrically', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('applies to AI opponents too, not just the player team (unlike chemistry)', () => {
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const legendSquad = positions.map((pos, i) => makePlayer(`legend-${i}`, pos, i < 5 ? 92 : 75))
+    const plainSquad = positions.map((pos, i) => makePlayer(`plain-${i}`, pos, 75))
+
+    // Both isPlayerTeam: false -- proves the row legend bonus doesn't need
+    // isPlayerTeam to kick in, as opposed to chemistry.
+    const teamWithLegends: TournamentTeam = { ...makeTeam('legends', 'Legends'), squad: legendSquad, isPlayerTeam: false }
+    const teamPlain: TournamentTeam = { ...makeTeam('plain', 'Plain'), squad: plainSquad, isPlayerTeam: false }
+
+    let legendGoalsTotal = 0
+    let plainGoalsTotal = 0
+    const runs = 2000
+    for (let seed = 1; seed <= runs; seed++) {
+      const match = simulateMatch(teamWithLegends, teamPlain, 'group', seed)
+      legendGoalsTotal += match.teamA.goals
+      plainGoalsTotal += match.teamB.goals
+    }
+
+    expect(legendGoalsTotal).toBeGreaterThan(plainGoalsTotal)
+  })
+})
+
+describe('individual legend scorer weight', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('a legend striker scores disproportionately more often than an equally-eligible non-legend teammate', () => {
+    const squad: Player[] = [
+      makePlayer('gk', 'GK', 80),
+      makePlayer('cb1', 'CB', 80),
+      makePlayer('cb2', 'CB', 80),
+      makePlayer('lb', 'LB', 80),
+      makePlayer('rb', 'RB', 80),
+      makePlayer('cdm', 'CDM', 80),
+      makePlayer('cm1', 'CM', 80),
+      makePlayer('cm2', 'CM', 80),
+      makePlayer('legend-st', 'ST', 95), // the squad's only legend
+      makePlayer('lw', 'LW', 80),
+      makePlayer('rw', 'RW', 80)
+    ]
+    const opponent = makeTeam('opp', 'Opponent')
+    const team: TournamentTeam = { ...makeTeam('has-legend', 'HasLegend'), squad }
+
+    let legendGoals = 0
+    let rwGoals = 0 // any other single eligible scorer, as a like-for-like comparison
+    for (let seed = 1; seed <= 3000; seed++) {
+      const match = simulateMatch(team, opponent, 'group', seed)
+      for (const ev of match.events) {
+        if (ev.type !== 'goal' || ev.team !== 'A') continue
+        if (ev.playerId === 'legend-st') legendGoals++
+        if (ev.playerId === 'rw') rwGoals++
+      }
+    }
+
+    expect(legendGoals).toBeGreaterThan(rwGoals)
+  })
+
+  it('is neutral in Legend Mode -- every player already qualifies as a legend, so ranking them is meaningless', () => {
+    const squad: Player[] = [
+      makePlayer('gk', 'GK', 91),
+      makePlayer('cb1', 'CB', 91),
+      makePlayer('cb2', 'CB', 91),
+      makePlayer('lb', 'LB', 91),
+      makePlayer('rb', 'RB', 91),
+      makePlayer('cdm', 'CDM', 91),
+      makePlayer('cm1', 'CM', 91),
+      makePlayer('cm2', 'CM', 91),
+      makePlayer('top-rated', 'ST', 99), // highest-rated, would dominate scorer weight outside Legend Mode
+      makePlayer('lw', 'LW', 91),
+      makePlayer('rw', 'RW', 91)
+    ]
+    const opponent = makeTeam('opp', 'Opponent')
+    const team: TournamentTeam = { ...makeTeam('legend-mode-team', 'LegendModeTeam'), squad, isLegendMode: true }
+
+    let topRatedGoals = 0
+    let rwGoals = 0
+    for (let seed = 1; seed <= 3000; seed++) {
+      const match = simulateMatch(team, opponent, 'group', seed)
+      for (const ev of match.events) {
+        if (ev.type !== 'goal' || ev.team !== 'A') continue
+        if (ev.playerId === 'top-rated') topRatedGoals++
+        if (ev.playerId === 'rw') rwGoals++
+      }
+    }
+
+    const ratio = topRatedGoals / rwGoals
+    expect(ratio).toBeGreaterThan(0.85)
+    expect(ratio).toBeLessThan(1.15)
+  })
+})
+
+describe('legend bonuses are suppressed for teams drafted in Legend Mode', () => {
+  const { simulateMatch } = useMatchEngine()
+
+  it('row bonuses do not apply even though every player is 90+', () => {
+    const positions: Player['primaryPosition'][] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST']
+    const legendModeSquad = positions.map((pos, i) => makePlayer(`p${i}`, pos, 92))
+
+    const legendModeTeam: TournamentTeam = { ...makeTeam('lm', 'LegendMode'), squad: legendModeSquad, isLegendMode: true }
+    const equallyRatedTeam: TournamentTeam = { ...makeTeam('lm-control', 'LegendModeControl'), squad: legendModeSquad, isLegendMode: false }
+    const opponent = makeTeam('opp', 'Opponent')
+
+    // Same squad ratings either way (both built from the same 92-rated
+    // positions), but the isLegendMode:false control should score more on
+    // average since it still gets the row bonuses.
+    let legendModeGoals = 0
+    let controlGoals = 0
+    const runs = 3000
+    for (let seed = 1; seed <= runs; seed++) {
+      legendModeGoals += simulateMatch(legendModeTeam, opponent, 'group', seed).teamA.goals
+      controlGoals += simulateMatch(equallyRatedTeam, opponent, 'group', seed).teamA.goals
+    }
+
+    expect(controlGoals).toBeGreaterThan(legendModeGoals)
   })
 })

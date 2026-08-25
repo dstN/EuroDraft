@@ -18,7 +18,8 @@ function buildTournamentTeam(
   squad: Player[],
   isPlayerTeam: boolean,
   customName?: string,
-  customEmblem?: string
+  customEmblem?: string,
+  isLegendMode?: boolean
 ): TournamentTeam {
   const ratings = calculateSectionRatings(squad)
   return {
@@ -28,6 +29,7 @@ function buildTournamentTeam(
     countryName: isPlayerTeam ? (customName || 'Dream XI') : (squad[0]?.countryName ?? country.toUpperCase()),
     squad,
     isPlayerTeam,
+    isLegendMode,
     ...ratings
   }
 }
@@ -335,7 +337,8 @@ export const useTournamentStore = defineStore('tournament', () => {
       draftedSquad,
       true,
       draft.teamName || 'Dream XI',
-      draft.teamEmblem || 'eu'
+      draft.teamEmblem || 'eu',
+      draft.isLegendMode
     )
 
     // Pick 15 CPU teams

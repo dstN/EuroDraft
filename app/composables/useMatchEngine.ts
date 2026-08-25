@@ -121,6 +121,84 @@ export function calculateOverallRatingBonus(ownOvr: number, opponentOvr: number)
   return Math.max(-OVR_BONUS_CAP, Math.min(OVR_BONUS_CAP, bonus))
 }
 
+// A rated-90+ ("legend") player lifts their own row (attack/midfield/
+// defense) by 2%, and each of the *other* two rows by 1% -- deliberately
+// small and capped (a squad with many legends gets no bigger a boost than
+// a handful) so this stays a flourish on top of the already-large effect a
+// legend-stacked squad has via its own attack/defense ratings and
+// averageOVR (and, by extension, calculateOverallRatingBonus above), not
+// another dominant lever. Not gated to isPlayerTeam -- a genuine legend in
+// a historical AI squad (e.g. peak Van Basten in a Dutch 1988 lineup) is a
+// real, variable fact about that squad, unlike chemistry (see above),
+// which every AI squad has 100% of by construction.
+//
+// Goalkeepers are excluded -- this models attack/midfield/defense working
+// better together with elite talent in the mix, not the goalkeeper's own
+// output, which is already just their personal rating (goalkeepingRating).
+const LEGEND_RATING_THRESHOLD = 90
+const LEGEND_OWN_ROW_BONUS = 0.02
+const LEGEND_OTHER_ROW_BONUS = 0.01
+const LEGEND_ROW_BONUS_CAP = 0.15
+
+type OutfieldRow = 'attack' | 'midfield' | 'defense'
+
+function playerRow(p: Player): OutfieldRow | null {
+  const pos = p.draftedPosition ?? p.primaryPosition
+  if (['ST', 'CF', 'LW', 'RW'].includes(pos)) return 'attack'
+  if (['CM', 'CAM', 'CDM', 'LM', 'RM'].includes(pos)) return 'midfield'
+  if (['CB', 'LB', 'RB'].includes(pos)) return 'defense'
+  return null
+}
+
+export function calculateRowLegendBonuses(squad: Player[]): Record<OutfieldRow, number> {
+  const totals: Record<OutfieldRow, number> = { attack: 0, midfield: 0, defense: 0 }
+  for (const p of squad) {
+    if (p.stats.overall < LEGEND_RATING_THRESHOLD) continue
+    const row = playerRow(p)
+    if (!row) continue
+    for (const r of ['attack', 'midfield', 'defense'] as const) {
+      totals[r] += r === row ? LEGEND_OWN_ROW_BONUS : LEGEND_OTHER_ROW_BONUS
+    }
+  }
+  return {
+    attack: Math.min(totals.attack, LEGEND_ROW_BONUS_CAP),
+    midfield: Math.min(totals.midfield, LEGEND_ROW_BONUS_CAP),
+    defense: Math.min(totals.defense, LEGEND_ROW_BONUS_CAP)
+  }
+}
+
+// The doubling/exponential part of the legend bonus is scoped to that
+// specific player's own chance of being the one who scores, not the team's
+// expected-goals total -- see pickWeighted() and its use in
+// _generateGoalEvents() below. Ranked by rating among the squad's own
+// legends: the squad's best legend gets +1%, the second +2%, third +4%,
+// fourth +8%, and so on -- an escalating personal spotlight for stacking
+// multiple legends, deliberately kept in the same small percentage scale
+// as the row bonuses above even though, unlike those, it only shifts *who*
+// gets credit for a goal the team was already going to score, not how many.
+function legendScorerWeight(player: Player, squad: Player[]): number {
+  if (player.stats.overall < LEGEND_RATING_THRESHOLD) return 1
+  const legends = [...squad]
+    .filter(p => p.stats.overall >= LEGEND_RATING_THRESHOLD)
+    .sort((a, b) => b.stats.overall - a.stats.overall)
+  const rank = legends.findIndex(p => p.id === player.id)
+  if (rank === -1) return 1
+  return 1 + 2 ** rank * 0.01
+}
+
+function pickWeighted<T>(items: T[], weightFn: (item: T) => number, rng: () => number): T | undefined {
+  if (!items || items.length === 0) return undefined
+  const weights = items.map(weightFn)
+  const total = weights.reduce((sum, w) => sum + w, 0)
+  if (total <= 0) return items[Math.floor(rng() * items.length)]
+  let r = rng() * total
+  for (let i = 0; i < items.length; i++) {
+    r -= weights[i]!
+    if (r <= 0) return items[i]
+  }
+  return items[items.length - 1]
+}
+
 // ---- Match simulation ----
 
 export function useMatchEngine() {
@@ -168,34 +246,52 @@ export function useMatchEngine() {
     // Formation shape modifies each team's own attack/defense output; squad
     // chemistry then boosts (or leaves untouched) the resulting lambda --
     // see calculateFormationShape/calculateChemistryBonus above.
+    //
+    // Chemistry is gated to the player's own team (isPlayerTeam) -- an AI
+    // opponent is always a single real historical squad (one nation, one
+    // year, see buildTournamentTeam() in stores/tournament.ts), so *every*
+    // one of its players always shares country and year with all 10
+    // teammates. Applying the same formula to them wouldn't reward a lucky
+    // draft the way it does for the player -- it would just hand every AI
+    // team a permanent +11%, which is the opposite of the intent.
     const shapeA = calculateFormationShape(teamA.squad)
     const shapeB = calculateFormationShape(teamB.squad)
-    const chemistryA = calculateChemistryBonus(teamA.squad)
-    const chemistryB = calculateChemistryBonus(teamB.squad)
+    const chemistryA = teamA.isPlayerTeam ? calculateChemistryBonus(teamA.squad) : 0
+    const chemistryB = teamB.isPlayerTeam ? calculateChemistryBonus(teamB.squad) : 0
     const ovrBonusA = calculateOverallRatingBonus(teamA.averageOVR, teamB.averageOVR)
     const ovrBonusB = calculateOverallRatingBonus(teamB.averageOVR, teamA.averageOVR)
+    // Legend Mode restricts drafting to 90+ rated players only, so every
+    // single player in that squad is trivially a "legend" -- the whole
+    // point of these bonuses (a rare, earned edge) would be meaningless
+    // there, maxed out every single run. Never set for AI opponents, so
+    // this only ever suppresses the bonus for the player's own team.
+    const rowLegendA = teamA.isLegendMode ? { attack: 0, midfield: 0, defense: 0 } : calculateRowLegendBonuses(teamA.squad)
+    const rowLegendB = teamB.isLegendMode ? { attack: 0, midfield: 0, defense: 0 } : calculateRowLegendBonuses(teamB.squad)
 
-    const effAttackA = teamA.attackRating * shapeA.attackMult
-    const effDefenseA = teamA.defenseRating * shapeA.defenseMult
-    const effAttackB = teamB.attackRating * shapeB.attackMult
-    const effDefenseB = teamB.defenseRating * shapeB.defenseMult
+    const effAttackA = teamA.attackRating * shapeA.attackMult * (1 + rowLegendA.attack)
+    const effDefenseA = teamA.defenseRating * shapeA.defenseMult * (1 + rowLegendA.defense)
+    const effMidfieldA = teamA.midfieldRating * (1 + rowLegendA.midfield)
+    const effAttackB = teamB.attackRating * shapeB.attackMult * (1 + rowLegendB.attack)
+    const effDefenseB = teamB.defenseRating * shapeB.defenseMult * (1 + rowLegendB.defense)
+    const effMidfieldB = teamB.midfieldRating * (1 + rowLegendB.midfield)
 
     // Midfield differential gets its own small kicker on top of already
     // being 40% of the attack blend below -- winning the midfield battle
     // means creating more chances, not just contributing to attack output.
-    const midfieldDomA = teamA.midfieldRating - teamB.midfieldRating
+    const midfieldDomA = effMidfieldA - effMidfieldB
 
     // Section comparison determines expected goals
-    const attackDomA = (effAttackA * 0.6 + teamA.midfieldRating * 0.4)
+    const attackDomA = (effAttackA * 0.6 + effMidfieldA * 0.4)
       - (effDefenseB * 0.6 + teamB.goalkeepingRating * 0.4) * 0.8
       + midfieldDomA * 0.15
-    const attackDomB = (effAttackB * 0.6 + teamB.midfieldRating * 0.4)
+    const attackDomB = (effAttackB * 0.6 + effMidfieldB * 0.4)
       - (effDefenseA * 0.6 + teamA.goalkeepingRating * 0.4) * 0.8
       - midfieldDomA * 0.15
 
-    // Lambda: base 1.15 goals per game, adjusted by dominance, then scaled
-    // by squad chemistry (0-11% more expected goals) and the flat overall-
-    // rating gap bonus (+/-30% cap) on top.
+    // Lambda: base 1.15 goals per game, adjusted by dominance (which already
+    // reflects the per-row legend bonuses baked into effAttack/effMidfield/
+    // effDefense above), then scaled by squad chemistry (0-11%) and the flat
+    // overall-rating gap bonus (+/-30% cap).
     const lambdaA = Math.max(0.25, (1.15 + attackDomA * 0.03) * (1 + chemistryA) * (1 + ovrBonusA))
     const lambdaB = Math.max(0.25, (1.15 + attackDomB * 0.03) * (1 + chemistryB) * (1 + ovrBonusB))
 
@@ -288,7 +384,11 @@ export function useMatchEngine() {
         ['ST', 'CF', 'LW', 'RW', 'CAM', 'CM'].includes(p.primaryPosition)
       )
       const defaultScorer = scoringTeam.squad[0] ?? _getFallbackPlayer(scoringTeam, 'scorer')
-      const scorer = (scorers.length > 0 ? pickRandom(scorers, rng) : pickRandom(scoringTeam.squad, rng)) ?? defaultScorer
+      const scorerPool = scorers.length > 0 ? scorers : scoringTeam.squad
+      // In Legend Mode every player is 90+ already, so ranking "the" legends
+      // among them is meaningless -- weight stays uniform there.
+      const scorerWeight = scoringTeam.isLegendMode ? () => 1 : (p: Player) => legendScorerWeight(p, scoringTeam.squad)
+      const scorer = pickWeighted(scorerPool, scorerWeight, rng) ?? defaultScorer
 
       const otherSquad = scoringTeam.squad.filter(p => p.id !== scorer.id)
       const maybeAssist = rng() > 0.4 && otherSquad.length > 0
