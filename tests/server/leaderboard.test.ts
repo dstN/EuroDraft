@@ -46,6 +46,18 @@ describe('GET /api/leaderboard', () => {
     expect(query).toHaveBeenCalledWith(expect.stringContaining('SELECT'), [10])
   })
 
+  it('orders by score (outcome + OVR), not ovr alone -- a winner must always outrank a group-stage exit regardless of submission order', async () => {
+    isDbConfigured.mockReturnValue(true)
+    const query = vi.fn().mockResolvedValue([[]])
+    getDbPool.mockReturnValue({ query })
+
+    await callRoute(getHandler, '/api/leaderboard', '/api/leaderboard?limit=10')
+
+    const sql = query.mock.calls[0]![0] as string
+    expect(sql).toMatch(/ORDER BY\s+score DESC/i)
+    expect(sql).not.toMatch(/ORDER BY\s+ovr DESC/i)
+  })
+
   it('clamps an out-of-range limit into [1, 100]', async () => {
     isDbConfigured.mockReturnValue(true)
     const query = vi.fn().mockResolvedValue([[]])
