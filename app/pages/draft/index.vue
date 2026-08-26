@@ -86,16 +86,32 @@ interface FlyingToken {
 const flyingToken = ref<FlyingToken | null>(null)
 const pulsingSlotId = ref<string | null>(null)
 
-// Handle browser/phone physical back button or swipe gesture
-function handlePopState(_event: PopStateEvent) {
-  // If we are currently showing the pitch on mobile due to player selection or tab
+// Handle browser/phone physical back button or swipe gesture: intercept the
+// navigation attempt via Vue Router's own guard instead of pushing/popping a
+// raw window.history entry. A previous version called window.history.pushState
+// on every player selection and window.history.back() to undo it -- mixing
+// raw History API calls into a page Vue Router also manages corrupts the
+// router's internal history position bookkeeping (see useHistoryStateNavigation
+// in vue-router: push() merges its cached state with whatever the live
+// history.state happens to be, and any popstate -- including ones from our own
+// raw back() calls -- runs through the router's full navigation pipeline). The
+// draft-completion path skipped the matching back() call (early return before
+// reaching it), so the pitch-view entry from selecting the 11th/last player
+// was never popped before navigateTo('/tournament') pushed its own entry right
+// after -- landing the router's position bookkeeping one entry behind reality.
+// onBeforeRouteLeave avoids all of this: it only intercepts navigation Vue
+// Router already knows about, no manual history entries involved.
+onBeforeRouteLeave((_to, _from, next) => {
   if (mobileTab.value === 'pitch') {
     mobileTab.value = 'squad'
     selectedPlayer.value = null
     selectedSlotId.value = null
     hoveredPlayer.value = null
+    next(false)
+    return
   }
-}
+  next()
+})
 
 // Redirect if no formation selected or if draft already complete
 onMounted(() => {
@@ -110,11 +126,6 @@ onMounted(() => {
   if (!roulette.currentCountry) {
     roulette.spin()
   }
-  window.addEventListener('popstate', handlePopState)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('popstate', handlePopState)
 })
 
 // The overlay's own fade-in (.card-splash-enter-active, 0.25s -- see <style>
@@ -223,11 +234,9 @@ function onPlayerClick(player: Player) {
   selectedPlayer.value = player
   selectedSlotId.value = null
 
-  // On mobile: smoothly switch to pitch view and push a state to history so back gesture stays on squad list
+  // On mobile: smoothly switch to pitch view (onBeforeRouteLeave above
+  // intercepts a physical back press to close this instead of leaving /draft)
   mobileTab.value = 'pitch'
-  if (typeof window !== 'undefined') {
-    window.history.pushState({ eurodraft_mobile_view: 'pitch' }, '')
-  }
 }
 
 // When user clicks a slot on the Tactical Pitch
@@ -298,14 +307,15 @@ function confirmDraft(player: Player, slot: DraftSlot) {
       }, 700)
 
       if (draft.isComplete) {
+        // Reset before navigating: onBeforeRouteLeave treats mobileTab ===
+        // 'pitch' as "close the pitch view instead of leaving", which would
+        // otherwise swallow this deliberate navigation to /tournament.
+        mobileTab.value = 'squad'
         appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
         navigateTo(localePath('/tournament'))
         return
       }
 
-      if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
-        window.history.back()
-      }
       mobileTab.value = 'squad'
       spinWithAnimation()
     }, 420)
@@ -322,14 +332,15 @@ function confirmDraft(player: Player, slot: DraftSlot) {
     }, 700)
 
     if (draft.isComplete) {
+      // Reset before navigating: onBeforeRouteLeave treats mobileTab ===
+      // 'pitch' as "close the pitch view instead of leaving", which would
+      // otherwise swallow this deliberate navigation to /tournament.
+      mobileTab.value = 'squad'
       appLoading.show('Preparing Tournament Simulation...', getRandomAnimationDuration(1250))
       navigateTo(localePath('/tournament'))
       return
     }
 
-    if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
-      window.history.back()
-    }
     mobileTab.value = 'squad'
     spinWithAnimation()
   }
@@ -341,9 +352,6 @@ function goBackToSquad() {
   selectedPlayer.value = null
   selectedSlotId.value = null
   hoveredPlayer.value = null
-  if (typeof window !== 'undefined' && window.history.state?.eurodraft_mobile_view === 'pitch') {
-    window.history.back()
-  }
 }
 
 function cancelSelection() {
@@ -492,7 +500,7 @@ const formationShortName = computed(() => {
               color="primary"
               label="Choose a Different Formation"
               class="rounded-full font-bold bg-emerald-800 hover:bg-emerald-700 !text-white"
-              @click="navigateTo(localePath('/draft/formation'))"
+              @click="() => { mobileTab = 'squad'; navigateTo(localePath('/draft/formation')) }"
             />
           </div>
 
