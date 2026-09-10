@@ -12,11 +12,11 @@ EuroDraft is a web-based fantasy football game built around **historical contine
 
 ### Core Loop
 
-1. **Choose a Formation** — 3 random formations are drawn. Pick one (4-4-2, 4-3-3, 4-2-3-1, etc.)
-2. **Spin the Roulette** — A random country + year combination appears (e.g. *France 2000*, *Germany 1972*, *Netherlands 1988*)
-3. **Pick ONE Player** — Only players who fit your open formation slots are eligible
+1. **Choose a Formation**: 3 random formations are drawn. Pick one (4-4-2, 4-3-3, 4-2-3-1, etc.)
+2. **Spin the Roulette**: A random country + year combination appears (e.g. *France 2000*, *Germany 1972*, *Netherlands 1988*)
+3. **Pick ONE Player**: Only players who fit your open formation slots are eligible
 4. **Repeat** until all 11 positions are filled
-5. **Simulate the Tournament** — Your all-time XI competes in a full simulated tournament with group stages, knockout rounds, and finals
+5. **Simulate the Tournament**: Your all-time XI competes in a full simulated tournament with group stages, knockout rounds, and finals
 
 ---
 
@@ -30,7 +30,7 @@ EuroDraft is a web-based fantasy football game built around **historical contine
 | Internationalization | [@nuxtjs/i18n](https://i18n.nuxtjs.org) (10 languages) |
 | Styling | Tailwind CSS v4 |
 | Data Pipeline | Wikipedia scraper + position enrichment pipeline |
-| Database (optional) | MySQL/MariaDB via [mysql2](https://github.com/sidorares/node-mysql2) — backs the global leaderboard only |
+| Database (optional) | MySQL/MariaDB via [mysql2](https://github.com/sidorares/node-mysql2), backs the global leaderboard only |
 | Unit Tests | [Vitest](https://vitest.dev) |
 | E2E / A11y Tests | [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) |
 
