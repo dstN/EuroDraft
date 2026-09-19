@@ -510,7 +510,7 @@
     "privacy_sharing_title": "3. Paylaşılan Sonuçlar (ed.rntm.de/r/:id)",
     "privacy_sharing_text": "Paylaşılan sonuçlar sadece açık rızanızla sunucuda saklanır (Art. 6(1)(a) GDPR).",
     "privacy_serverlogs_title": "4. Sunucu Günlükleri ve SSL",
-    "privacy_serverlogs_text": "Bağlantı verileri sunucu güvenliği amacıyla işlenir (Art. 6(1)(f) GDPR).",
+    "privacy_serverlogs_text": "Bağlantı verileri sunucu güvenliği amacıyla işlenir (Art. 6(1)(f) GDPR). Barındırma hizmeti netcup GmbH (Karlsruhe, Almanya) tarafından sağlanmaktadır; kendisiyle GDPR md. 28 uyarınca bir veri işleme sözleşmesi bulunmaktadır. Sunucular Almanya’dadır; üçüncü ülkelere aktarım yapılmamaktadır. Erişim kayıtları her gün döndürülür ve en geç 48 saat sonra silinir. Ziyaretçi istatistiği oluşturulmaz; günlük analizi barındırma panelinde kapalıdır.",
     "privacy_rights_title": "5. Haklarınız",
     "privacy_rights_text": "Verilerinize erişim veya silme talebi için info{'@'}rntm.de adresine yazabilirsiniz.",
     "terms_scope_title": "1. Koşulların Kabulü",

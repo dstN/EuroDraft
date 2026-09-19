@@ -510,7 +510,7 @@
     "privacy_sharing_title": "3. Udostępnianie wyników (ed.rntm.de/r/:id)",
     "privacy_sharing_text": "Udostępnione wyniki są zapisywane na serwerze wyłącznie za Twoją zgodą (Art. 6(1)(a) RODO).",
     "privacy_serverlogs_title": "4. Dzienniki serwera i szyfrowanie SSL",
-    "privacy_serverlogs_text": "Dane techniczne są przetwarzane w celach bezpieczeństwa serwera (Art. 6(1)(f) RODO).",
+    "privacy_serverlogs_text": "Dane techniczne są przetwarzane w celach bezpieczeństwa serwera (Art. 6(1)(f) RODO). Hosting zapewnia netcup GmbH (Karlsruhe, Niemcy); zawarto z nią umowę powierzenia przetwarzania danych zgodnie z art. 28 RODO. Serwery znajdują się w Niemczech; nie następuje przekazywanie danych do państw trzecich. Dzienniki dostępu są rotowane codziennie i usuwane najpóźniej po 48 godzinach. Nie są generowane statystyki odwiedzin; analiza dzienników jest wyłączona w panelu hostingowym.",
     "privacy_rights_title": "5. Twoje prawa",
     "privacy_rights_text": "Masz prawo do wglądu i usunięcia danych pisząc na info{'@'}rntm.de.",
     "terms_scope_title": "1. Postanowienia ogólne",
