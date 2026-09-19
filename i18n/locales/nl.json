@@ -510,7 +510,7 @@
     "privacy_sharing_title": "3. Gedeelde Resultaten (ed.rntm.de/r/:id)",
     "privacy_sharing_text": "Gedeelde toernooiresultaten worden alleen met uw uitdrukkelijke toestemming opgeslagen (Art. 6(1)(a) AVG).",
     "privacy_serverlogs_title": "4. Serverlogs & SSL-beveiliging",
-    "privacy_serverlogs_text": "Verbindingsgegevens worden verwerkt voor serverbeveiliging (Art. 6(1)(f) AVG). Volledige SSL-versleuteling.",
+    "privacy_serverlogs_text": "Verbindingsgegevens worden verwerkt voor serverbeveiliging (Art. 6(1)(f) AVG). Volledige SSL-versleuteling. De hosting wordt verzorgd door netcup GmbH (Karlsruhe, Duitsland); met hen is een verwerkersovereenkomst conform art. 28 AVG gesloten. De servers staan in Duitsland; er vindt geen doorgifte naar een derde land plaats. De toegangslogboeken worden dagelijks geroteerd en uiterlijk na 48 uur verwijderd. Er worden geen bezoekersstatistieken gegenereerd; de loganalyse is uitgeschakeld in het hostingpaneel.",
     "privacy_rights_title": "5. Uw Rechten",
     "privacy_rights_text": "U kunt inzage of verwijdering van gegevens aanvragen via info{'@'}rntm.de.",
     "terms_scope_title": "1. Toepasselijkheid",

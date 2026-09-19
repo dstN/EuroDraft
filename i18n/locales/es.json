@@ -510,7 +510,7 @@
     "privacy_sharing_title": "3. Resultados Compartidos (ed.rntm.de/r/:id)",
     "privacy_sharing_text": "Los resultados compartidos solo se guardan con su consentimiento expreso (Art. 6(1)(a) RGPD).",
     "privacy_serverlogs_title": "4. Registros del Servidor y Seguridad SSL",
-    "privacy_serverlogs_text": "Los datos de conexión se procesan por seguridad (Art. 6(1)(f) RGPD). Transmisión SSL/TLS cifrada.",
+    "privacy_serverlogs_text": "Los datos de conexión se procesan por seguridad (Art. 6(1)(f) RGPD). Transmisión SSL/TLS cifrada. El alojamiento corre a cargo de netcup GmbH (Karlsruhe, Alemania); existe un contrato de encargo de tratamiento conforme al art. 28 del RGPD. Los servidores están en Alemania; no hay transferencia a terceros países. Los registros de acceso se rotan a diario y se eliminan como máximo a las 48 horas. No se generan estadísticas de visitantes; el análisis de los registros está desactivado en el panel de alojamiento.",
     "privacy_rights_title": "5. Sus Derechos",
     "privacy_rights_text": "Puede ejercer sus derechos de acceso y rectificación escribiendo a info{'@'}rntm.de.",
     "terms_scope_title": "1. Aceptación de los Términos",
