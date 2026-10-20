@@ -5,21 +5,54 @@ on:
     workflows: [ci]
     branches: [master]
     types: [completed]
+  # Content only (texts, legal pages; Dustin, 20 October 2026): started by hand, the `build` job below makes the
+  # artifact ci.yml would make, without tests, and the deploy ships it. The automatic path above is unchanged.
+  workflow_dispatch:
+    inputs:
+      ohne_ci:
+        description: 'Content only: build here and deploy, without a CI run'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
   actions: read
 
 jobs:
+  # The build of ci.yml (Node 26, npm ci, npm run build), only for a content-only deploy. A job of its own without
+  # the deploy environment, so npm and its install scripts never share a job with the webspace password.
+  build:
+    name: Build (content only)
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ohne_ci }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eurodraft-output-${{ github.sha }}
+          path: .output/
+          retention-days: 1
+          include-hidden-files: true
+
   deploy:
     name: Deploy to Netcup
+    needs: build
     runs-on: ubuntu-latest
     # apt-get against the runner's mirror has been observed to stall for
     # 15-30 minutes instead of failing cleanly on sibling repos (same
     # account/hosting). This is the only thing that reliably recovers from
     # that, since it tears down the whole runner VM.
     timeout-minutes: 15
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # after a green CI, or after the content-only build above (on workflow_run that job is skipped)
+    if: ${{ !cancelled() && (github.event.workflow_run.conclusion == 'success' || needs.build.result == 'success') }}
     # The environment must exist in repo Settings → Environments for its
     # protection rules (and its branch policy restricting it to `master`) to
     # apply. If it does not, GitHub silently auto-creates an unprotected one
@@ -67,16 +100,16 @@ jobs:
       - name: Checkout the built commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: eurodraft-output-${{ github.event.workflow_run.head_sha }}
+          name: eurodraft-output-${{ github.event.workflow_run.head_sha || github.sha }}
           path: .output/
-          # artifact is uploaded by ci.yml for the same commit
+          # artifact is uploaded by ci.yml for the same commit, or by the build job of this run (content only)
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
 
       # Everything remote is done with plain ssh + sshpass rather than a
       # marketplace action: the webspace login is a password (Netcup exposes
