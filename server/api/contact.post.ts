@@ -22,7 +22,8 @@ export default defineEventHandler(async (event) => {
   const email = String(body?.email || '').trim().toLowerCase()
   const subject = String(body?.subject || '').trim()
   const message = String(body?.message || '').trim()
-  const consent = Boolean(body?.consent)
+  // No consent field: the policy names Art. 6 (1) b/f GDPR as the basis, not
+  // consent. A `consent` sent by an older client is ignored.
 
   if (!name || name.length < 2 || name.length > 100) {
     throw createError({
@@ -53,13 +54,6 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (!consent) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'You must accept the Privacy Policy to submit the contact form.'
-    })
-  }
-
   const smtpHost = process.env.SMTP_HOST || process.env.MAIL_HOST
   const smtpPort = Number(process.env.SMTP_PORT || process.env.MAIL_PORT || 587)
   const smtpUser = process.env.SMTP_USER || process.env.MAIL_USER || 'system@rntm.de'
@@ -75,18 +69,18 @@ export default defineEventHandler(async (event) => {
   // condition so it doesn't have to be discovered via a support email that
   // never arrives. The dev-mode mock path only applies outside production
   // (NODE_ENV, set by Passenger's Application Mode per DEPLOYMENT.md --
-  // never set manually), and no longer logs the message body or the
-  // sender's email address.
+  // never set manually). Neither log line carries anything from the form
+  // (name, email, subject, message): the server log is not the place for it.
   if (!smtpHost || !smtpPass) {
     if (process.env.NODE_ENV === 'production') {
-      console.error(`[contact] SMTP not configured in production -- message from "${name}" (subject: "${subject}") was not delivered`)
+      console.error('[contact] Sending failed: SMTP is not configured in production (no host or password set)')
       throw createError({
         statusCode: 503,
         statusMessage: 'The contact form is temporarily unavailable. Please email info@rntm.de directly.'
       })
     }
 
-    console.log(`[CONTACT FORM INQUIRY - DEV MOCK] from "${name}", subject: "${subject}" (SMTP unconfigured; not sent)`)
+    console.log('[contact] Dev mock: SMTP is not configured, message not sent')
 
     return {
       success: true,
@@ -111,7 +105,7 @@ export default defineEventHandler(async (event) => {
       to: recipientEmail,
       replyTo: `"${name}" <${email}>`,
       subject: `[EuroDraft Contact] ${subject} — from ${name}`,
-      text: `Name: ${name}\nEmail: ${email}\nIP: ${ip}\nSubject: ${subject}\n\nMessage:\n${message}`,
+      text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded: 8px;">
           <h2 style="color: #059669; border-bottom: 2px solid #10b981; padding-bottom: 8px; margin-top: 0;">New EuroDraft Contact Inquiry</h2>
@@ -127,10 +121,6 @@ export default defineEventHandler(async (event) => {
             <tr>
               <td style="padding: 6px 0; font-weight: bold; color: #4b5563;">Subject:</td>
               <td style="padding: 6px 0; color: #111827;">${escapeHtml(subject)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; font-weight: bold; color: #4b5563;">Sender IP:</td>
-              <td style="padding: 6px 0; color: #6b7280; font-family: monospace;">${escapeHtml(ip)}</td>
             </tr>
           </table>
           <div style="background-color: #f9fafb; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px;">
