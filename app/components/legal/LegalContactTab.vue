@@ -10,7 +10,6 @@ const contactForm = reactive({
   email: '',
   subject: '',
   message: '',
-  consent: false,
   website: '' // honeypot
 })
 
@@ -36,11 +35,6 @@ async function handleSubmitContact() {
     return
   }
 
-  if (!contactForm.consent) {
-    submitError.value = t('legal.contact_error_consent')
-    return
-  }
-
   isSubmitting.value = true
 
   try {
@@ -51,7 +45,6 @@ async function handleSubmitContact() {
         email: contactForm.email,
         subject: contactForm.subject,
         message: contactForm.message,
-        consent: contactForm.consent,
         website: contactForm.website
       }
     })
@@ -62,7 +55,6 @@ async function handleSubmitContact() {
       contactForm.email = ''
       contactForm.subject = ''
       contactForm.message = ''
-      contactForm.consent = false
     }
   } catch (err: unknown) {
     const fetchErr = err as { data?: { statusMessage?: string }, statusMessage?: string, message?: string }
@@ -233,29 +225,22 @@ async function handleSubmitContact() {
           />
         </div>
 
-        <!-- Consent Checkbox -->
-        <div class="flex items-start gap-2.5 pt-1">
-          <input
-            id="contact-consent"
-            v-model="contactForm.consent"
-            type="checkbox"
-            required
-            class="mt-1 size-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-          >
-          <label
-            for="contact-consent"
-            class="text-xs text-zinc-600 dark:text-zinc-400 select-none cursor-pointer leading-normal"
-          >
-            {{ $t('legal.contact_consent_label') }}
+        <!-- Privacy notice (no consent: the basis is Art. 6 (1) b/f GDPR) -->
+        <i18n-t
+          keypath="legal.contact_privacy_notice"
+          tag="p"
+          class="pt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-normal"
+        >
+          <template #link>
             <button
               type="button"
               class="text-emerald-900 dark:text-emerald-300 font-bold hover:underline"
               @click="emit('switchToPrivacyTab')"
             >
-              {{ $t('legal.tab_privacy') }}
-            </button>.
-          </label>
-        </div>
+              {{ $t('legal.contact_privacy_notice_link') }}
+            </button>
+          </template>
+        </i18n-t>
 
         <!-- Submit Button -->
         <div class="pt-3">

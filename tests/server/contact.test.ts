@@ -14,8 +14,7 @@ const VALID_BODY = {
   name: 'Jamie Doe',
   email: 'jamie@example.com',
   subject: 'General question',
-  message: 'This message is definitely long enough to pass validation.',
-  consent: true
+  message: 'This message is definitely long enough to pass validation.'
 }
 
 function withSmtp() {
@@ -84,11 +83,24 @@ describe('POST /api/contact', () => {
     expect(res.status).toBe(400)
   })
 
-  it('rejects submission without consent', async () => {
+  // The legal basis is Art. 6 (1) b/f GDPR, not consent: there is no consent
+  // field, and one sent by an older client changes nothing.
+  it.each([undefined, false, true])('sends regardless of a legacy consent field (%s)', async (consent) => {
     withSmtp()
-    const res = await post({ ...VALID_BODY, consent: false })
+    const res = await post({ ...VALID_BODY, consent })
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(200)
+    expect(sendMail).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves the sender IP out of the email', async () => {
+    withSmtp()
+    await post(VALID_BODY, { 'x-forwarded-for': '192.0.2.77' })
+
+    const mail = sendMail.mock.calls[0]![0]
+    expect(JSON.stringify(mail)).not.toContain('192.0.2.77')
+    expect(mail.text).not.toMatch(/IP/)
+    expect(mail.html).not.toMatch(/IP/)
   })
 
   it('silently "succeeds" without sending when the honeypot field is filled', async () => {
@@ -100,20 +112,34 @@ describe('POST /api/contact', () => {
     expect(sendMail).not.toHaveBeenCalled()
   })
 
+  // Nothing from the form may reach the server log.
+  function expectNoFormContents(spy: { mock: { calls: unknown[][] } }) {
+    expect(spy).toHaveBeenCalled()
+    const logged = JSON.stringify(spy.mock.calls)
+    for (const value of Object.values(VALID_BODY)) expect(logged).not.toContain(value)
+  }
+
   it('returns 503 in production when SMTP is unconfigured, rather than a false success', async () => {
     process.env.NODE_ENV = 'production'
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     const res = await post(VALID_BODY)
 
     expect(res.status).toBe(503)
     expect(sendMail).not.toHaveBeenCalled()
+    expectNoFormContents(error)
+    error.mockRestore()
   })
 
   it('returns a mocked success outside production when SMTP is unconfigured', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
     const res = await post(VALID_BODY)
 
     expect(res.status).toBe(200)
     expect(res.json).toMatchObject({ success: true, mock: true })
+    expectNoFormContents(log)
+    log.mockRestore()
   })
 
   it('rejects requests once the rate limit is exceeded', async () => {

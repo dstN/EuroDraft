@@ -151,8 +151,9 @@ Passenger after any change.
 
 `SMTP_HOST`/`MAIL_HOST` and `SMTP_PASS`/`MAIL_PASS`/`SMTP_PASSWORD` are
 required *together* for the contact form (`server/api/contact.post.ts`) to
-actually send mail. Without them: in dev, submissions are logged to the
-console instead (`mock: true` in the response); **in production, the
+actually send mail. Without them: in dev, nothing is sent and the console
+only notes that, without any form contents (`mock: true` in the response);
+**in production, the
 endpoint returns `503`** rather than falsely reporting success — check
 `GET /api/health`'s `contactForm` field (`"configured"` /
 `"not_configured"`), which only counts against overall health when

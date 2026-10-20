@@ -67,6 +67,19 @@
       <div class="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-2">
         <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
           <UIcon
+            name="i-lucide-mail"
+            class="size-4 text-emerald-500"
+          />
+          <span>{{ $t('legal.privacy_contact_title') }}</span>
+        </h3>
+        <p class="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
+          {{ $t('legal.privacy_contact_text') }}
+        </p>
+      </div>
+
+      <div class="pt-4 border-t border-zinc-200 dark:border-white/5 space-y-2">
+        <h3 class="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+          <UIcon
             name="i-lucide-check-circle-2"
             class="size-4 text-emerald-500"
           />
