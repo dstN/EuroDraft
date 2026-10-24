@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-10-24
+
+Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test Coverage and v3.2 Localisation & Polish milestones, the privacy and contact-form rework, and two fixes from 2026-10-24.
+
+### Security
+- Stored XSS through the share payload into the OG image closed: payloads are validated and size-capped at `/api/share`, rate-limited, and the OG renderer escapes its output (#25, #27)
+- Share, leaderboard and GDPR endpoints only act on a record when the caller presents its ownership token, instead of on any ID (#26)
+- Baseline security response headers: CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` (#31)
+
+### Added
+- Production deploy pipeline: a green CI run on `master` deploys its build artifact to netcup/Plesk; content-only changes can go live by hand via `ohne_ci` without a CI run
+- `robots.txt` and a locale-aware `sitemap.xml` (#42)
+- Real PNG OpenGraph images, site-wide and per share -- Discord and most embed crawlers don't render SVG (#60)
+- Formation shape and squad chemistry influence the match simulation, and the overall-rating gap is a direct win-chance lever (#67)
+- Legend bonus redesigned: each 90+ player lifts their own row by 2% and the other two by 1%, plus an individual scorer weight; suppressed inside Legend Mode, where every player qualifies
+- Tournament view auto-scrolls to the live match and to results (#56, #64)
+- Full translation coverage in all 10 locales for the draft, tournament, compare, leaderboard, history, share and error pages, the landing page and match commentary (#39, #48, #49)
+- Tests for every API handler (#37), the draft, roulette and tournament stores (#36, #47), and axe audits of compare, leaderboard, history, the share page and both tournament modals (#34)
+- CI runs build, e2e and a11y, and installs with `npm ci` (#38)
+
+### Changed
+- Leaderboard ranks by an Elo-style expected-vs-actual score (migrations 004, 005): an 82-OVR win now clearly outranks a 92-OVR one, and no non-winner can outrank a winner (#70, #72)
+- The player database is loaded as the static build asset instead of a 1.9 MB SSR payload (#30)
+- Mobile navigation is a full off-canvas menu (#52, #63); the legal tab bar is four equal tiles, and the Imprint links the contact form (#53, #68, #69)
+- Privacy policy, all 10 locales: names netcup GmbH with its full address as processor under an Art. 28 GDPR agreement, servers in Germany, logs deleted after at most 3 days, no visitor statistics, and a new section on the contact form
+- Contact form: no consent checkbox (the legal basis is Art. 6(1)(b)/(f) GDPR, not consent), no IP address in the mail, no form data in the logs
+- Dependencies refreshed; the esbuild dev-server advisory GHSA-g7r4-m6w7-qqqr is cleared (#43)
+
+### Fixed
+- Draft and tournament were dead in production: the player database wasn't reachable from the deploy artifact (#24); its SSR fetch also 404'd in dev mode
+- `mysql2` broke at query time when inlined into the Nitro bundle (#45)
+- Share links were lost on every restart and invisible across Passenger workers; they persist to MySQL when `DATABASE_URL` is set (#28)
+- The contact form reported success while discarding messages whenever SMTP was unset (#29)
+- Deploy: Passenger starts through the `app.js` shim (pointing it at `.output/server/index.mjs` failed every route), and the CI artifact upload was empty because `.output/` is a dot-directory
+- Czechia showed the Danish flag: `@nuxt/icon` 2.5 wrote a still-loading icon under the next flag's name while the roulette reel cycled; each flag now gets its own icon instance (#74)
+- The new squad flashed before the loading overlay was opaque (#66)
+- Firefox "server not found" (`ed.rntm.deundefined`) after drafting the last player: the draft page no longer mixes the raw History API with Vue Router (#73)
+- Icons weren't inlined during SSR and popped in after hydration (#41)
+- Nine real players, Lewandowski among them, were tagged as goalkeepers by the position enrichment (#61)
+- The chemistry bonus was always maxed for every AI opponent
+- The landing page called EURO 2008 and 2012 24-team tournaments (#71)
+- Mobile: draft-list rows overflowed horizontally (#50, #62), the squad list kept its scroll position after a reroll (#57, #65), the Legend Mode tooltip was unreachable by touch (#55)
+- Share: wrong formation slots on the public share page (#51), the PNG share card cut names at a fixed length (#58); the footer contact link did nothing on `/legal` (#54); the Custom formation UI looked unfinished (#59)
+- Accessibility: the tournament stats table was mouse-only (#32), the "tournament" a11y cases audited the formation picker (#33), 19 color-contrast failures sitewide (#46), primary buttons' text color in dark mode, and the leaderboard OVR figure below AAA contrast
+- The skip link showed its raw translation key in pt, ru and tr (#40); every locale defined `tournament.table_ga` twice
+- The mute preference caused a hydration mismatch; the orphaned `wip-index.html` is gone (#44)
+- Playwright adopted any server already listening on port 3000 as the app under test (#35)
+
+---
+
 ## [0.8.0] - 2026-08-23
 
 ### Changed
