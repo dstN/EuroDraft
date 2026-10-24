@@ -99,4 +99,22 @@ test.describe('Full Draft Flow', () => {
       await expect(page.locator('.custom-scroll')).toBeVisible()
     }
   })
+
+  // #74: dk's icon resolving while the flag already shows cz (whose own
+  // fetch is still in flight) used to write the Danish SVG under cz's class.
+  test('a flag switched mid-load keeps its own SVG', async ({ page }) => {
+    await page.route('**/api/_nuxt_icon/**', async (route) => {
+      const url = route.request().url()
+      await new Promise(r => setTimeout(r, url.includes('icons=cz') ? 1500 : url.includes('icons=dk') ? 300 : 0))
+      await route.continue()
+    })
+    await page.locator('[role="status"][aria-label="Loading EuroDraft"]').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
+    await page.selectOption('#all-nations-select', 'dk')
+    await page.selectOption('#all-nations-select', 'cz')
+
+    // The red lower band of the Czech flag; the Danish flag has no such path.
+    const czFlag = page.locator('[class~="i-circle-flags:cz"]').first()
+    await expect.poll(() => czFlag.evaluate(el => decodeURIComponent(getComputedStyle(el).backgroundImage)), { timeout: 5000 })
+      .toContain('M210 256h302v256H0z')
+  })
 })
