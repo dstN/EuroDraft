@@ -39,7 +39,14 @@ const flagIcon = computed(() => {
     ]"
     :title="country ? country.toUpperCase() : ''"
   >
+    <!-- Keyed so every flag gets its own icon instance: @nuxt/icon 2.5's CSS
+         mode writes a still-loading icon's SVG under whatever name the
+         *same* instance shows when the fetch resolves, so cycling dk -> cz
+         (roulette reel) gave Czechia the Danish flag for the whole session
+         (#74). ponytail: drop the key once @nuxt/icon >= 2.6.0 is in the
+         lockfile, it captures the selector at load start upstream. -->
     <UIcon
+      :key="flagIcon"
       :name="flagIcon"
       class="w-full h-full"
     />
