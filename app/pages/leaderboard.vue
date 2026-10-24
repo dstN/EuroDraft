@@ -138,7 +138,7 @@ function medalFor(rank: number): string {
             {{ entry.formation }} · {{ outcomeLabel(entry.outcome) }}
           </p>
         </div>
-        <span class="font-mono font-black text-lg text-emerald-700 dark:text-emerald-400 shrink-0">
+        <span class="font-mono font-black text-lg text-emerald-800 dark:text-emerald-400 shrink-0">
           {{ entry.ovr }}
         </span>
       </div>
