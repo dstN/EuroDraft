@@ -66,11 +66,9 @@ export default defineNuxtConfig({
         ].join('; '),
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        // Verify the Plesk vhost isn't already adding this (see
-        // DEPLOYMENT.md) before relying on it -- two HSTS headers from
-        // different layers is unspecified behavior, not just redundant.
-        'Strict-Transport-Security': 'max-age=63072000; includeSubDomains'
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+        // No Strict-Transport-Security here: Plesk sends it with the certificate,
+        // and a second one from the app arrived twice (checked 2026-10-30).
       }
     },
     // /og/** serves attacker-reachable SVG (see server/utils/ogImage.ts,
