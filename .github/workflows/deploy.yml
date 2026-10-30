@@ -51,8 +51,12 @@ jobs:
     # account/hosting). This is the only thing that reliably recovers from
     # that, since it tears down the whole runner VM.
     timeout-minutes: 15
-    # after a green CI, or after the content-only build above (on workflow_run that job is skipped)
-    if: ${{ !cancelled() && (github.event.workflow_run.conclusion == 'success' || needs.build.result == 'success') }}
+    # after a green CI on code from this repository, or after the content-only build above (on workflow_run that job
+    # is skipped). A fork's pull request from a branch named master passes the branches filter too, and the checkout
+    # below would run its code with the secrets.
+    if: >-
+      ${{ !cancelled() && ((github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository) || needs.build.result == 'success') }}
     # The environment must exist in repo Settings → Environments for its
     # protection rules (and its branch policy restricting it to `master`) to
     # apply. If it does not, GitHub silently auto-creates an unprotected one
