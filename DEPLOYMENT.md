@@ -246,7 +246,9 @@ Written by reading `DEPLOYMENT.md` / `README.md` / `docs/RUNBOOK.md` from
 hold partly production-verified history for this Netcup/Plesk setup, and
 not from generic Phusion Passenger documentation. The startup-file section
 above lists where that history disagrees (footyguess and GourMerge use unwrapped ESM/`.js`; bewerby needed the
-`.cjs` wrapper after a live failure). None of this has been tested against
-a real EuroDraft deployment yet. Treat the first real deploy as the
-verification, and update this file with whatever it finds, the same way
-bewerby's own runbook was corrected after its first live run.
+`.cjs` wrapper after a live failure). The first EuroDraft deploy on
+ed.rntm.de has since confirmed two points: the `app.js` startup file and
+the mysql2 setup under "What to upload", both marked "Verified live" above.
+Everything else is still taken from the other apps' history; when a later
+deploy shows something different, update this file, the same way bewerby's
+own runbook was corrected after its first live run.

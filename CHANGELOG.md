@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - README, CONTRIBUTING, DEPLOYMENT, ROADMAP, this changelog and the issue templates use plain wording: dashes, bold labels on every bullet, emoji milestone markers and section rules are gone, and so is filler like "Comprehensive" or "actually". No facts, versions or issue numbers changed
 
+### Fixed
+- `DEPLOYMENT.md` still said none of it had been tested against a real EuroDraft deployment, while two sections above it are marked "Verified live" from the first deploy on ed.rntm.de; the closing section now says which parts are confirmed
+
 ---
 
 ## [0.9.0] - 2026-10-24
