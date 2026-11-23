@@ -20,7 +20,7 @@ export function useShareCardText(props: {
 
   const wordleShareText = computed(() => {
     let text = `🏆 EuroDraft Tournament Run\n`
-    text += `🛡️ DEF: ${props.lineRatings.def} · 🎯 MID: ${props.lineRatings.mid} · ⚡ ATT: ${props.lineRatings.att} · ⭐ ${props.lineRatings.overall} GES (${props.formation})\n\n`
+    text += `🛡️ DEF: ${props.lineRatings.def} · 🎯 MID: ${props.lineRatings.mid} · ⚡ ATT: ${props.lineRatings.att} · ⭐ ${props.lineRatings.overall} OVR (${props.formation})\n\n`
     text += `📈 Finish: ${data.outcomeTitle.value}\n`
     if (props.runStats) {
       text += `📊 Record: ${props.runStats.totalMatches} Matches · ${props.runStats.totalGoalsFor}:${props.runStats.totalGoalsAgainst} GD · ${props.runStats.cleanSheets} Clean Sheets\n\n`
@@ -30,7 +30,7 @@ export function useShareCardText(props: {
       text += `⚽ Top Scorers & Playmakers (G/A):\n`
       data.topPerformers.value.forEach((p, i) => {
         const gaText = p.assists > 0 ? `${p.goals} ⚽ · ${p.assists} 🎯 (${p.goals + p.assists} G/A)` : `${p.goals} ⚽`
-        text += `${i + 1}. ${p.player.name} — ${gaText}\n`
+        text += `${i + 1}. ${p.player.name}: ${gaText}\n`
       })
       text += `\n`
     }

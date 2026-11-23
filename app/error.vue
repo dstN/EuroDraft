@@ -36,7 +36,7 @@ const copy = computed(() => {
 })
 
 useSeoMeta({
-  title: `${statusCode.value} — EuroDraft`,
+  title: `${statusCode.value} | EuroDraft`,
   robots: 'noindex'
 })
 

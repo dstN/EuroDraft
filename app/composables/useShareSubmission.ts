@@ -109,7 +109,7 @@ export function useShareSubmission(props: {
       })
       leaderboardSubmitted.value = true
     } catch {
-      leaderboardError.value = 'Leaderboard is not available right now — please try again later.'
+      leaderboardError.value = 'Leaderboard is not available right now. Please try again later.'
       agreeToLeaderboard.value = false
     } finally {
       isSubmittingLeaderboard.value = false

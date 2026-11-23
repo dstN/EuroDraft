@@ -481,7 +481,7 @@ const sizeClasses = computed(() => {
     >
       <img
         src="/logo.svg"
-        alt="EuroDraft — Build Your Legacy"
+        alt="EuroDraft: Build Your Legacy"
         class="w-full h-auto rounded-2xl shadow-2xl border border-white/10"
       >
     </div>

@@ -29,16 +29,16 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'EuroDraft — Draft Your Euro Dream Team',
-  description: 'Pick legendary players from Europe\'s top continental tournaments since 1960 and battle for glory in a full simulated tournament.',
-  ogTitle: 'EuroDraft — Draft Your Euro Dream Team',
+  title: 'EuroDraft: Draft Your Euro Dream Team',
+  description: 'Pick players from Europe\'s continental tournaments since 1960 and take them through a full simulated tournament.',
+  ogTitle: 'EuroDraft: Draft Your Euro Dream Team',
   ogDescription: 'Pick legendary players from 64 years of European tournament history and simulate a full continental championship.',
   ogImage: '/og-image.png',
   ogImageWidth: 1200,
   ogImageHeight: 630,
   ogType: 'website',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'EuroDraft — Draft Your Euro Dream Team',
+  twitterTitle: 'EuroDraft: Draft Your Euro Dream Team',
   twitterDescription: 'Pick legendary players from 64 years of European tournament history and simulate a full continental championship.',
   twitterImage: '/og-image.png'
 })

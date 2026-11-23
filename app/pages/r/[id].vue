@@ -74,7 +74,7 @@ const seoDescription = () => sharedRun.value
   ? t('sharedRun.seo_description', { formation: sharedRun.value.formation, ovr: sharedRun.value.teamOVR })
   : t('sharedRun.seo_description_fallback')
 const seoOgTitle = () => sharedRun.value
-  ? `${sharedRun.value.teamName} — ${outcomeTitle.value.replace(/^[^\w]+/, '')}`
+  ? `${sharedRun.value.teamName}: ${outcomeTitle.value.replace(/^[^\w]+/, '')}`
   : t('sharedRun.seo_title_fallback')
 
 useSeoMeta({

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.2] - 2026-11-23
+
+### Changed
+- Interface texts in all 10 locales say what happens instead of selling it: the landing page, era descriptions, tournament outcomes, share and history pages and match commentary lose dashes, three-item slogans and phrases like "ultimate XI to conquer" or "magical masterpiece". The page title, error page title, share text and logo alt text follow suit. No text got longer; the legal pages are unchanged
+
+### Fixed
+- German outcome text read "Ausschied in der Gruppenphase"; it is "Aus in der Gruppenphase" now
+- Italian, Portuguese and Russian era texts called Van Basten's 1988 final goal an overhead kick; it was a volley
+- The English share text labelled the overall rating "GES", the German abbreviation; it says "OVR" now
+
+---
+
 ## [0.9.1] - 2026-11-23
 
 ### Changed
