@@ -1,24 +1,20 @@
 # EuroDraft
 
-> **Draft your all-time European Dream XI.** Pick legends from historical continental tournament squads since 1960, build your dream team in a tactical formation, and simulate a full tournament.
+> Draft an all-time European XI from the continental tournament squads since 1960, line it up in a formation and simulate a full tournament.
 
 [![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
 
----
-
 ## What is EuroDraft?
 
-EuroDraft is a web-based fantasy football game built around **historical continental tournament squads**. Instead of picking modern players, you draft legends from tournaments spanning 1960 to 2024.
+EuroDraft is a browser fantasy football game. Every player you can pick played in a continental tournament squad between 1960 and 2024.
 
 ### Core Loop
 
-1. **Choose a Formation**: 3 random formations are drawn. Pick one (4-4-2, 4-3-3, 4-2-3-1, etc.)
-2. **Spin the Roulette**: A random country + year combination appears (e.g. *France 2000*, *Germany 1972*, *Netherlands 1988*)
-3. **Pick ONE Player**: Only players who fit your open formation slots are eligible
-4. **Repeat** until all 11 positions are filled
-5. **Simulate the Tournament**: Your all-time XI competes in a full simulated tournament with group stages, knockout rounds, and finals
-
----
+1. Choose a formation. The game draws 3 at random (4-4-2, 4-3-3, 4-2-3-1, etc.) and you pick one.
+2. Spin the roulette. It lands on a country and year, e.g. *France 2000*, *Germany 1972* or *Netherlands 1988*.
+3. Pick one player from that squad. Only players who fit an open slot in your formation are eligible.
+4. Repeat until all 11 positions are filled.
+5. Simulate the tournament: group stage, knockout rounds and final.
 
 ## Tech Stack
 
@@ -33,8 +29,6 @@ EuroDraft is a web-based fantasy football game built around **historical contine
 | Database (optional) | MySQL/MariaDB via [mysql2](https://github.com/sidorares/node-mysql2), backs the global leaderboard only |
 | Unit Tests | [Vitest](https://vitest.dev) |
 | E2E / A11y Tests | [Playwright](https://playwright.dev) + [@axe-core/playwright](https://github.com/dequelabs/axe-core-npm) |
-
----
 
 ## Getting Started
 
@@ -68,15 +62,13 @@ npm run build:db
 
 ### Enrich Player Positions
 
-To enrich player position data from an external football data source:
+To fill in position data from an external football data source:
 
 ```bash
 POSITION_SOURCE_BASE_URL=https://... npm run enrich:positions -- --name "Zinedine Zidane"
 # Or enrich all ~4600 players in the database:
 POSITION_SOURCE_BASE_URL=https://... npm run enrich:positions -- --db
 ```
-
----
 
 ## Commands
 
@@ -91,8 +83,6 @@ POSITION_SOURCE_BASE_URL=https://... npm run enrich:positions -- --db
 | `npm run test:a11y` | Run accessibility audit |
 | `npm run lint` | Lint code |
 | `npm run typecheck` | TypeScript type check |
-
----
 
 ## Project Structure
 
@@ -113,11 +103,9 @@ EuroDraft/
 └── tests/                 # Unit (Vitest) + E2E/a11y (Playwright) tests
 ```
 
----
-
 ## Internationalization
 
-EuroDraft is available in **10 languages**:
+EuroDraft is available in 10 languages:
 
 | Language | Code |
 |---|---|
@@ -132,27 +120,17 @@ EuroDraft is available in **10 languages**:
 | Russian | `ru` |
 | Turkish | `tr` |
 
----
-
 ## Data Pipeline
 
-- **Player Rosters**: Wikipedia squad tables for all 17 continental tournaments (1960–2024)
-- **Player Positions**: Verified specific tactical roles (CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF)
-- **Player Ratings**: Curated historical prime ratings calibrated by position and tournament performance
-
----
+Rosters come from the Wikipedia squad tables of all 17 continental tournaments (1960–2024). Each player has a verified tactical role (CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF) and a curated rating for their prime, calibrated by position and tournament performance.
 
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for planned features and milestones.
 
----
-
 ## Deployment
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for the Netcup + Phusion Passenger production runbook.
-
----
 
 ## Contributing
 

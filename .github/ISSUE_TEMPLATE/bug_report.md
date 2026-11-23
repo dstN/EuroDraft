@@ -6,7 +6,7 @@ labels: bug
 ---
 
 ## Description
-A clear description of the bug.
+What goes wrong?
 
 ## Steps to Reproduce
 1. Go to '...'
@@ -24,8 +24,8 @@ If applicable, add screenshots.
 
 ## Player Data Issues
 If this is a player position/rating issue:
-- **Player**: 
-- **Country + Year**: 
-- **Current (incorrect)**: 
-- **Correct**: 
-- **Source**: (Transfermarkt URL preferred)
+- Player: 
+- Country + Year: 
+- Current (incorrect): 
+- Correct: 
+- Source: (Transfermarkt URL preferred)

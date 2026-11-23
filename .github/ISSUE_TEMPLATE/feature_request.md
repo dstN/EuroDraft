@@ -6,13 +6,13 @@ labels: enhancement
 ---
 
 ## Summary
-A clear, concise description of the feature.
+What should the feature do?
 
 ## Motivation
-Why is this feature valuable? What problem does it solve?
+What problem does it solve?
 
 ## Proposed Solution
-How would you implement this? Any technical details?
+How would you implement it? Technical details welcome.
 
 ## Acceptance Criteria
 - [ ] ...

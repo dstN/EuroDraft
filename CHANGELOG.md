@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.1] - 2026-11-23
+
+### Changed
+- README, CONTRIBUTING, DEPLOYMENT, ROADMAP, this changelog and the issue templates use plain wording: dashes, bold labels on every bullet, emoji milestone markers and section rules are gone, and so is filler like "Comprehensive" or "actually". No facts, versions or issue numbers changed
+
+---
+
 ## [0.9.0] - 2026-10-24
 
 Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test Coverage and v3.2 Localisation & Polish milestones, the privacy and contact-form rework, and two fixes from 2026-10-24.
@@ -19,7 +26,7 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 ### Added
 - Production deploy pipeline: a green CI run on `master` deploys its build artifact to netcup/Plesk; content-only changes can go live by hand via `ohne_ci` without a CI run
 - `robots.txt` and a locale-aware `sitemap.xml` (#42)
-- Real PNG OpenGraph images, site-wide and per share -- Discord and most embed crawlers don't render SVG (#60)
+- Real PNG OpenGraph images, site-wide and per share, because Discord and most embed crawlers don't render SVG (#60)
 - Formation shape and squad chemistry influence the match simulation, and the overall-rating gap is a direct win-chance lever (#67)
 - Legend bonus redesigned: each 90+ player lifts their own row by 2% and the other two by 1%, plus an individual scorer weight; suppressed inside Legend Mode, where every player qualifies
 - Tournament view auto-scrolls to the live match and to results (#56, #64)
@@ -60,11 +67,11 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 ## [0.8.0] - 2026-08-23
 
 ### Changed
-- Split the four largest files in the codebase, none of which had a documented reason to be one file each -- verified each with real browser automation (a full draft-to-tournament run, the share modal's canvas render and API submission, all four legal tabs) rather than just typecheck/lint:
+- Split the four largest files in the codebase, none of which had a documented reason to be one file each. Each split was checked with browser automation (a full draft-to-tournament run, the share modal's canvas render and API submission, all four legal tabs), not just typecheck/lint:
   - `tournament/index.vue`: 1229 → ~230 lines. Extracted `useTournamentResults.ts` (outcome/rating/sort logic) and five components (`TournamentGroupTable`, `TournamentMatchList`, `TournamentOutcomeBanner`, `TournamentSquadOverview`, `TournamentPlayerStatsTable`); `TournamentMatchList` also removes the near-duplicate markup the group and knockout match sections used to carry separately
   - `TournamentShareModal.vue`: 958 → 278 lines. Extracted `useShareCardData.ts`, `useShareCardCanvas.ts` (the ~450-line Canvas drawing engine), `useShareCardText.ts`, and `useShareSubmission.ts`
   - `legal/index.vue`: 619 → 120 lines. Extracted one component per tab (`LegalImprintTab`, `LegalPrivacyTab`, `LegalTermsTab`, `LegalContactTab`), each only ever rendered one at a time
-  - `draft/index.vue`: 777 → 676 lines. Extracted `DraftSquadList.vue`; the rest of the page's interaction logic (roulette animation, mobile-tab/swipe state, the flying-disc draft confirmation) stayed put since it's genuinely interdependent, not just co-located
+  - `draft/index.vue`: 777 → 676 lines. Extracted `DraftSquadList.vue`; the rest of the page's interaction logic (roulette animation, mobile-tab/swipe state, the flying-disc draft confirmation) stayed put because those parts depend on each other
 
 ### Fixed
 - Dropped a dead `ref="squadScrollRef"` in `draft/index.vue` that was never wired to an actual `ref()` declaration anywhere in the script
@@ -74,9 +81,9 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 ## [0.7.0] - 2026-08-23
 
 ### Removed
-- `app/pages/match/[id].vue`, a full match-detail route with zero references anywhere in the app -- superseded by the inline match accordion already in `tournament/index.vue`; its now-orphaned `match.*` i18n namespace was removed from all 10 locales
+- `app/pages/match/[id].vue`, a full match-detail route with zero references anywhere in the app, superseded by the inline match accordion already in `tournament/index.vue`; its now-orphaned `match.*` i18n namespace was removed from all 10 locales
 - Dead type exports (`PositionDefinition`, `GamePhase` in `app/types/index.ts`; `RatingProfile` in `scripts/player-ratings.ts`), never referenced anywhere
-- Unused dependencies (`@nuxt/test-utils`, `@vue/test-utils` -- no test mounts a Vue component; `axe-core` -- redundant with `@axe-core/playwright`'s own dependency on it) and a broken `vitest.config.ts` alias pointing at a composables index file that has never existed in this repo
+- Unused dependencies (`@nuxt/test-utils` and `@vue/test-utils`, since no test mounts a Vue component; `axe-core`, redundant with `@axe-core/playwright`'s own dependency on it) and a broken `vitest.config.ts` alias pointing at a composables index file that has never existed in this repo
 
 ### Fixed
 - Two real TypeScript errors caught during the audit: `app/error.vue` indexed a lookup table with a possibly-`undefined` status code, and `server/middleware/compression.ts` had a type mismatch between `compression()`'s Express typing and h3's `NodeMiddleware`
@@ -88,7 +95,7 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 
 ### Changed
 - Lighthouse Performance score raised from 53 to 85 (Accessibility/Best Practices/SEO already at 100): scoped the ~2.8MB player database load out of `app.vue` into a route middleware (`ensure-database`) applied only to `/draft/**` and `/tournament/**`, cutting homepage FCP/LCP from ~17s to ~3s under throttled network simulation
-- Static assets (CSS/JS) are now actually served gzip/brotli-compressed. `node-server` was transferring a ~270KB CSS chunk uncompressed despite the client requesting it, costing ~6s under Lighthouse's throttled simulation -- worked around a Nitro bug where the node-server preset's static-asset manifest is frozen before its own build-time compression runs, by building twice (`scripts/build.mjs`) so the second build's manifest sees the first build's compressed output
+- Static assets (CSS/JS) are now served gzip/brotli-compressed. `node-server` was transferring a ~270KB CSS chunk uncompressed despite the client requesting it, costing ~6s under Lighthouse's throttled simulation. Worked around a Nitro bug where the node-server preset's static-asset manifest is frozen before its own build-time compression runs, by building twice (`scripts/build.mjs`) so the second build's manifest sees the first build's compressed output
 - Added runtime response compression (`server/middleware/compression.ts`) for SSR pages and API/JSON responses, which aren't covered by the static-asset manifest at all
 - Pre-warm the player database cache at server startup (`server/plugins/warm-player-db.ts`) instead of paying the ~250ms read+parse cost inline on whichever request happens to be first after a (re)start
 
@@ -96,7 +103,7 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 - Branded error page (`app/error.vue`) for 404/400/429/500/503, matching the app's design system with football-themed copy per status code, replacing Nuxt's generic default
 
 ### Fixed
-- Every error page (any 404, any thrown error) was served as a completely blank page to any real visitor whose browser requests compression -- effectively everyone. The response compression middleware claimed `Content-Encoding: br` while shipping zero actual bytes, because Nitro's internal error-render request (a re-fetch of `/__nuxt_error?...`) passed through compression under a *different* status code than the outer response ultimately used
+- Every error page (any 404, any thrown error) was served as a completely blank page to any real visitor whose browser requests compression, which is nearly everyone. The response compression middleware claimed `Content-Encoding: br` while shipping zero actual bytes, because Nitro's internal error-render request (a re-fetch of `/__nuxt_error?...`) passed through compression under a different status code than the outer response used
 
 ---
 
@@ -114,20 +121,20 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 - "Legend Mode": drafting restricted to 90+ rated players, with a graceful "no eligible squads left" state for scarce-position dead ends (#21)
 - Custom formation and tactic builder: pick exact position counts with a live pitch preview (#22)
 - Local draft history (`/history`): every completed run auto-saves to localStorage (capped at 20), with an expand-to-view-squad accordion, delete-one, and clear-all (#23)
-- `app/utils/pitchLayout.ts`: shared, count-generic pitch-coordinate logic for `FormationPitch.vue`/`MiniFormationPitch.vue`, replacing ~140 lines of duplicated, hard-coded-per-count logic — required for the custom formation builder to render arbitrary position combinations without overlap
+- `app/utils/pitchLayout.ts`: shared, count-generic pitch-coordinate logic for `FormationPitch.vue`/`MiniFormationPitch.vue`, replacing ~140 lines of duplicated, hard-coded-per-count logic; the custom formation builder needs it to render arbitrary position combinations without overlap
 
 ### Changed
-- The player database (~2.8MB) no longer loads eagerly on every page via `app.vue` — scoped to a route middleware (`ensure-database`) on only `/draft/**` and `/tournament/**`, the two routes that actually touch it. Cut homepage FCP/LCP roughly in half under Lighthouse's throttled network simulation (~17s → ~8s)
+- The player database (~2.8MB) no longer loads eagerly on every page via `app.vue`. It is scoped to a route middleware (`ensure-database`) on only `/draft/**` and `/tournament/**`, the two routes that use it. Cut homepage FCP/LCP roughly in half under Lighthouse's throttled network simulation (~17s → ~8s)
 
 ### Fixed
 - `currentCountryDisplayName` fell back to a raw country code (e.g. "ua") instead of the full name; now uses the existing `getCountryName()` util
 - Starting a new draft without a hard reload kept the previous session's reroll count, drafted-player blocklist, and roulette used-team-keys
 - 4-3-2-1 (Christmas Tree) formation's central-midfield trio collapsed two dots onto the same coordinate
 - Roulette flag stayed on its Netherlands fallback for the very first squad shown on a fresh `/draft` visit (the silent initial spin never triggered the reel's sync watcher); nation name also revealed instantly on reroll instead of waiting for the spin animation to settle
-- Pitch discs visually overlapping despite numerically distinct coordinates (e.g. 4-1-2-1-2's CB landing almost on top of LB/RB) — the coordinate-spread formula stretched too wide for low counts relative to fixed-position neighbors
+- Pitch discs visually overlapping despite numerically distinct coordinates (e.g. 4-1-2-1-2's CB landing almost on top of LB/RB): the coordinate-spread formula stretched too wide for low counts relative to fixed-position neighbors
 - Top nav silently overflowed off-screen on mobile once enough links (Compare, Leaderboard) were added; now horizontally scrollable
 - Page visibly shifted left when opening a dropdown/modal, since the scroll-lock library hides the scrollbar without `scrollbar-gutter` reserving its space (missed `body`, the element actually locked, on the first attempt)
-- GDPR self-service portal read/exported/wiped *all* of localStorage, not just EuroDraft's own keys — the "wipe my data" button in particular called `localStorage.clear()` unconditionally, which could delete an unrelated site's data sharing the same origin
+- GDPR self-service portal read/exported/wiped all of localStorage instead of only EuroDraft's own keys. The "wipe my data" button in particular called `localStorage.clear()` unconditionally, which could delete an unrelated site's data sharing the same origin
 - Language-switcher flag requested `circle-flags:gb` (unbundled, logged a load failure) instead of `circle-flags:gb-eng`, which the rest of the app already uses consistently for English
 
 ---
@@ -156,7 +163,7 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 - Vitest unit tests for formations composable (#5)
 - Playwright e2e draft flow tests (#5)
 - axe-core a11y tests for all pages (#5)
-- Comprehensive README, CHANGELOG, CONTRIBUTING, PR/issue templates (#6)
+- README, CHANGELOG, CONTRIBUTING, PR/issue templates (#6)
 - ROADMAP.md with milestone planning (#7)
 - GitHub issues and milestones via gh CLI (#7)
 - Position enrichment pipeline (cheerio + Playwright fallback) (#8)
@@ -172,14 +179,14 @@ Everything since 0.8.0: the v3.0 Production Readiness, v3.1 Accessibility & Test
 ## [0.2.0] - 2026-08-21
 
 ### Added
-- Authentic historical player positions via `scripts/player-positions.ts` registry (350+ legends)
+- Historical player positions via `scripts/player-positions.ts` registry (350+ legends)
 - Calibrated historical star ratings: Zidane 94, Blanc 90, Thuram 90, Deschamps 89, Barthez 89
 - Granular position specificity: CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, ST, CF
 - Vector circular flags via `@iconify-json/circle-flags`
 - Working light/dark theme toggle
 - Language switcher in header (10 locales)
 - Direct click-to-place pitch interaction (no popup/modal)
-- Position-sorted squad list: GK → DEF → MID → FWD with section headers
+- Position-sorted squad list (GK, DEF, MID, FWD) with section headers
 
 ### Fixed
 - Tactical pitch visible in drafting mode alongside squad list

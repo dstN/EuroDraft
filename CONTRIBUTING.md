@@ -1,17 +1,15 @@
 # Contributing to EuroDraft
 
-Thank you for contributing! This guide covers setup, conventions, and workflow.
-
----
+This guide covers setup, commit conventions and the PR workflow.
 
 ## Development Setup
 
 ### Prerequisites
 
-- **Node.js** >= 20
-- **npm** >= 10 (or pnpm)
-- **Git**
-- **gh CLI** (for creating issues: `gh auth login`)
+- Node.js >= 20
+- npm >= 10 (or pnpm)
+- Git
+- gh CLI (for creating issues: `gh auth login`)
 
 ### Setup
 
@@ -24,11 +22,9 @@ npm run dev
 
 The dev server runs on `http://localhost:3000`.
 
----
-
 ## Branching Strategy
 
-We use a simple feature branch workflow:
+We use feature branches:
 
 ```
 main          ← stable releases
@@ -37,15 +33,13 @@ feature/xxx   ← feature branches (one issue = one branch)
 fix/xxx       ← bugfix branches
 ```
 
-**Always branch from `development`:**
+Branch from `development`:
 
 ```bash
 git checkout development
 git pull
 git checkout -b fix/my-fix
 ```
-
----
 
 ## Commit Conventions
 
@@ -55,7 +49,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 <type>(<scope>): <description> (closes #<issue-number>)
 ```
 
-**Types:**
+Types:
 
 | Type | When to use |
 |---|---|
@@ -67,15 +61,13 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 | `refactor` | Code change with no behavior change |
 | `chore` | Tooling, deps, config |
 
-**Examples:**
+Examples:
 
 ```bash
 git commit -m "feat: formation picker shows mini-pitch with player dots (closes #3)"
 git commit -m "fix: squad list scrolls to top after draft pick (closes #2)"
 git commit -m "data: rebuild DB with enriched positions (closes #9)"
 ```
-
----
 
 ## Running Tests
 
@@ -103,8 +95,6 @@ describe('expandFormationToSlots', () => {
 })
 ```
 
----
-
 ## Rebuilding the Player Database
 
 ```bash
@@ -113,11 +103,9 @@ npm run build:db
 
 This scrapes Wikipedia squad tables for all 17 Euros (1960–2024). Results are cached in `scripts/cache/`.
 
----
-
 ## Player Position Correction Workflow
 
-EuroDraft maintains an authentic registry of historical positions for players across all 17 European tournaments (1960–2024). Contributors can propose corrections either via GitHub Issues or via a direct Pull Request.
+EuroDraft keeps a registry of the positions players actually played across all 17 European tournaments (1960–2024). You can propose a correction through a GitHub issue or a pull request.
 
 ### Option A: Submitting via GitHub Issue Form
 1. Open [GitHub Issues](https://github.com/dstN/EuroDraft/issues/new/choose) and select **⚽ Player Position / Rating Correction**.
@@ -142,7 +130,7 @@ EuroDraft maintains an authentic registry of historical positions for players ac
    ```bash
    npm run build:db
    ```
-4. Run tests to ensure validation passes:
+4. Run the tests so the validation runs:
    ```bash
    npm run test
    ```
@@ -150,8 +138,6 @@ EuroDraft maintains an authentic registry of historical positions for players ac
    ```bash
    git commit -m "feat(data): correct position for Yuri Zhirkov (closes #10)"
    ```
-
----
 
 ## Pull Request Checklist
 
@@ -163,11 +149,6 @@ EuroDraft maintains an authentic registry of historical positions for players ac
 - [ ] `npm run typecheck` passes
 - [ ] Description in PR references the GitHub issue
 
----
-
 ## Issue Reporting
 
-Use the templates in `.github/ISSUE_TEMPLATE/`:
-- **Bug Report**: Report unexpected UI errors, simulation bugs, or styling issues.
-- **Feature Request**: Suggest new mechanics, game modes, or UX enhancements.
-- **Player Position / Rating Correction**: Report incorrect tactical slots, missing secondary positions, or rating anomalies.
+Use the templates in `.github/ISSUE_TEMPLATE/`: Bug Report for UI errors, simulation bugs and styling issues, Feature Request for new mechanics, game modes or UX changes, and Player Position / Rating Correction for wrong tactical slots, missing secondary positions or odd ratings.
